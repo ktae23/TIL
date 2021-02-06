@@ -11,7 +11,7 @@ public class Magazine {
 	int year;
 	int month;
 	
-	
+	public Magazine() {}
 	
 	public Magazine(String isbn, String title, String author, String publisher, 
 					int price, int year, int month) {
@@ -41,6 +41,17 @@ public class Magazine {
 
 	@Override
 	public String toString() {
+		if (isbn == null) {
+			isbn = " ";
+		}else if(title == null) {
+			title = " ";
+		}else if(author == null) {
+			author = " ";
+		}else if(publisher == null) {
+			publisher = " ";
+		}else if(desc == null) {
+			desc = " ";
+		}
 		return isbn + "   |   " + title + "   " + author + "  |  " + publisher + "  |  "
 				+ price +"      " + desc + "  |  " + year +"."+month;
 	}

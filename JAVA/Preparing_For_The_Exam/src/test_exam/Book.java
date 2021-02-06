@@ -37,7 +37,17 @@ public class Book {
 
 	@Override
 	public String toString() {
-		
+		if (isbn == null) {
+			isbn = " ";
+		}else if(title == null) {
+			title = " ";
+		}else if(author == null) {
+			author = " ";
+		}else if(publisher == null) {
+			publisher = " ";
+		}else if(desc == null) {
+			desc = " ";
+		}
 		return isbn + "   |   " + title + "   | " + author + "               | " + publisher + "   |   "
 				+ price +" " + desc;
 	}
