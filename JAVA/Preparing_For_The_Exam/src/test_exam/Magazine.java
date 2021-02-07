@@ -52,8 +52,8 @@ public class Magazine {
 		}else if(desc == null) {
 			desc = " ";
 		}
-		return isbn + "   |   " + title + "   " + author + "  |  " + publisher + "  |  "
-				+ price +"      " + desc + "  |  " + year +"."+month;
+		return isbn + "  | " + title + "  | " + author + "  | " + publisher + "  | "
+				+ price +" " + desc + "  | " + year +"."+month;
 	}
 	
 	

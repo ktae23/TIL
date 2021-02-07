@@ -1,4 +1,4 @@
-package test_exam;
+package Test_exam_2;
 
 public class Book {
 	String isbn;
@@ -20,7 +20,6 @@ public class Book {
 		this.desc="";
 		this.price=price;
 	}
-
 	
 	
 	
@@ -48,10 +47,10 @@ public class Book {
 		}else if(desc == null) {
 			desc = " ";
 		}
-		return isbn + "  | " + title + "  | " + author + "  | " + publisher + "  | "
+		return isbn + "   |   " + title + "   | " + author + "               | " + publisher + "   |   "
 				+ price +" " + desc;
 	}
-
+	
 	
 
 }
