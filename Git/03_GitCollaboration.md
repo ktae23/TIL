@@ -94,3 +94,58 @@ git push origin master
 
 ## (3) Branch & PR
 
+> 가지를 나누듯이 명령 시점에서 다른 가지 하나를 만들어 분리함
+
+```shell
+git branch [브랜치 이름]
+```
+
+- 위 명령어로 브랜치를 생성
+
+```shell
+git branch
+```
+
+- 브랜치 조회
+
+```shell
+git checkout [브랜치 이름]
+```
+
+- 브랜치 이동
+
+```shell
+git merge [변화 가져올 브랜치 이름]
+```
+
+- 변경사항 브랜치 합치기
+
+```shell
+git log --graph --all --decorate
+```
+
+- 깃 로그 시각화
+
+```shell
+git rebase [변화 가져올 브랜치 이름]
+```
+
+- log를 한 줄로 남겨 줌
+
+```shell
+git branch -D [삭제할 브랜치 이름]
+```
+
+- 브랜치 삭제
+
+```shell
+git checkout -b [브랜치 이름]
+```
+
+- 브랜치 생성과 이동 한번에 하기
+
+```shell
+git push -d origin [원격 브랜치 이름]
+```
+
+- 원격저장소의 브랜치 삭제

@@ -7,7 +7,6 @@ import java.awt.Frame;
 import java.awt.Panel;
 import java.awt.TextArea;
 import java.awt.TextField;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowListener;
 
 public class ClientUi {
@@ -23,8 +22,12 @@ public class ClientUi {
 		f.addWindowListener(fHandler);
 		
 		
-		ActionListener b1Handler=new MyButtonHandler();
+		MyButtonHandler b1Handler=new MyButtonHandler();
+		b1Handler.setTextArea(ta);
+		b1Handler.setTextField(tf);
 		b1.addActionListener(b1Handler);
+		
+		tf.addActionListener(b1Handler);
 		
 		
 /*		Button b2 = new Button("전송2");

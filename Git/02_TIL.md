@@ -141,3 +141,12 @@ $ git commit -m "학습 내용 추가"
 $ git push origin master
 ```
 
+
+
+### (3) 저장소 변경 사항 확인
+
+```shell
+git fetch
+git status
+```
+
