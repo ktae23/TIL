@@ -1,4 +1,4 @@
-package test_exam;
+package com.scsa.java.fifth;
 
 public class Magazine {
 	String isbn;

@@ -1,4 +1,4 @@
-package test_exam;
+package com.scsa.java.fifth;
 
 public class Book {
 	String isbn;
@@ -8,7 +8,6 @@ public class Book {
 	String desc;
 	int price;
 	
-	
 
 	@Override
 	public String toString() {
@@ -17,7 +16,4 @@ public class Book {
 		}
 		return isbn + "\t| " + title + "\t| " + author + "\t| " + publisher + "\t| " + price + "\t| " + desc;
 	}
-
-	
-
 }

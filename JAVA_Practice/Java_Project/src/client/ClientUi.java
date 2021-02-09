@@ -1,18 +1,21 @@
 package client;
 
-import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Checkbox;
-import java.awt.Color;
+import java.awt.FileDialog;
 import java.awt.Frame;
+import java.awt.Menu;
 import java.awt.MenuBar;
+import java.awt.MenuItem;
 import java.awt.Panel;
 import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 	
 public class ClientUi {
@@ -39,8 +42,56 @@ public class ClientUi {
 		tf=new TextField(20);
 		ta=new TextArea();
 		MenuBar mb=new MenuBar();
-		Menu 
+		Menu file_menu=new Menu("파일");
+		Menu edit_menu=new Menu("편집");
+		MenuItem open_item=new MenuItem("열기");
+		MenuItem save_item=new MenuItem("저장");
 		
+		file_menu.add(open_item);
+		file_menu.add(save_item);
+		
+		mb.add(file_menu);
+		mb.add(edit_menu);
+		f.setMenuBar(mb);
+		
+		open_item.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent a) {
+				System.out.println("open file");
+				FileDialog open=new FileDialog(f, "열기 창", FileDialog.LOAD); // 열기 창 설정
+				open.setVisible(true); //컨테이너 계열들은 보여주는 설정이 필요.
+
+				FileReader fr = null;
+				BufferedReader br = null;
+				
+				try {
+					fr = new FileReader(open.getDirectory()+open.getFile()); //선택하는 파일의 경로 획득
+					br=new  BufferedReader(fr);
+					String oneLine="";
+					ta.setText("");// 빈 문자열로 셋팅해서 지워지는 효과 
+					while((oneLine = br.readLine()) != null) {
+						ta.append(oneLine+"\n");	// append는 매 입력이 추가되는 방식
+					}
+				
+				
+				} catch (FileNotFoundException e) {
+					e.printStackTrace(); // 실행시점에선 삭제 해야하지만 개발 시점에선 에러 추적을 위해 사용
+				} catch (IOException e) {
+					e.printStackTrace(); // 실행시점에선 삭제 해야하지만 개발 시점에선 에러 추적을 위해 사용
+				}
+				finally {
+					try {
+							// 실행문 하나일때 중괄호 생략 가능
+					if(br != null) br.close(); //null이 아닐 경우 생성의 역순으로 종료
+					if(fr != null) fr.close(); //null이 아닐 경우 생성의 역순으로 종료
+					
+					}catch(IOException e){
+						
+					}
+				}
+			}
+		});
 //-------------------------------------------------------------------------			
 /*		
 		ta.addTextListener(new TextListener() {
@@ -78,10 +129,9 @@ public class ClientUi {
 			}
 		});		
 		
-		
-
-		/*
-		    b1.addActionListener(new ActionListener() {
+	
+/*		
+		b1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//하고자 하는 일
@@ -90,9 +140,9 @@ public class ClientUi {
 		});
 		*/
 		//위 메서드의 Lambda식 표현
-		b1.addActionListener((ActionEvent e) ->{
+		b1.addActionListener(e-> {
 			chatMsg();
-			}
+		}		
 		);
 		
 		

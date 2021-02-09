@@ -1,4 +1,5 @@
-package test_exam;
+package com.scsa.java.fifth;
+
 
 public class BookTest {
 
@@ -29,9 +30,9 @@ public class BookTest {
 		m1.month = 2;
 		
 		
-		System.out.println("**************************도서목록**************************");
-		System.out.println(b1.toString());
-		System.out.println(b2.toString());
-		System.out.println(m1.toString());
+		System.out.println("**************************도서 목록**************************");
+		System.out.println(b1);
+		System.out.println(b2);
+		System.out.println(m1);
 	}
 }
