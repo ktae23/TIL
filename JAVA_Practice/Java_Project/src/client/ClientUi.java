@@ -20,6 +20,12 @@ public class ClientUi {
 	TextArea ta;
 	TextField tf;
 	
+	public void chatMsg() {
+		String msg=tf.getText();
+		ta.append(msg+"\n");
+		tf.setText("");		
+	}
+	
 	public void onCreate() {
 		Frame f = new Frame("나의 채팅");
 		Panel p=new Panel();	
@@ -33,6 +39,12 @@ public class ClientUi {
 		
 		tf=new TextField(20);
 		ta=new TextArea();
+		
+
+
+		
+		
+		
 		ta.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
@@ -57,24 +69,30 @@ public class ClientUi {
 			}
 		});		
 		
-		b1.addActionListener(new ActionListener() {
+		
+
+		/*
+		    b1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//하고자 하는 일
-				String msg=tf.getText();
-				ta.append(msg+"\n");
-				tf.setText("");
+				chatMsg();
 			}
 		});
+		*/
+		//위 메서드의 Lambda식 표현
+		b1.addActionListener((ActionEvent e) ->{
+			chatMsg();
+			}
+		);
+		
 		
 		tf.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//하고자 하는 일
-				String msg=tf.getText();
-				ta.append(msg+"\n");
-				tf.setText("");				
+				chatMsg();
 			}
 		});
 
