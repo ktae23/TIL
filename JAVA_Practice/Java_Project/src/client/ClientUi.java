@@ -10,6 +10,8 @@ import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 	
@@ -37,8 +39,7 @@ public class ClientUi {
 		MyButtonHandler b1Handler=new MyButtonHandler();			
 		b1.addActionListener(b1Handler);
 		
-		MyButtonHandler tfHandler=new MyButtonHandler();			
-		tf.addActionListener(tfHandler);
+		tf.addActionListener(b1Handler);
 
 		
 		f.add(ta, BorderLayout.CENTER);
@@ -86,4 +87,14 @@ public class ClientUi {
 			tf.setText("");
 		}
 	}
+	public class MyFrameHandler extends WindowAdapter{	
+
+		@Override
+		public void windowClosing(WindowEvent e) {
+			System.out.println("windowClosing");
+			System.exit(0);
+		}
+	}
+	
+	
 }
