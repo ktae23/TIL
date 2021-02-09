@@ -6,7 +6,6 @@ public class Magazine {
 	String author;
 	String publisher;
 	String desc;
-
 	int price;
 	int year;
 	int month;

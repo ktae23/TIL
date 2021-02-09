@@ -90,7 +90,8 @@ class ClassName extends WindowAdapter
 ```
 
 - MouseListener, MouseAdapter 등 비슷한 클래스 제공
-- 
+
+  
 
 ### 메뉴바 생성 및 설정
 

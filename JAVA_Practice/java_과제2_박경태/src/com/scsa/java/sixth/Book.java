@@ -74,7 +74,11 @@ public class Book {
 	}
 
 	public void setPrice(int price) {
-			this.price = price;	
+		if(price<0) {
+			price = 0;
+		}else {
+			this.price = price;
+		}
 	}
 
 	

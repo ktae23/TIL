@@ -75,7 +75,11 @@ public class Magazine {
 	}
 
 	public void setPrice(int price) {
-			this.price = price;	
+		if(price<0) {
+			price = 0;
+		}else {
+			this.price = price;
+		}
 	}
 
 	public int getYear() {
@@ -83,7 +87,11 @@ public class Magazine {
 	}
 
 	public void setYear(int year) {
-		this.year = year;
+		if(year<0) {
+			year = 0;
+		}else {
+			this.year = year;
+		}
 	}
 
 	public int getMonth() {
@@ -91,7 +99,11 @@ public class Magazine {
 	}
 
 	public void setMonth(int month) {
-		this.month = month;
+		if(month<0) {
+			month = 0;
+		}else {
+			this.month = month;
+		}
 	}
 
 	public Magazine() {}

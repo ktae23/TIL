@@ -15,7 +15,7 @@ public class BookTest {
 		Magazine m4=new Magazine("76543", "Architecture", "편집부", "Jaen.kr", 5000, "java 시스템", 2013, 2);
 		Magazine m5=new Magazine("76534", "Data Modeling", "편집부", "Jaen.krm", 14000, 2013, 2);
 
-		System.out.println("********************도서 목록********************");
+		System.out.println("**************************도서 목록**************************");
 		System.out.println(b1);
 		System.out.println(b2);
 		System.out.println(b3);
@@ -24,7 +24,7 @@ public class BookTest {
 		
 
 		System.out.println();
-		System.out.println("********************잡지 목록********************");
+		System.out.println("**************************잡지 목록**************************");
 		System.out.println(m1);
 		System.out.println(m2);	
 		System.out.println(m3);	
