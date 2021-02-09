@@ -90,5 +90,26 @@ class ClassName extends WindowAdapter
 ```
 
 - MouseListener, MouseAdapter 등 비슷한 클래스 제공
+- 
 
-### 
+### 메뉴바 생성 및 설정
+
+```java
+		file_menu.add(open_item);
+		file_menu.add(save_item);
+		
+		mb.add(file_menu);
+		mb.add(edit_menu);
+		f.setMenuBar(mb);
+		
+		open_item.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("open file");
+				FileDialog open=new FileDialog(f, "열기 창", FileDialog.LOAD); // 열기 창 설정
+				open.setVisible(true); //컨테이너 계열들은 보여주는 설정이 필요.
+			}
+		});
+```
+
