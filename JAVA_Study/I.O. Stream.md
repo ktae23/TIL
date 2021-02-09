@@ -3,8 +3,34 @@
 ### 외부 자원 사용 방법
 
 1. 객체화 (Has a)
+
 2. 상속 (Is a)
+
 3. 외부 파일 인풋 받기
+
+   
+
+   ```
+    내 프로그램
+   
+   	|
+   
+   BufferdReader -readLineI()
+   
+   	| chain
+   
+   FileREader - read()
+   
+   	|
+   
+   	|
+   
+      파일
+   ```
+
+   
+
+   
 
 ```java
 public class FileReadTest {
@@ -33,3 +59,24 @@ public class FileReadTest {
 > ```
 >
 > 위 처럼 멀티 캐치하는 방식은 좋지 않음, 나눠서 catch 권장
+
+
+
+---
+
+#### InputStream [1바이트 단위 처리]
+
+-> FileInputStream
+
+
+
+#### Reader [2바이트 단위 처리]
+
+|======================> BufferdReader
+
+-> InputStreamReader
+
+​		->FileReader**(BufferdReader체인 걸어 사용)**
+
+---
+
