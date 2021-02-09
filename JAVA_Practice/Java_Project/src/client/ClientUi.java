@@ -32,11 +32,14 @@ public class ClientUi {
 		f.addWindowListener(fHandler);
 		
 		
-		MyButtonHandler b1Handler=new MyButtonHandler();
-		b1Handler.setTextArea(ta);
-		b1Handler.setTextField(tf);
+		MyButtonHandler b1Handler=MyButtonHandler.getInstance();
+		b1Handler.setResouce(ta,tf);
 		b1.addActionListener(b1Handler);
-		tf.addActionListener(b1Handler);
+		
+		
+		MyButtonHandler tfHandler = MyButtonHandler.getInstance();
+		tfHandler.setResouce(ta,tf);
+		tf.addActionListener(tfHandler);
 		
 		
 /*		Button b2 = new Button("전송2");

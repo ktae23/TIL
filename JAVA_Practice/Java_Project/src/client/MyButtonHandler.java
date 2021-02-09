@@ -8,6 +8,12 @@ import java.awt.event.ActionListener;
 public class MyButtonHandler implements ActionListener{
 	TextArea ta;
 	TextField tf;
+	
+	private final static MyButtonHandler me = new MyButtonHandler();
+	
+	private MyButtonHandler() {
+		super();
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -17,12 +23,15 @@ public class MyButtonHandler implements ActionListener{
 		tf.setText("");
 	}
 	
-	public void setTextArea(TextArea ta) {
+	public void setResouce(TextArea ta, TextField tf) {
 		this.ta=ta;
-	}
-	
-	public void setTextField(TextField tf) {
 		this.tf=tf;
 	}
+
+	public static MyButtonHandler getInstance() {
+		
+		return me;
+	}
+
 
 }
