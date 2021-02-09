@@ -1,64 +1,21 @@
 package imsi;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.Panel;
-import java.awt.TextArea;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+public class Test {	// 아웃 클래스 시작
+	public static void main(String[] args) { //메서드 블럭 시작
+		int out=10; // 로컬클래스에서 사용하는 값은 final이어야 하지만 자바 8부터는 명시하지 않아도 자동 적용 됨
 
-public class Test {
-
-	public static void main(String[] args) {
-	
-		Frame f=new Frame();
-		TextArea ta=new TextArea();
-		Button b=new Button("Button");
-		Panel p=new Panel();
+	class Inner{	//이너 클래스 시작
+		public int count() {
+			int cnt=0;
+			for(int i=0;i<out;i++) {
+				cnt +=i;
+			}
+			return cnt;
+		}
+	}	// 이너 클래스 끝
+		Inner a=new Inner();
+		System.out.println(a.count());
 		
-//		A handler=new A();
-//		ta.addMouseListener(handler);
-		
-		ta.setBackground(Color.LIGHT_GRAY);
-		p.setSize(500,100);
-		p.setBackground(Color.green);
-		f.add(ta,BorderLayout.CENTER);
-		f.add(b, BorderLayout.SOUTH);
-		f.setSize(500,300);
-		f.setVisible(true);
-	
-	
-	
-	}
-class A implements MouseListener{
+	} // 메서드 블럭 끝
 
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			System.out.println("마우스가 클릭되었습니다.");
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			System.out.println("마우스가 눌렸습니다.");
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			System.out.println("마우스가 릴리즈 되었습니다.");
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			 System.out.println("마우스가 입력되었습니다.");
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			System.out.println("마우스가 나가졌습니다.");
-		}
-		
-		
-	}
-}
+}// 아웃 클래스 끝
