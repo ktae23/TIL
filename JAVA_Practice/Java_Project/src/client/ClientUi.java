@@ -10,8 +10,8 @@ import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.TextEvent;
+import java.awt.event.TextListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -40,18 +40,26 @@ public class ClientUi {
 		tf=new TextField(20);
 		ta=new TextArea();
 		
-
-
-		
-		
-		
-		ta.addMouseListener(new MouseAdapter() {
+//-------------------------------------------------------------------------			
+/*		
+		ta.addTextListener(new TextListener() {
 			@Override
-			public void mouseEntered(MouseEvent e) {
-				ta.append("마우스 진입\n");
+			public void textValueChanged(TextEvent e) {
+				System.out.println("텍스트값 변경");
 			}
 		});
-
+*/
+		// 위 블럭 람다식으로 표현
+/*		
+		ta.addTextListener((e) -> {
+			System.out.println("텍스트값 변경");
+		}
+	);
+*/
+		// 위 식을 더 간단하게
+		// 매개변수 하나면 소괄호 생략, 실행문 하나면 중괄호 생략
+		ta.addTextListener(e -> System.out.println("텍스트값 변경")	);
+//-------------------------------------------------------------------------		
 		f.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
