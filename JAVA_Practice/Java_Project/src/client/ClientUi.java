@@ -28,18 +28,15 @@ public class ClientUi {
 		TextField tf=new TextField(20);
 		TextArea ta=new TextArea();
 
-		WindowListener fHandler = new MyFrameHandler();
-		f.addWindowListener(fHandler);
+		WindowListener fHandler=new MyFrameHandler();
+		f.addWindowListener(fHandler);		
 		
-		
-		MyButtonHandler b1Handler=MyButtonHandler.getInstance();
-		b1Handler.setResouce(ta,tf);
+		MyButtonHandler b1Handler=new MyButtonHandler(ta,tf);				
 		b1.addActionListener(b1Handler);
 		
-		
-		MyButtonHandler tfHandler = MyButtonHandler.getInstance();
-		tfHandler.setResouce(ta,tf);
+		MyButtonHandler tfHandler=new MyButtonHandler(ta,tf);		
 		tf.addActionListener(tfHandler);
+
 		
 		
 /*		Button b2 = new Button("전송2");
