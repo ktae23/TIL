@@ -10,9 +10,10 @@ import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 	
 public class ClientUi {
@@ -32,14 +33,50 @@ public class ClientUi {
 		
 		tf=new TextField(20);
 		ta=new TextArea();
+		ta.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				ta.append("마우스 진입\n");
+			}
+		});
 
-		WindowListener fHandler=new MyFrameHandler();
-		f.addWindowListener(fHandler);		
+		f.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				System.exit(0);				
+			}
+		});
 		
-		MyButtonHandler b1Handler=new MyButtonHandler();			
-		b1.addActionListener(b1Handler);
+		// 익명 클래스 사용
+		f.addWindowListener(new WindowAdapter(){	// 부모 클래스를 매개변수로 넣음
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				System.out.println("windowClosing");
+				System.exit(0);
+			}
+		});		
 		
-		tf.addActionListener(b1Handler);
+		b1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//하고자 하는 일
+				String msg=tf.getText();
+				ta.append(msg+"\n");
+				tf.setText("");
+			}
+		});
+		
+		tf.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//하고자 하는 일
+				String msg=tf.getText();
+				ta.append(msg+"\n");
+				tf.setText("");				
+			}
+		});
 
 		
 		f.add(ta, BorderLayout.CENTER);
@@ -74,27 +111,6 @@ public class ClientUi {
 		ui.onCreate();
 		
 
-	}
-	//ClientUi 클래스 내부에 선언한 클래스, ClientUi 내부에서 사용할 목적.
-	public class MyButtonHandler implements ActionListener{
-	
-			
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			//하고자 하는 일
-			String msg=tf.getText();
-			ta.append(msg+"\n");
-			tf.setText("");
-		}
-	}
-	public class MyFrameHandler extends WindowAdapter{	
-
-		@Override
-		public void windowClosing(WindowEvent e) {
-			System.out.println("windowClosing");
-			System.exit(0);
-		}
-	}
-	
+	}	
 	
 }
