@@ -5,13 +5,12 @@ import java.awt.Button;
 import java.awt.Checkbox;
 import java.awt.Color;
 import java.awt.Frame;
+import java.awt.MenuBar;
 import java.awt.Panel;
 import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.TextEvent;
-import java.awt.event.TextListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -39,6 +38,8 @@ public class ClientUi {
 		
 		tf=new TextField(20);
 		ta=new TextArea();
+		MenuBar mb=new MenuBar();
+		Menu 
 		
 //-------------------------------------------------------------------------			
 /*		
