@@ -201,7 +201,7 @@ public class Test {
 
 <br />
 
-##### 3.1 Object 클래스의 equals() 메서드
+##### 3.1 Object 클래스의 hashCode() 메서드
 
 ```java
 //저장위치 = 해시함수(객체 정보)
