@@ -51,7 +51,7 @@ getClass().getName() + '@' + Integer.toHexString(hashcode())
 
 #### 2. equals() 메서드
 
-- 원래의 기능은 두 인스턴스의 주소 값을 비교하여 `boolean` 값 (true / false)
+- 원래의 기능은 두 인스턴스의 주소 값을 비교하여 `boolean` 값 (true / false) 반환
 
 - 서로 다른 주소 값을 가질 때도 같은 인스턴스라고 정의 할 수 있는 경우도 있음
   - 따라서 물리적 동일성 뿐 아니라 논리적 동일성을 구현할 때도 equals() 메서드를 재정의 하여 사용
@@ -679,10 +679,30 @@ System.out.println(c);
 - 클래스참조변수.getFields();
 - 참조한 클래스형 변수에서 해당 클래스의 모든 멤버변수(필드) 가져오기
 
+```java
+    @CallerSensitive
+    public Field[] getFields() throws SecurityException {
+        checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
+        return copyFields(privateGetPublicFields(null));
+    }
+```
+
+
+
 #### getMethods() 메서드
 
 - 클래스참조변수.getMethods();
 - 참조한 클래스형 변수에서 해당 클래스의 모든 메서드가져오기
+
+```java
+    @CallerSensitive
+    public Method[] getMethods() throws SecurityException {
+        checkMemberAccess(Member.PUBLIC, Reflection.getCallerClass(), true);
+        return copyMethods(privateGetPublicMethods());
+    }
+```
+
+
 
 <br />
 
@@ -725,20 +745,33 @@ public class StringClassTest {
 ```
 
 **===================생성자===================**
+
 **public java.lang.String(byte[],int,int)**
+
 **public java.lang.String(byte[],java.nio.charset.Charset)**
+
 **`---중략---`**
+
 **public java.lang.String(byte[],int)**
+
 **public java.lang.String(byte[],int,int,int)**
 
+
+
 **===================멤버변수===================**
+
 **public static final java.util.Comparator java.lang.String.CASE_INSENSITIVE_ORDER**
 
 **===================메서드===================**
+
 **public boolean java.lang.String.equals(java.lang.Object)**
+
 **public java.lang.String java.lang.String.toString()**
+
 **`---중략---`**
+
 **public default java.util.stream.IntStream java.lang.CharSequence.chars()**
+
 **public default java.util.stream.IntStream java.lang.CharSequence.codePoints()**
 
 <br />
@@ -775,7 +808,7 @@ public class NewInstanceTest {
 - 데이터베이스 연동은 시스템을 컴파일 할때 모든 DB 라이브러리(드라이버)를 같이 컴파일 할 필요는 없다.
   - 때문에 시스템을 구동할 때 어떤 DB로 연결할지만 결정되면 해당 라이브러리만 로딩하면 된다.
   - DB 정보는 환경 파일에서 읽거나 다른 변수 값으로 받을 수 있다.
-  - 이처럼 프로그램 실행 이후 클래스의 로딩이 필요한 경우 `동적 로딩`방식을 사용한다.
+  - 이처럼 프로그램 실행 이후 클래스의 로딩이 필요한 경우 `동적 로딩`(dynamic loading)방식을 사용한다.
   - 자바는 Class.forName() 메서드를 동적 로딩으로 제공
 
 <br />
