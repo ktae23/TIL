@@ -47,6 +47,8 @@ getClass().getName() + '@' + Integer.toHexString(hashcode())
 
 <br />
 
+<br />
+
 ---
 
 #### 2. equals() 메서드
