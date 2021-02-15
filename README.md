@@ -8,7 +8,7 @@
 
 3. 날짜 단위가 아닌 기능 단위로 작성
 
-# [자바 정리](https://github.com/ktae23/TIL/tree/master/JAVA_Study/Doit_Java)
+# [Do it 자바 프로그래밍 입문 - 책 정리](https://github.com/ktae23/TIL/tree/master/JAVA_Study/Doit_Java)
 
    - [변수](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/01_%EB%B3%80%EC%88%98.md)
 - [상수와 리터럴](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/02_%EC%83%81%EC%88%98%EC%99%80_%EB%A6%AC%ED%84%B0%EB%9F%B4.md)
@@ -32,9 +32,7 @@
 - [Singleton](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/20_Singleton_Pattern.md)
 - [Array](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/21_Array.md)
 - [Array Copy](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/22_Array_Copy.md)
-
 - [Multi Dimention Array](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/23_Multi-dimensional_%20Array.md)
-
 - [Inheritance](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/24_Inheritance.md)
 - [Polymorphism](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/25_Polymorphism.md)
 - [Abstract](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/26_Abstract.md)
@@ -48,7 +46,15 @@
 - [Exception](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/34_Exception.md)
 - [IO Stream](https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/35_IOStream.md)
 
-# 강의 기록
+
+
+<br/>
+
+### [책 정리를 마친 회고](https://github.com/ktae23/TIL/blob/master/JAVA_Study/%ED%9A%8C%EA%B3%A0.md)
+
+<br/>
+
+# # 강의 기록
 
 > ### Python
 >
