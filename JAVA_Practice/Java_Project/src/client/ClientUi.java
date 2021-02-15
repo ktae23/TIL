@@ -2,7 +2,6 @@ package client;
 
 import java.awt.BorderLayout;
 import java.awt.Button;
-import java.awt.Checkbox;
 import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Frame;
@@ -17,31 +16,52 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 	
 public class ClientUi {
 	TextArea ta;
 	TextField tf;
+	DataOutputStream out;
+	DataInputStream in;
+	String chatId;
+	
+	class ClientTread extends Thread{
+		@Override
+		public void run() {
+			while(true) {
+				try {
+					ta.append(in.readUTF()+"\n");
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		
+		}
+	}
 	
 	public void chatMsg() {
 		String msg=tf.getText();
-		ta.append(msg+"\n");
-		tf.setText("");		
-	}
+		try {
+			out.writeUTF(chatId + msg);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} //서버로 메시지 전송
+		tf.setText("");
+		}
 	
 	public void onCreate() {
 		Frame f = new Frame("나의 채팅");
 		Panel p=new Panel();	
-		Panel p1=new Panel();
 		Button b1 = new Button("전송");
-		Button b2 = new Button("저장");
-		Button b3 = new Button("백업");
-		Checkbox c1 = new Checkbox("사진");
-		Checkbox c2 = new Checkbox("동영상");
-		Checkbox c3 = new Checkbox("문자");
 		
 		tf=new TextField(20);
 		ta=new TextArea();
@@ -51,12 +71,40 @@ public class ClientUi {
 		MenuItem open_item=new MenuItem("열기");
 		MenuItem save_item=new MenuItem("저장");
 		
+		
 		file_menu.add(open_item);
 		file_menu.add(save_item);
 		
 		mb.add(file_menu);
 		mb.add(edit_menu);
 		f.setMenuBar(mb);
+		
+	save_item.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				FileDialog save=new FileDialog(f, "저장 창", FileDialog.SAVE);
+				save.setVisible(true);
+				
+				FileWriter fw=null;
+				try {
+					fw=new FileWriter(save.getDirectory()+save.getFile());
+					fw.write(ta.getText());
+					
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}finally {
+					 try {
+						 if(fw !=null ) fw.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}		
+				
+			}
+		});
+		
 		
 		open_item.addActionListener(new ActionListener() {
 			
@@ -68,9 +116,10 @@ public class ClientUi {
 
 				FileReader fr = null;
 				BufferedReader br = null;
+				String path_open = open.getDirectory()+open.getFile();
 				
 				try {
-					fr = new FileReader(open.getDirectory()+open.getFile()); //선택하는 파일의 경로 획득
+					fr = new FileReader(path_open); //선택하는 파일의 경로 획득
 					br=new  BufferedReader(fr);
 					String oneLine="";
 					ta.setText("");// 빈 문자열로 셋팅해서 지워지는 효과 
@@ -89,7 +138,7 @@ public class ClientUi {
 							// 실행문 하나일때 중괄호 생략 가능
 					if(br != null) br.close(); //null이 아닐 경우 생성의 역순으로 종료
 					if(fr != null) fr.close(); //null이 아닐 경우 생성의 역순으로 종료
-					
+					 
 					}catch(IOException e){
 						
 					}
@@ -116,12 +165,6 @@ public class ClientUi {
 		// 매개변수 하나면 소괄호 생략, 실행문 하나면 중괄호 생략
 		ta.addTextListener(e -> System.out.println("텍스트값 변경")	);
 //-------------------------------------------------------------------------		
-		f.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				System.exit(0);				
-			}
-		});
 		
 		// 익명 클래스 사용
 		f.addWindowListener(new WindowAdapter(){	// 부모 클래스를 매개변수로 넣음
@@ -133,21 +176,30 @@ public class ClientUi {
 			}
 		});		
 		
-	
-/*		
 		b1.addActionListener(new ActionListener() {
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//하고자 하는 일
-				chatMsg();
+				//채팅서버 연결
+				chatId="[" + tf.getText() + "]";
+				ta.setText(chatId + "님 채팅을 시작합니다.");
+				try {
+					Socket s=new Socket("localhost", 9999);
+					out=new DataOutputStream(s.getOutputStream());
+					in=new DataInputStream(s.getInputStream());
+					ClientTread t = new ClientTread();
+					t.start();
+					
+					ta.append("연결 ok\n");
+					tf.setText("");
+
+				} catch (UnknownHostException e1) {
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
-		*/
-		//위 메서드의 Lambda식 표현
-		b1.addActionListener(e-> {
-			chatMsg();
-		}		
-		);
 		
 		
 		tf.addActionListener(new ActionListener() {
@@ -158,40 +210,16 @@ public class ClientUi {
 				chatMsg();
 			}
 		});
-
 		
 		f.add(ta, BorderLayout.CENTER);
 		f.add(p, BorderLayout.SOUTH);
-		f.add(p1, BorderLayout.EAST);
 		p.add(tf);
 		p.add(b1);
-		
-		p1.add(b2);
-		p1.add(b3);
-
-		p1.add(c1);
-		p1.add(c2);
-		p1.add(c3);
-		
-		
-		
 		p.setBackground(Color.gray);
-		p1.setBackground(Color.lightGray);
-		
 		
 //		Color bgColor = new Color(123,24,56);
 		f.setLocation(800, 200);
 		f.setSize(400,500);
 		f.setVisible(true);
 	}
-
-    // Main 메서드
-	public static void main(String[] args) {
-        //ClientUi 클래스 생성 및 메서드 호출
-		ClientUi ui=new ClientUi();
-		ui.onCreate();
-		
-
-	}	
-	
 }

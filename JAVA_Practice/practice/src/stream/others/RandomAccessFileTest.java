@@ -9,7 +9,7 @@ public class RandomAccessFileTest {
 	public static void main(String[] args) throws IOException {
 		RandomAccessFile rf = new RandomAccessFile("random.txt", "rw");
 		rf.writeInt(100);
-		System.out.println("파일 포인터 위치:" + rf.getFilePointer()); //파일 포인터 위치 반환
+		System.out.println("파일 포인터 위 치:" + rf.getFilePointer()); //파일 포인터 위치 반환
 
 		rf.writeDouble(3.14);
 		System.out.println("파일 포인터 위치:" + rf.getFilePointer()); //파일 포인터 위치 반환

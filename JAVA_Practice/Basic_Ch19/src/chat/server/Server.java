@@ -1,18 +1,22 @@
-package server;
+package chat.server;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Server {
-
-	public static void main(String[] args) {
+	
+	public void chatProcess() {
 		try {
-			ServerSocket ss=new ServerSocket(1234); //1024번 이전 번호는 대부분 사용 중. 이후로 사용
-			Socket s=ss.accept(); //소켓 대기
-			System.out.println(s.getInetAddress()+"connect ok!!!!");  //소켓 접속한 클라이언트 주소 얻는 메서드
+			ServerSocket ss=new ServerSocket(9999);//0~65565 1024번까지는 시스템 포트 21:FTP 23:telnet 25:SMTP 80:HTTP
+			System.out.println("server ready...");
+			Socket s=ss.accept();
+			System.out.println(s.getInetAddress()+"님 접속");
+			DataInputStream in=new DataInputStream(s.getInputStream());
 			
-			DataInputStream in=new DataInputStream(s.getInputStream()); //데이터 입력 받는 데이터 스트림
+			ServerThread t=new ServerThread(in);
+			t.start(); // Thread 호출
 			String msg=in.readUTF();
 			System.out.println(msg);
 		} catch (IOException e) {
@@ -21,4 +25,23 @@ public class Server {
 		}
 	}
 
+	class ServerThread extends Thread{
+		DataInputStream in;
+		public ServerThread(DataInputStream in) {
+			this.in=in;
+		}
+		@Override
+		public void run() {
+			String msg = "";
+			try {
+				msg = in.readUTF();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println(msg);
+		}
+	}
+	public static void main(String[] args) {
+
+	}
 }
