@@ -1,4 +1,6 @@
-# 1.1 DBMS
+# DBMS개요와 Oracle 소개
+
+## 1.1 DBMS
 
 ### 1.1.1 데이터베이스의 정의와 특징
 
@@ -12,7 +14,7 @@
 
 ![image-20210216091709450](C:\Users\zz238\AppData\Roaming\Typora\typora-user-images\image-20210216091709450.png)
 
-- - 이미지 출처 : 이것이 오라클이다
+- 이미지 출처 : 이것이 오라클이다
 
 <br/>
 
