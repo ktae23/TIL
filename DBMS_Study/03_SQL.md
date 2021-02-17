@@ -243,7 +243,7 @@ SELECT [컬럼 명, 집계 함수 AS "별칭 지정"] FROM [테이블 명] GROUP
 
 ### DML
 
-- Data Manipulation Language : 데이터 조작 언너
+- Data Manipulation Language : 데이터 조작 언어
 
 - 데이터를 조작(선택, 삽입, 수정, 삭제)하는 데 사용되는 언어
 - DML 구문이 사용되는 대상은 테이블의 행
