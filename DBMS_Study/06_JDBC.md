@@ -376,3 +376,27 @@ public class InsertTest {
 
 
 
+#### ResultSet을 바로 넘기지 않고 ArrayList로 가공하여 넘기는 이유
+
+- 그냥 넘기면 클라이언트가  DB에 접속해서 정보를 받아와야 하기 때문에 독립성과 보안성 등이 떨어짐
+
+<br>
+
+#### java.util.sql  <==>  java.util.date
+
+```java
+1. java.sql.Date ==> java.util.Date
+
+java.util.Date utilDate = new java.util.Date(rs.getDate("regdate").getTime());
+
+java.util.Date utilDate = rs.getTimestamp("regdate");    //->java.sql.Timestamp가  Date을 상속하기 때문에 이렇게 쓸 수 있음
+
+
+2. java.util.Date ==> java.sql.Date
+pstmt.setDate(4, new java.sql.Date(java.util.Date.getTime()) );
+
+pstmt.setTimestamp(4, new java.sql.Timestamp(java.util.Date.getTime()) );
+
+```
+
+[코드 출처](https://sunijjang.tistory.com/20)
