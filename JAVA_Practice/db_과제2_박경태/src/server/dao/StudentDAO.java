@@ -67,8 +67,8 @@ public class StudentDAO {
 				String det=rs.getString(3);
 				String addr=rs.getString(4);
 				String tel =rs.getString(5);
-				StudentDTO studentDTO=new StudentDTO(no, name, det, addr, tel);
-				list.add(studentDTO);
+				StudentDTO studentDTOList=new StudentDTO(no, name, det, addr, tel);
+				list.add(studentDTOList);
 			}  
 			if (list.size() != 0 ) {
 				for(StudentDTO ls : list) {
@@ -93,9 +93,5 @@ public class StudentDAO {
 			
 		}	
 	}
-	
-	
-	
-
 	
 }

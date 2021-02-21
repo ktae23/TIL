@@ -32,14 +32,18 @@ public class StudentDTO {
 		setAddr(addr);
 		setTel(tel);
 	}
-
+	
 
 
 	public int getNo() {
 		return no;
 	}
-
-	public void setNo(int no) throws StudentException {
+	
+	
+	// 테이블에 no값이 있는지 체크하는 코드
+	// DAO에서 전체 값 출력할때 생성자 사용하면서 의도치 않은 결과가 나와서 폐기
+	
+	/*public void setNo(int no) throws StudentException {
 		Connection con=null;
 		PreparedStatement pstmt=null;
 		ResultSet rs=null;
@@ -84,15 +88,15 @@ public class StudentDTO {
 			}
 			
 		}	
-	}
+	}*/
 
-	/*public void setNo(int no) {
+	public void setNo(int no) {
 		if(no > 0) {
 			this.no = no;
 		}else {
 			System.out.println("번호는 0보다 작을 수 없습니다.");
 			}
-		}*/
+		}
 
 	public String getName() {
 		return name;
