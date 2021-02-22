@@ -1,0 +1,150 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="0D246B8A-7217-B3E0-D39D-4C7E9C626446" name="STAFF">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:49:51 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<ordsAlias>table_5</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="staffNum" id="483057C9-377D-E666-642E-D29FE54AD5AB">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:50:13 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="staffName" id="E6732DD6-D575-AC5C-B532-8A84FED1E007">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:55:31 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT035</logicalDatatype>
+<dataTypeSize>3</dataTypeSize>
+<ownDataTypeParameters>3,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="onBordingDay" id="7DF1FDDA-F30D-7B41-CE14-FD09E32C70ED">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:56:35 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="workingPart" id="09E2C152-A4EE-6FCB-03BF-6FFD129F807E">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT035</logicalDatatype>
+<dataTypeSize>2</dataTypeSize>
+<ownDataTypeParameters>2,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="accNum" id="97A5A3AD-E97E-BFCD-4487-A6AF7EB6C063">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="quitTime" id="C392175E-E7DF-E4F4-59AF-499D15EC2F28">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="workTime" id="905C43BA-9577-E258-1173-46B75645A37A">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="position" id="6700B5DA-EE87-ACEE-AE29-6FB6BFA6BC10">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT035</logicalDatatype>
+<dataTypeSize>2</dataTypeSize>
+<ownDataTypeParameters>2,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="bank" id="1F0FD118-388E-8A72-A955-73D0A524FF11">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT035</logicalDatatype>
+<dataTypeSize>2</dataTypeSize>
+<ownDataTypeParameters>2,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="pay" id="79A7ABBB-8EBA-3DC7-C78F-088EFFE09A98">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="is_resig" id="A6D5C40D-C428-99A1-C3A6-0C2804A267E5">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:57:08 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT006</logicalDatatype>
+<dataTypeSize>1</dataTypeSize>
+<ownDataTypeParameters>1,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="33F24327-FDED-6C46-1165-7CFC05907814" name="STAFF_PK">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:50:18 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="483057C9-377D-E666-642E-D29FE54AD5AB"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

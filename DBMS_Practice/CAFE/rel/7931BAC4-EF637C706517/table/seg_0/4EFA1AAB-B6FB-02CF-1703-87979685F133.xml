@@ -1,0 +1,73 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="4EFA1AAB-B6FB-02CF-1703-87979685F133" name="MADELIST">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:08:18 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<ordsAlias>table_12</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="count" id="76E0A069-8913-970E-0114-96340673A938">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:09:01 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="PRODUCT_prodNum" id="E94CD48F-268C-7583-87AC-AB0B21AF4178">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:09:05 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="A5A316A2-47B5-74D6-8A41-00D7CF39E9F2" referredColumn="0CCCF5F4-D0B5-EB3A-172E-F468B84FA5DF"/>
+</associations>
+</Column>
+<Column name="MATERIAL_matNum" id="09A3D585-1E67-EDB4-A07B-B87546D12A09">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:09:10 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="71F81B85-DB9A-1AF2-047B-90B2B76D862A" referredColumn="A5162C27-C781-C6F2-5D09-A29A16AE70FE"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="D576F216-DF73-9FC1-5496-AEC0FEEC1743" name="MADELIST_PRODUCT_FK">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:09:05 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="E94CD48F-268C-7583-87AC-AB0B21AF4178"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="A8B76833-4F54-24A1-29A2-69FB1A6C3FB8" name="MADELIST_MATERIAL_FK">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:09:10 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="09A3D585-1E67-EDB4-A07B-B87546D12A09"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

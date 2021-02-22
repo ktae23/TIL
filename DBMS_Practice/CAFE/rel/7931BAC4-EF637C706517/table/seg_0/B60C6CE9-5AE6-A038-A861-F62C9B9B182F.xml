@@ -1,0 +1,94 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="B60C6CE9-5AE6-A038-A861-F62C9B9B182F" name="MATERIAL">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:07:13 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<ordsAlias>table_11</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="matNum" id="A5162C27-C781-C6F2-5D09-A29A16AE70FE">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:08:06 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="matName" id="850A1B9C-F5C1-07C9-735E-75439B6C4CDF">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:10:27 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT035</logicalDatatype>
+<dataTypeSize>3</dataTypeSize>
+<ownDataTypeParameters>3,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="buyprice" id="D4BBE9C6-6B46-B20C-04C2-EF541BB779E2">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:10:27 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="stockQuan" id="F871D9F2-65F5-7A9D-1F06-6BEF84480F33">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:10:27 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="size" id="146C8E9C-C4D7-1928-E878-FAC85D77A7B4">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:10:27 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT020</logicalDatatype>
+<dataTypePrecision>4</dataTypePrecision>
+<dataTypeScale>2</dataTypeScale>
+<ownDataTypeParameters>,4,2</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="buyComp" id="BD3E644F-5F89-7568-CA9C-93AD9CE0E582">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:10:27 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT035</logicalDatatype>
+<dataTypeSize>3</dataTypeSize>
+<ownDataTypeParameters>3,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="47F8490D-20D4-2F26-EA7A-D433E1B988C3" name="MATERIAL_PK">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:08:06 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="A5162C27-C781-C6F2-5D09-A29A16AE70FE"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>

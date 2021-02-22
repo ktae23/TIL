@@ -1,0 +1,70 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<Table class="oracle.dbtools.crest.model.design.relational.Table" directorySegmentName="seg_0" id="3B0AE6F8-0796-FEB3-1E7D-0377CCCA3740" name="BUY">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:50:43 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<ordsAlias>table_6</ordsAlias>
+<allowColumnReorder>false</allowColumnReorder>
+<existDependencyGenerateInDDl>true</existDependencyGenerateInDDl>
+<parsed>true</parsed>
+<columns itemClass="oracle.dbtools.crest.model.design.relational.Column">
+<Column name="buyNum" id="8C90D5E4-298C-F5AB-3732-02BF7D164530">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:51:07 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="buyDay" id="DF7D80BF-9BA2-6EF2-D62E-E525D08DA87A">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:53:14 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<nullsAllowed>true</nullsAllowed>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT007</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<autoIncrementCycle>false</autoIncrementCycle>
+</Column>
+<Column name="STAFF_staffNum" id="50868879-FA5F-CD5A-E1CD-CEDF844DD6A3">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:06:35 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<useDomainConstraints>false</useDomainConstraints>
+<use>1</use>
+<logicalDatatype>LOGDT011</logicalDatatype>
+<ownDataTypeParameters>,,</ownDataTypeParameters>
+<previousColumn>false</previousColumn>
+<autoIncrementCycle>false</autoIncrementCycle>
+<associations>
+<colAssociation fkAssociation="20043AC4-D715-239D-4239-F90A3C8333B4" referredColumn="483057C9-377D-E666-642E-D29FE54AD5AB"/>
+</associations>
+</Column>
+</columns>
+<indexes itemClass="oracle.dbtools.crest.model.design.relational.Index">
+<ind_PK_UK id="2E9B0C35-94F2-166A-C6DB-A988B33316F6" name="ORDER_PK">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 05:51:07 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<pk>true</pk>
+<indexState>Primary Constraint</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="8C90D5E4-298C-F5AB-3732-02BF7D164530"/>
+</indexColumnUsage>
+</ind_PK_UK>
+<ind_PK_UK id="AC0EC930-7185-DE17-4694-933D1BE0E460" name="BUY_STAFF_FK">
+<createdBy>zz238</createdBy>
+<createdTime>2021-02-17 06:06:35 UTC</createdTime>
+<ownerDesignName>CAFE</ownerDesignName>
+<indexState>Foreign Key</indexState>
+<isSurrogateKey>false</isSurrogateKey>
+<indexColumnUsage>
+<colUsage columnID="50868879-FA5F-CD5A-E1CD-CEDF844DD6A3"/>
+</indexColumnUsage>
+</ind_PK_UK>
+</indexes>
+</Table>
