@@ -211,5 +211,29 @@ background : url('[이미지 경로]') bottom 100% no-repeat fixed
 
 #### 글자 정렬
 
+```css
+    <style>
+        .font_big { font-size: 2em; }
+        .font_italic { font-style: italic; }
+        .font_bold { font-weight: bold; }
+        .font_center { text-align: center; }
+        .font_right { text-align: right; }
+    </style>
+```
 
+- span 태그는 인라인 형태로 너비의 개념이 없기 때문에 정렬이 안 됨
+- div 태그는 블럭 형태로 수직 정렬을 지정 불가
+  - 글자를 감싸는 박스의 높이와 같은 크기로 line-height 속성 지정하면 가능
+
+<br />
+
+#### 링크 글자 밑줄 제거
+
+```css
+    <style>
+        a { text-decoration: none; }
+    </style>
+```
+
+<br />
 
