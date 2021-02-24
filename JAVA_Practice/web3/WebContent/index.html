@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
-	<style>
-		.a{ background-color: yellow;}
-		#b{ background-color: red;}
+	<style>		
+		body{
+			background-image: url('img/funny.jpg');
+		}
 	</style>
 </head>
 <body>
 	<form action="HelloServlet">
-		<h1>회원가입</h1>
+		<h1 class="select">회원가입</h1>
 		<ul>
+			<li class="select">사과</li>
 			<li>바나나</li>
 			<li>오렌지</li>
 			<li>감</li>
 		</ul>
-		
-		ID <input type="text" name="id"><br>
-		PW <input type="password" name="pw"><br>
-		NAME <input type="text" name="name"><br>
+		ID <input type="text" name="id" ><br>
+		PW <input type="password" name="pw" ><br>
+		NAME <input type="text" name="name" ><br>
 		관심분야 : java<input type="checkbox" name="lang" value="java"> 
 		  		c<input type="checkbox" name="lang" value="c"> 
 				python<input type="checkbox" name="lang" value="python"><br>
