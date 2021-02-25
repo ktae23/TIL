@@ -8,85 +8,7 @@
 
 3. 날짜 단위가 아닌 기능 단위로 작성
 
-# [Do it 자바 프로그래밍 입문 - 책 정리](https://github.com/ktae23/TIL/tree/master/JAVA_Study/Doit_Java)
 
-<details>
-<summary>목차</summary>
-<br>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/01_%EB%B3%80%EC%88%98.md">🟩변수</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/02_%EC%83%81%EC%88%98%EC%99%80_%EB%A6%AC%ED%84%B0%EB%9F%B4.md">🟩상수와 리터럴</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/03_%ED%98%95%20%EB%B3%80%ED%99%98(type%20conversion).md">🟩형 변환</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/04_%ED%95%AD%EA%B3%BC%20%EC%97%B0%EC%82%B0%EC%9E%90.md">🟩항과 연산자</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/05_If-Else.md">🟩If-else</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/06_Switch-Case.md">🟩Switch-case</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/07_for.md">🟩For</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/08_continue%2CBreak.md">🟩Continue, Break</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/09_while.md">🟩While</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/10_Class_Package_Method.md">🟩Class, Package, Method</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/11_Call_Method%2C%20Stack_Memory.md">🟩Call Method, Stack Memory</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/12_Main_Method.md">🟩Main Method</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/13_Instance%2CHeap_Memory.md">🟩Instance, Heap</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/14_Constructor.md">🟩Constructor</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/15_Reference_Type.md">🟩Reference Type</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/16_Information_Hiding.md">🟩Information Hiding</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/17_This.md">🟩this</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/18_Object_Oriented_Programing.md">🟩OOP</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/19_Static%2C%20Variable_Valid_Range.md">🟩Static</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/20_Singleton_Pattern.md">🟩Singleton</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/21_Array.md">🟩Array</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/22_Array_Copy.md">🟩Array Copy</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/23_Multi-dimensional_%20Array.md">🟩Multi Dimention Array</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/24_Inheritance.md">🟩Interitance</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/25_Polymorphism.md">🟩Polymorpism</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/26_Abstract.md">🟩Abstract</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/27_Interface.md">🟩Interfacece</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/28_Base_Classes.md">🟩Basic Class</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/29_Generic.md">🟩Generic</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/30_Collection_Framework_List_Interface.md">🟩Collection FrameWork List</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/31_Collection_Framework_Set_And_Map_Interface.md">🟩Collection FrameWork Set and Map</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/32_InnerClass.md">🟩Inner Class</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/33_Lambda_And_Stream.md">🟩Lambda and Stream</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/34_Exception.md">🟩Exception</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/35_IOStream.md">🟩IOStream</a>
-    <br/>
-    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/%ED%9A%8C%EA%B3%A0.md">🟥회고</a>
-</details>
-
-<br/>
 
 <br/>
 
@@ -172,11 +94,89 @@ ___
 🟢 딥러닝 챗봇<br>
 </details>
 
+---
+
 <details>
     <summary>Java
         </summary>
 🟢 Do it! 자바 프로그래밍 입문<br>
 🟢 이것이 자바다<br>
+</details>
+
+<details>
+<summary>do it 자바프로그래밍 입문 정리 목차</summary>
+<br>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/01_%EB%B3%80%EC%88%98.md">🟩변수</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/02_%EC%83%81%EC%88%98%EC%99%80_%EB%A6%AC%ED%84%B0%EB%9F%B4.md">🟩상수와 리터럴</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/03_%ED%98%95%20%EB%B3%80%ED%99%98(type%20conversion).md">🟩형 변환</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/04_%ED%95%AD%EA%B3%BC%20%EC%97%B0%EC%82%B0%EC%9E%90.md">🟩항과 연산자</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/05_If-Else.md">🟩If-else</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/06_Switch-Case.md">🟩Switch-case</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/07_for.md">🟩For</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/08_continue%2CBreak.md">🟩Continue, Break</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/09_while.md">🟩While</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/10_Class_Package_Method.md">🟩Class, Package, Method</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/11_Call_Method%2C%20Stack_Memory.md">🟩Call Method, Stack Memory</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/12_Main_Method.md">🟩Main Method</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/13_Instance%2CHeap_Memory.md">🟩Instance, Heap</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/14_Constructor.md">🟩Constructor</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/15_Reference_Type.md">🟩Reference Type</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/16_Information_Hiding.md">🟩Information Hiding</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/17_This.md">🟩this</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/18_Object_Oriented_Programing.md">🟩OOP</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/19_Static%2C%20Variable_Valid_Range.md">🟩Static</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/20_Singleton_Pattern.md">🟩Singleton</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/21_Array.md">🟩Array</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/22_Array_Copy.md">🟩Array Copy</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/23_Multi-dimensional_%20Array.md">🟩Multi Dimention Array</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/24_Inheritance.md">🟩Interitance</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/25_Polymorphism.md">🟩Polymorpism</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/26_Abstract.md">🟩Abstract</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/27_Interface.md">🟩Interfacece</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/28_Base_Classes.md">🟩Basic Class</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/29_Generic.md">🟩Generic</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/30_Collection_Framework_List_Interface.md">🟩Collection FrameWork List</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/31_Collection_Framework_Set_And_Map_Interface.md">🟩Collection FrameWork Set and Map</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/32_InnerClass.md">🟩Inner Class</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/33_Lambda_And_Stream.md">🟩Lambda and Stream</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/34_Exception.md">🟩Exception</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/35_IOStream.md">🟩IOStream</a>
+    <br/>
+    <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/%ED%9A%8C%EA%B3%A0.md">🟥회고</a>
 </details>
 
 ___
