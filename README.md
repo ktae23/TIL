@@ -84,17 +84,31 @@
     <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/Doit_Java/35_IOStream.md">🟩IOStream</a>
     <br/>
     <a href="https://github.com/ktae23/TIL/blob/master/JAVA_Study/%ED%9A%8C%EA%B3%A0.md">🟥회고</a>
+</details>
 
 <br/>
 
 <br/>
+
+
 
 # 💥 강의 기록
 
 <details>
     <summary>Python
         </summary>
-🟢 Pro
+🟢 Programming for Everybody (Getting Started with Python) - University of Michigan_Coursera<br>
+
+🟢 Python Data Structures - University of Michigan_Coursera<br>
+
+🟢 Using Python to Access Web Data - University of Michigan_Coursera<br>
+
+🟢 Using Databases with Python - University of Michigan_Coursera<br>
+
+🟢 파이썬으로 시작하는 데이터 사이언스 - 부스트코스<br>
+
+🟢 체셔의 퀴즈, 파이썬 기초 강의 등 - 엘리스<br>
+</details>
 
 ___
 
@@ -145,6 +159,8 @@ ___
 ---
 
 <br/>
+
+
 
 # 💥 책 기록
 
