@@ -1,0 +1,59 @@
+#main-header{
+	padding: 10px 5px;
+}
+
+#main-header h1{
+	font-size: 40px;
+	font-weight: bold;
+	line-height: 27px;
+	color:#222;
+	display: inline;
+}
+#loginDiv{
+	display: inline;
+	float: right;
+}
+
+#main-header ul{
+	margin-top:20px;
+	margin-bottom:10px;
+}
+
+#main-header li{
+	margin-top:10px;
+	margin-bottom:10px;
+}
+
+#main-header li a{
+	color:#555;
+}
+
+#main-header li.active a{
+	color:blue;
+	font-weight: bold;
+}
+
+#main-header label{
+	text-align:center;
+	float:left;
+	width:40px;
+	height:27px;
+	line-height: 27px;
+	color:#222;
+	border:1px solid #222;
+	border-radius:5px;
+}
+
+#checkbox{
+	display: none;
+}
+
+#checkbox + nav{
+	display:block;
+	
+}
+
+#checkbox:checked + nav{
+	display: none;	
+
+}
