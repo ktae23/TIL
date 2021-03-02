@@ -1,0 +1,121 @@
+
+#portrait{
+	border-radius: 1000px;
+	display: block;
+	margin: 0px auto;
+}
+
+.portrait{
+	text-align: center;
+}
+
+body, h1, h2, h3, p, ul {
+    margin: 0;
+    padding: 0;
+    
+}
+h1, h2, h3{
+    font-size: 100%;
+    font-weight: normal;
+}
+
+
+  .bg-1 { 
+    background-color: black;
+    color: #ffffff;
+    }
+  .bg-2 { 
+    background-color: #474e5d; /* Dark Blue */
+    color: #ffffff;
+  }
+  .bg-3 { 
+    background-color: #fff; /* White */
+    color: #555555;
+  }
+  
+  .header{
+    font-size: 3.5em;
+    line-height: 0.8;
+    padding: 15px;
+  }
+  
+  
+  
+    .container-fluid {
+    padding-top: 70px;
+    padding-bottom: 70px;
+  }
+  
+  .profile{
+  padding:50px;
+  }
+  
+  .img-responsive{
+  padding: 40px;
+  }
+  
+  .name{
+    font-size: 30px;
+    line-height: 2;
+    font-style: italic;
+    margin-bottom: 50px;
+    font-family: 'Pacifico', cursive;
+}
+
+.name-job{
+    display: inline-block;
+    color: floralwhite;
+    vertical-align: top;
+    height: 2em;
+    overflow: hidden;
+    padding-right: 0.5em;
+    position: relative;
+    
+    
+}
+
+.name-job::after{
+    content: ' ';
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin-left: -1em;
+    box-shadow: inset 0 0 10px 10px #111;
+}
+
+.name-job-list{
+    animation-name: rolling;
+    animation-duration: 8s;
+    animation-iteration-count: infinite;
+    
+}
+
+.name-title{
+    font-size: 1.8em;
+    line-height: 0.8;
+    color: darkorange;
+    margin-left: -0.3em;
+    position: relative;
+    
+}
+@keyframes rolling{
+    0%{
+        transform: translateY(0);
+    }
+    25%{
+        transform: translateY(-20%);
+    }
+    50%{
+        transform: translateY(-40%);
+    }
+    75%{
+        transform: translateY(-60%);
+    }
+    100%{
+        transform: translateY(-80%);
+    }
+}
+  
+  
