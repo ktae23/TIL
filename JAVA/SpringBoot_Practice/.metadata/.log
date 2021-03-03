@@ -186,3 +186,33 @@ This warning can be switched off on the Team > Git > Confirmations and Warnings 
 
 !ENTRY org.springframework.tooling.ls.eclipse.commons 1 0 2021-03-02 21:59:25.328
 !MESSAGE executing callback sts4.classpath.yYtlYfss SUCCESS [done]
+
+!ENTRY org.springframework.tooling.ls.eclipse.commons 1 0 2021-03-02 23:06:49.376
+!MESSAGE ClasspathListenerHandler removeClasspathListener sts4.classpath.yYtlYfss
+
+!ENTRY org.springframework.tooling.ls.eclipse.commons 1 0 2021-03-02 23:06:49.376
+!MESSAGE unsubscribing from classpath changes: sts4.classpath.yYtlYfss
+
+!ENTRY org.springframework.tooling.ls.eclipse.commons 1 0 2021-03-02 23:06:49.377
+!MESSAGE subsribers = {}
+
+!ENTRY org.springframework.tooling.ls.eclipse.commons 1 0 2021-03-02 23:06:49.378
+!MESSAGE ClasspathListenerHandler removeClasspathListener sts4.classpath.yYtlYfss => OK
+
+!ENTRY org.eclipse.ui 2 2 2021-03-02 23:06:49.636
+!MESSAGE Invalid property category path: org.springframework.ide.eclipse.beans.ui.properties.ProjectPropertyPage (bundle: org.springframework.ide.eclipse.xml.namespaces, propertyPage: org.springframework.ide.eclipse.beans.ui.namespaces.projectPropertyPage)
+
+!ENTRY org.eclipse.eclemma.core 4 5013 2021-03-02 23:06:49.790
+!MESSAGE Error while dumping coverage data (code 5013).
+!STACK 0
+java.net.SocketException: Connection reset
+	at java.base/sun.nio.ch.NioSocketImpl.implRead(NioSocketImpl.java:323)
+	at java.base/sun.nio.ch.NioSocketImpl.read(NioSocketImpl.java:350)
+	at java.base/sun.nio.ch.NioSocketImpl$1.read(NioSocketImpl.java:803)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:981)
+	at java.base/java.net.Socket$SocketInputStream.read(Socket.java:976)
+	at java.base/java.io.FilterInputStream.read(FilterInputStream.java:82)
+	at org.jacoco.core.data.ExecutionDataReader.read(ExecutionDataReader.java:84)
+	at org.eclipse.eclemma.internal.core.MemoryExecutionDataSource.readFrom(MemoryExecutionDataSource.java:69)
+	at org.eclipse.eclemma.internal.core.launching.AgentServer.run(AgentServer.java:115)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
