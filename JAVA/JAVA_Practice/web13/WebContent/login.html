@@ -17,7 +17,7 @@
 		if ((user_id.length == 0 || user_id == "") || (user_pw.length == 0 || user_pw == "")){
 			alert("아이디와 비밀번호는 필수입니다.");
 		}else{
-			frmLogin.method = "post";	// <form> 태그 전송 방식 post로 설정
+			frmLogin.method = "get";	// 넘어가는 정보 확인 용
 			frmLogin.action = "main";	// action 속성을 서블릿 매핑 이름으로 설정
 			frmLogin.submit();	//자바스크립트에서 서블 릿으로 전송
 		}

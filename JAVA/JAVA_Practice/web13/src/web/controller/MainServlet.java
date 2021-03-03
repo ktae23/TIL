@@ -42,10 +42,25 @@ public class MainServlet extends HttpServlet {
 		if(sign==null) {
 			return;
 		}else if(sign.equals("login")) {
+			
 			String id=request.getParameter("id");
 			String pw=request.getParameter("pw");
+			response.setContentType("text/html;charset=utf-8");
 			PrintWriter out=response.getWriter();
-			out.write(id+":"+pw);
+			try {
+				String name =mDao.login(id,pw);
+				if(name!=null) {
+					// login ok
+					out.write(name+"님 환영합니다");
+				}else {
+					//login fail
+					out.write("다시 로그인 해주세요<br><a href='login.html' >다시 로그인 하기</a>");
+				}
+			} catch (MyException e) {
+				// login error
+				out.write(e.getMessage());
+			}
+		
 			}
 		else if(sign.equals("memberInsert")) {
 			response.setContentType("text/html;charset=utf-8");

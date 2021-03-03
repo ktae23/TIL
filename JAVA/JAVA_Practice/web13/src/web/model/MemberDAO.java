@@ -98,4 +98,37 @@ public class MemberDAO {
 	
 		
 	}
+
+	public String login(String id, String pw) throws MyException {
+		Connection con=null;
+		PreparedStatement stmt=null;
+		ResultSet rs=null;
+			try {
+				con=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","cafe","1234");
+				
+				stmt=con.prepareStatement("select * from member wher memid=? and pw=?");
+				stmt.setString(1, id);
+				stmt.setString(2, pw);
+				
+				rs = stmt.executeQuery();
+				if(rs.next()) {
+					String name=rs.getString("memname");
+					return name;
+				} return null;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw new MyException("로그인 실패");
+			} finally {
+				
+				try {
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+					if(con!=null) con.close();
+				} catch (SQLException e) {
+					
+				}
+			}
+			
+	
+	}
 }
