@@ -1,8 +1,14 @@
 package web.model;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-import web.util.MemberVO;
+import web.util.Member;
 import web.util.MyException;
 
 public class MemberDAO {
@@ -17,7 +23,7 @@ public class MemberDAO {
 		}
 	}
 	
-	public void memberInsert(MemberVO m) throws MyException {
+	public void memberInsert(Member m) throws MyException {
 		Connection con=null;
 		PreparedStatement stmt=null;
 		try {
@@ -25,11 +31,18 @@ public class MemberDAO {
 			con=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","cafe","1234");
 			
 			// 3. Statement
-			stmt=con.prepareStatement("insert into member(memid,memname) values(?,?)");
+			stmt=con.prepareStatement("insert into member(memid,pw,memname,subject) values(?,?,?,?)");
 			
 			// 4. SQL 전송
 			stmt.setString(1,  m.getId());
-			stmt.setString(2, m.getName());
+			stmt.setString(2, m.getPw());
+			stmt.setString(3, m.getName());
+			String subject="";
+			for(String s:m.all_subject) {
+				subject += s+", ";
+			}
+			stmt.setString(4, subject);
+			
 			int i = stmt.executeUpdate();
 			
 			// 5. 결과 확인
@@ -49,5 +62,40 @@ public class MemberDAO {
 			}
 			
 		}
+	}
+	public List<Member> listMembers() throws MyException{
+		List<Member> list=new ArrayList<Member>();
+		Connection con=null;
+		PreparedStatement stmt=null;
+		ResultSet rs=null;
+			try {
+				con=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","cafe","1234");
+				
+				stmt=con.prepareStatement("select * from member");
+				
+				rs = stmt.executeQuery();
+				while(rs.next()) {
+					String id=rs.getString("memid");
+					String pw=rs.getString("pw");
+					String name=rs.getString("memname");
+					Member m=new Member(id,pw,name);
+					list.add(m);
+				}return list;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw new MyException("모든 고객 조회 실패");
+			} finally {
+				
+				try {
+					if(rs!=null) rs.close();
+					if(stmt!=null) stmt.close();
+					if(con!=null) con.close();
+				} catch (SQLException e) {
+					
+				}
+			}
+			
+	
+		
 	}
 }

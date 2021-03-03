@@ -28,11 +28,4 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>WebContent/WEB-INF/lib/ojdbc6.jar</name>
-			<type>1</type>
-			<location>C:/Users/zz238/TIL/DBMS/DBMS_Practice/ojdbc6.jar</location>
-		</link>
-	</linkedResources>
 </projectDescription>

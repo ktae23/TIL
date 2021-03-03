@@ -2,6 +2,7 @@ package web.controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import web.model.MemberDAO;
-import web.util.MemberVO;
+import web.util.Member;
 import web.util.MyException;
 
 @WebServlet("/main")
@@ -20,6 +21,7 @@ public class MainServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		try {
+			// doGet 메서드에서 생성하면 너무 많은 객체가 생성 되므로 최초 1회만 생성하도록 init 메서드에서 생성
 			mDao=new MemberDAO();
 		} catch (MyException e) {
 			System.out.println(e.getMessage());
@@ -46,7 +48,7 @@ public class MainServlet extends HttpServlet {
 			out.write(id+":"+pw);
 			}
 		else if(sign.equals("memberInsert")) {
-			response.setContentType("text/html;charset-utf-8");
+			response.setContentType("text/html;charset=utf-8");
 			PrintWriter out=response.getWriter();
 			
 			String id=request.getParameter("id");
@@ -54,15 +56,25 @@ public class MainServlet extends HttpServlet {
 			String name=request.getParameter("name");
 			String [] all_subject=request.getParameterValues("subject");
 
-			for(String s:all_subject) {
-//				out.write(s+"&nbsp; ");
-			}
-			MemberVO m=new MemberVO(id,name);
+
+			Member m=new Member(id,pw,name,all_subject);
 			try {
 				mDao.memberInsert(m);
 				out.write("회원가입 완료되었습니다.");
 			} catch (MyException e) {
 				out.write(e.getMessage());
+			}
+			
+		}else if (sign.equals("listMembers")) {
+			try {
+				List<Member> list = mDao.listMembers();
+				response.setContentType("text/html; charset=utf-8");
+				PrintWriter out=response.getWriter();
+				for(Member m : list) {
+					out.append(m.getId()+":"+m.getName()+"<br>");
+				}
+			} catch (MyException e) {
+				
 			}
 			
 		}
