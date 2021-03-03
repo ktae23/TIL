@@ -29,13 +29,13 @@ public class CalcServlet extends HttpServlet {
 			String result = calculate(Float.parseFloat(won), operator);
 			pw.print("<html><font size=10>변환결과</font><br>");
 			pw.print("<html><font size=10>" + result + "</font><br>");
-			pw.print("<a href='/pro06/calc'>환율 계산기 </a>");
+			pw.print("<a href='calc'>환율 계산기 </a>");
 			return;
 		}
 
 		pw.print("<html><title>환율계산기</title>");
 		pw.print("<font size=5>환율 계산기</font><br>");
-		pw.print("<form  name='frmCalc' method='get'  action='/pro06/calc'  />  ");
+		pw.print("<form  name='frmCalc' method='get'  action='calc'  />  ");
 		pw.print("원화: <input type='text' name='won' size=10  />  ");
 		pw.print("<select name='operator' >");
 		pw.print("<option value='dollar'>달러</option>");

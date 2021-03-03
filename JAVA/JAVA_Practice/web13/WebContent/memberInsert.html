@@ -3,9 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>Insert title here</title>
+<script type="text/javascript">
+	function memberInsert() {
+		var form=document.myForm;
+		//필드 체크 목적
+		form.method="get";
+		form.action="main";
+		form.submit();
+	}
+</script>
 </head>
 <body>
-	<form action="main" method="get" >
+	<form name = "myForm">
 		<input type="hidden" name="sign" value="memberInsert2">
 		ID <input name="id"><br>
 		PW <input type="password" name="pw"><br>
@@ -15,7 +24,7 @@
 		C<input type="checkbox" name="subject" value="c">
 		JSP<input type="checkbox" name="subject" value="jsp">
 		Python<input type="checkbox" name="subject" value="python"><br>
-		<input type="submit" value="회원가입">
+		<input type="button" onClick="memberInsert()" value="회원가입">
 	</form>
 </body>
 </html>
