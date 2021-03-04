@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+    pageEncoding="UTF-8"  isErrorPage="true"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,6 +7,6 @@
 <title>Insert title here</title>
 </head>
 <body>
-	${name }님 환영합니다.
+<%= exception.getMessage() %>
 </body>
 </html>

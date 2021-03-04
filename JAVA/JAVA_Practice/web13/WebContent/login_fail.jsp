@@ -7,6 +7,6 @@
 <title>Insert title here</title>
 </head>
 <body>
-	${name }님 환영합니다.
+	로그인 실패
 </body>
 </html>

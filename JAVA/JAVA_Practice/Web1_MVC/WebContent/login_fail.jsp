@@ -7,6 +7,7 @@
 <title>Insert title here</title>
 </head>
 <body>
-	${name }님 환영합니다.
+	다시 로그인 해주세요
+	<br><a href='index.html'>홈으로 가기</a>
 </body>
 </html>
