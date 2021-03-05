@@ -121,7 +121,7 @@ public class MemberDAO {
 		}
 		
 	}//end member insert
-	public void deleteMember(String id) throws MyException {
+	public void memberDelete(String id) throws MyException {
 		Connection con=null;
 		PreparedStatement stmt=null;
 		try {
