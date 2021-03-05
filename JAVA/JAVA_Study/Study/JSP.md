@@ -3,10 +3,66 @@
 - `Dynamic Web Project` - `WebContent` - `JSP file`
 - HTML 내부에서 프로그램 코드를 돌리기 위해 사용
 - JSP는 Servlet으로 변환하여 동작 함
+
+<br/>
+
+#### JSP templete
+
+- html, text, css, js, xml
+
+#### JSP element ( Scripting / tag)
+
+- Scripting : 
   - `<%@` [코드] `%>` : `지시자` page 지시자 등 정보를 지시하기 위해 사용
+    - page : lnaguage, contentType, import...+
+    - include : 주로 정적 파일을 포함(html, txt, jsp...+)
+    - taglib : prepix를 만나면 uri로 가서 처리하라는 커스텀 태그 처리 지시
   - `<%!` [코드] `%>` : `선언문` 전역변수 선언 및 메소드 선언에 사용
   - `<%` [코드] `%>` : `Scriptlet` 자바 코드를 입력할 수 있는 부분
-  -  `<%=` [코드] `%>` :  `표현식` 응답 결과에 넣고 싶은 자바 코드 입력(화면에 출력할 내용)
+  - `<%=` [코드] `%>` :  `표현식` 응답 결과에 넣고 싶은 자바 코드 입력(화면에 출력할 내용)
+- Tag : 
+  - `<jsp:액션 속성=값` `</jsp:액션>` : Standard tag
+  - `<[prepix] <%=` [코드] `%>` `</[prepix]>` : Custrom tag
+
+<br/>
+
+```jsp
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ include file="header.html" %>
+<%-- <%@ taglib prefix="jes" uri="..." %>--%>
+    
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	${name }님 환영합니다.
+	<br><a href='shop.html'>쇼핑 가기</a>
+	<jsp:include page="img.html"></jsp:include>
+	<!-- <pkt:<%--<%=  %>--%></pkt:> -->
+	<br>
+	<%!
+	int i=10;
+	public void printI() {
+		System.out.println(i);
+	}
+	%>
+	
+	<%=i++ %>
+	<% 
+		printI();
+	%>
+</body>
+</html>
+
+
+
+```
+
+<br/>
 
 ```jsp
 <%@ page language="java" contentType="text/html; charset=UTF-8"
