@@ -9,19 +9,4 @@
 		</property>
 	</bean>
 
-	<bean id="person2" class="my.model.PersonImpl">
-		<constructor-arg value="이순신"></constructor-arg>
-	</bean>
-	
-	<bean id="person3" class="my.model.PersonImpl">
-		<constructor-arg value="박경태"></constructor-arg>
-		<constructor-arg value="30"></constructor-arg>
-	</bean>
-
-	<bean id="person4" class="my.model.PersonImpl">
-		<constructor-arg value="50"></constructor-arg>
-		<constructor-arg value="이순수"></constructor-arg>
-	</bean>
-		
-	
 </beans>
