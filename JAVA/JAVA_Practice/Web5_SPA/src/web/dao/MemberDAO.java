@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 
 import web.util.MyException;
 
-public class MemberDAO {
+public class MemberDAO implements DAO{
 	DataSource dbcp;
 
 	public MemberDAO() throws MyException {
