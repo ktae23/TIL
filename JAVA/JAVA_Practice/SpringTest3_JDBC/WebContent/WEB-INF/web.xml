@@ -19,8 +19,8 @@
   <context-param>
   	<param-name>contextConfigLocation</param-name>
   	<param-value>
-  	/WEB-INF/config/action-service.xml
-  	/WEB-INF/config/action-dataSource.xml
+  		/WEB-INF/a/action-service.xml,
+  		/WEB-INF/a/action-dataSource.xml
   	</param-value>
   </context-param>
   
