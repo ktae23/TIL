@@ -50,6 +50,13 @@
 		]]>
 	
 	</update>
+	<delete id="" parameterType="String">
+		<![CDATA[
+			delte from member where id=#{id}
+		
+		]]>
+	
+	</delete>
 
 
 </mapper> 
