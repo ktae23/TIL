@@ -23,7 +23,7 @@
   <Listener className="org.apache.catalina.security.SecurityListener" />
   -->
   <!--APR library loader. Documentation at /docs/apr.html -->
-  <Listener SSLEngine="on" className="org.apache.catalina.core.AprLifecycleListener"/>
+  <!--  Listener SSLEngine="on" className="org.apache.catalina.core.AprLifecycleListener"/>-->
   <!-- Prevent memory leaks due to use of particular java/javax APIs-->
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener"/>
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"/>
@@ -153,7 +153,7 @@
              Note: The pattern used is equivalent to using pattern="common" -->
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs" pattern="%h %l %u %t &quot;%r&quot; %s %b" prefix="localhost_access_log" suffix=".txt"/>
 
-      <Context docBase="SpringTest5_myBatis" path="/SpringTest5_myBatis" reloadable="true" source="org.eclipse.jst.jee.server:SpringTest5_myBatis"/></Host>
+      <Context docBase="fw_과제_박경태" path="/ai_fw_test" reloadable="true" source="org.eclipse.jst.jee.server:fw_과제_박경태"/></Host>
     </Engine>
   </Service>
 </Server>
