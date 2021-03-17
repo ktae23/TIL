@@ -24,6 +24,8 @@
 	
 	<!-- 알럿 창을 아름답게 -->
  	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+ 	
  	
 </head>
 
@@ -41,12 +43,12 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="#">Home
+            <a class="nav-link" href="/bookmark">Home
               <span class="sr-only">(current)</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="memberList" >sign in</a>
+            <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
           </li>
             
           </li>
@@ -60,11 +62,23 @@
 
     <div class="row">
       <div class="col-lg-3">
-		<h1 class="my-4">당신의 북마크</h1>
+		<h1 class="my-4">북마크 게시판</h1>
+		<p class="card-text">
+		폴더 형태의 북마크가 아닌,
+		게시판 형태의 북마크입니다.
+		</p>
+		<p class="card-text">
+		짧은 설명을 첨부 할 수 있어서
+		어떤 링크였는지 한눈에 파악 할 수 있죠.
+		</p>
         <div class="list-group">
-          <a href="memberList" class="list-group-item">회원 관리</a>
+          <a href="memberList" class="list-group-item">회원 관리로 이동</a>
           <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">북마크 생성</a>
+          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkUpdateForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=600');">북마크 수정</a>
+          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkRemoveForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">북마크 삭제</a>
         </div>
+
+
 
       </div>
       <!-- /.col-lg-3 -->
@@ -99,23 +113,23 @@
         </div>
 
         <div class="row">
-        
-  <c:if test='${!bookmarkList.isEmpty()}'>
-	<c:forEach var="bookmark" items="${bookmarkList }">
-          <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100">
-              <div class="card-body">
-                <h4 class="card-title">
-                  <a href="${bookmark.url }">${bookmark.title }</a>
-                </h4>
-                <p class="card-text">${bookmark.coment }</p>
-                <p class="card-text">작성자 : ${bookmark.memid }</p>
-                <p class="card-text">작성일 : <fmt:formatDate value="${bookmark.date}" pattern="yyyy.MM.dd"/></p> 
-              </div>
-            </div>
-          </div>
-	</c:forEach>
-	</c:if>
+			  <c:if test='${!bookmarkList.isEmpty()}'>
+				<c:forEach var="bookmark" items="${bookmarkList }">
+			          <div class="col-lg-4 col-md-6 mb-4">
+			            <div class="card h-100">
+			              <div class="card-body">
+			                <h4 class="card-title">
+			                	<p>${bookmark.bookmark_no }</p>
+			                  <a href="https://${bookmark.url }" target="_blank">${bookmark.title }</a>
+			                </h4>
+			                <p class="card-text">${bookmark.coment }</p>
+			                <p class="card-text">작성자 : ${bookmark.memid }</p>
+			                <p class="card-text">작성일 : <fmt:formatDate value="${bookmark.date}" pattern="yyyy.MM.dd"/></p>
+			              </div>
+			            </div>
+			          </div>
+				</c:forEach>
+				</c:if>
 
         </div>
         <!-- /.row -->

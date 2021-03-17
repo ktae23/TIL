@@ -11,4 +11,7 @@ import kr.co.bookmark.vo.BookmarkVO;
 public interface BookmarkService {
 	public List<BookmarkVO> bookmarkList() throws Exception;
 	public void bookmarkInsert(BookmarkVO bookmarkVO) throws Exception;
+	public void bookmarkUpdate(BookmarkVO bookmarkVO)throws Exception;
+	public Long getBookmark_no()throws Exception;
+	public void bookmarkDelete(BookmarkVO bookmarkVO)throws Exception;
 }

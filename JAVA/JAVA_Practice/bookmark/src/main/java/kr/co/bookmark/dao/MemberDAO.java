@@ -11,5 +11,7 @@ import kr.co.bookmark.vo.MemberVO;
 		public void memberInsert(MemberVO m);
 		public String login(MemberVO m);
 		public List<MemberVO> memberList();
+		public void memberDelete(MemberVO m);
+		public void memberUpdate(MemberVO m);
 		}
 

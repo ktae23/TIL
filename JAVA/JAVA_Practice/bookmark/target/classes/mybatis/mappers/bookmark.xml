@@ -10,32 +10,41 @@
 		<result property="coment" column="coment" />
 		<result property="date" column="writedate" />
 		<result property="memid" column="memid" />
+		<result property="bookmark_no" column="bookmark_no"/>
 	</resultMap>
 	
 	<select id="selectAllBookmarkList" resultMap="bookmarkResult" >
 		<![CDATA[
-			select * from bookmarks order by writedate desc
+			select * from bookmarks order by bookmark_no desc
 		]]>
 	</select>
 	
 	<insert id="bookmarkInsert"   parameterType="java.util.Map" >
 		<![CDATA[
-			insert into bookmarks(title,url,coment,memid) 
-			values(#{title},#{url},#{coment},#{memid})
+			insert into bookmarks(title,url,coment,memid,bookmark_no) 
+			values(#{title},#{url},#{coment},#{memid}, #{bookmark_no})
 		]]>
 	</insert>
+	
+	<select id="bookmark_no" resultType="long" >
+		<![CDATA[
+			select bookmark_no_seq.nextval from dual
+		]]>
+	</select>	
+	
 	
 	<update  id="updateBookmark"  parameterType="java.util.Map" >
 		<![CDATA[
 			update bookmarks
 			set title=#{title}, coment=#{coment}, url=#{url}
-			where memid=#{memid}
+			where bookmark_no = #{bookmark_no}
 		]]>
 	</update>
 	
-	<delete id="deleteBookmark" parameterType="String">
+	
+	<delete id="deleteBookmark" parameterType="java.util.Map">
 		<![CDATA[
-			delete from bookmarks where title=#{title}
+			delete from bookmarks where bookmark_no = #{bookmark_no}
 		]]>
 	
 	</delete>

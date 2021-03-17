@@ -38,12 +38,12 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ml-auto">
           <li class="nav-item active">
-            <a class="nav-link" href="#">Home
+            <a class="nav-link" href="/bookmark">Home
               <span class="sr-only">(current)</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="memberList" >sign in</a>
+             <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
           </li>
         </ul>
       </div>
@@ -55,13 +55,24 @@
 
     <div class="row">
       <div class="col-lg-3">
-		<h1 class="my-4">당신의 북마크</h1>
+		<h1 class="my-4">북마크 게시판</h1>
+
+		<p class="card-text">
+		폴더 형태의 북마크가 아닌,
+		게시판 형태의 북마크입니다.
+		</p>
+		<p class="card-text">
+		짧은 설명을 첨부 할 수 있어서
+		어떤 링크였는지 한눈에 파악 할 수 있죠.
+		</p>
         <div class="list-group">
           <a href="memberList" class="list-group-item">회원 관리</a>
           <a href="bookmarkList" class="list-group-item">북마크 게시판</a>
         </div>
 
       </div>
+      
+      
       <!-- /.col-lg-3 -->
 
       <div class="col-lg-9">
@@ -102,6 +113,8 @@
                   <a href="https://www.naver.com">Naver</a>
                 </h4>
                 <p class="card-text">네이버 북마크!</p>
+                 <p class="card-text">작성자 : 관리자</p>
+                <p class="card-text">작성일 : 2021.03.17</p>
               </div>
             </div>
           </div>
@@ -112,7 +125,9 @@
                 <h4 class="card-title">
                   <a href="https://www.google.com">Google</a>
                 </h4>
-                <p class="card-text">구글 북마크! 항상 고마워요 구글님!</p>
+                <p class="card-text">구글 북마크!</p>
+                <p class="card-text">작성자 : 관리자</p>
+                <p class="card-text">작성일 : 2021.03.17</p>
               </div>
             </div>
           </div>
@@ -124,6 +139,8 @@
                   <a href="https://www.multicampus.com">Multi Campus</a>
                 </h4>
                 <p class="card-text">멀티캠퍼스 북마크!</p>
+                <p class="card-text">작성자 : 관리자</p>
+                <p class="card-text">작성일 : 2021.03.17</p>
               </div>
             </div>
           </div>
@@ -165,5 +182,13 @@
 
 
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script>
+$(function(){
+
+var login=$.cookie('logined');
+	$("#msgDiv").html(login);
+	});
+</script>
 
 </html>

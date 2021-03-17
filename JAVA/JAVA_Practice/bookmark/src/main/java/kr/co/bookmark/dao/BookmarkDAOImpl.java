@@ -18,6 +18,7 @@ public class BookmarkDAOImpl implements BookmarkDAO{
 
 	@Override
 	public void bookmarkInsert(BookmarkVO bookmarkVO) throws DataAccessException {
+		System.out.println("DAO북마크 인서트 호출");
 		sqlSession.insert("mapper.bookmark.bookmarkInsert",bookmarkVO);
 	}
 	
@@ -28,6 +29,25 @@ public class BookmarkDAOImpl implements BookmarkDAO{
 		return sqlSession.selectList("mapper.bookmark.selectAllBookmarkList");
 
 	}
+
+
+	@Override
+	public void bookmarkUpdate(BookmarkVO bookmarkVO) throws Exception {
+		sqlSession.update("mapper.bookmark.bookmarkUpdate",bookmarkVO);
+		
+	}
 	
+	public Long getBookmark_no() throws Exception{
+		System.out.println("DAO 북마크 번호");
+		return sqlSession.selectOne("mapper.bookmark.bookmark_no");
+	}
+
+
+	@Override
+	public void deleteBookmark(BookmarkVO bookmarkVO) throws Exception {
+		System.out.println("DAO 북마크 삭제");
+		sqlSession.delete("mapper.bookmark.deleteBookmark",bookmarkVO);
+		
+	}
 
 }

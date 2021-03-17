@@ -10,14 +10,49 @@ public class BookmarkVO {
 	private String url;
 	private String memid;
 	private Date date;
-	
-	
+	private long bookmark_no;
 
+
+	public BookmarkVO() {
+		super();
+	}
+	public BookmarkVO(String title, String url, String coment,  String memid, Long bookmark_no) throws MyException {
+		
+		this(title, url, coment, memid);
+		setBookmark_no(bookmark_no);
+	}	
+	
+	
+	public BookmarkVO(String title, String url, String coment,  String memid) throws MyException {
+		super();
+		setTitle(title);
+		setUrl(url);
+		setComent(coment);
+		setMemid(memid);
+	}	
+
+	public BookmarkVO(String memid, Long bookmark_no) throws MyException {
+		setMemid(memid);
+		setBookmark_no(bookmark_no);
+	}
 	@Override
 	public String toString() {
 		return "BookmarkVO [title=" + title + ", coment=" + coment + ", url=" + url + ", memid=" + memid + ", date="
-				+ date + "]";
+				+ date + ", bookmark_no=" + bookmark_no + "]";
 	}
+
+	public long getBookmark_no() {
+		return bookmark_no;
+	}
+
+	public void setBookmark_no(long bookmark_no) throws MyException {
+		if(bookmark_no!=0) {
+			this.bookmark_no = bookmark_no;
+		}else {
+			throw new MyException("bookmark_no가 입력되지 않았습니다");
+		}
+	}
+
 
 	public Date getDate() {
 		return date;
@@ -25,17 +60,6 @@ public class BookmarkVO {
 
 	public void setDate(Date date) {
 		this.date = date;
-	}
-
-	public BookmarkVO() {
-		super();
-	}
-	
-	public BookmarkVO(String title, String url, String coment,  String memid) throws MyException {
-		setTitle(title);
-		setUrl(url);
-		setComent(coment);
-		setMemid(memid);
 	}
 
 	public String getTitle() {

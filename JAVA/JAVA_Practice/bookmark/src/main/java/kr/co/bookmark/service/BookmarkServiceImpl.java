@@ -24,7 +24,26 @@ public class BookmarkServiceImpl implements BookmarkService{
 	
 	@Override
 	public void bookmarkInsert(BookmarkVO bookmarkVO) throws Exception {
+		System.out.println("서비스 인서트 호출");
 		bookmarkDAO.bookmarkInsert(bookmarkVO);
+	}
+	
+
+	@Override
+	public void bookmarkUpdate(BookmarkVO bookmarkVO) throws Exception {
+		bookmarkDAO.bookmarkUpdate(bookmarkVO);
+	}
+
+	@Override
+	public Long getBookmark_no() throws Exception {
+		System.out.println("서비스 북마크 번호");
+		return bookmarkDAO.getBookmark_no();
+	}
+
+	@Override
+	public void bookmarkDelete(BookmarkVO bookmarkVO) throws Exception {
+		System.out.println("서비스 북마크 삭제");
+		bookmarkDAO.deleteBookmark(bookmarkVO);
 	}
 	
 }
