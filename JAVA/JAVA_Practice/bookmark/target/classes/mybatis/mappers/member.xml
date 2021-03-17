@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="mapper.member">
+	<resultMap type="memberVO" id="memResult">
+		<result property="id" column="memid" />
+		<result property="pw" column="pw" />
+		<result property="name" column="memname" />
+		<result property="date" column="memdate" />
+	</resultMap>
+	
+	<select id="selectAllMemberList" resultMap="memResult">
+		<![CDATA[
+			select * from member order by memdate desc
+		]]>
+	</select>
+	
+	<select id="login" resultType="String" parameterType="memberVO">
+		<![CDATA[
+			select memname from member where memid=#{id} and pw=#{pw}
+		]]>
+	</select>
+	
+	<select id="selectMemberById" resultMap="memResult" parameterType="String">
+		<![CDATA[
+			select * from member where memid=#{id}
+		]]>
+	</select>
+	
+	<select id="selectMemberByPw"  resultMap="memResult" parameterType="String">
+		<![CDATA[
+			select * from member where pw=#{pw}
+		]]>
+	</select>
+	
+	<insert id="memberInsert"   parameterType="memberVO" >
+		<![CDATA[
+			insert into member(memid,pw,memname,memdate) 
+			values(#{id},#{pw},#{name}, SYSDATE)
+		]]>
+	</insert>
+	
+	<update  id="updateMember"  parameterType="memberVO" >
+		<![CDATA[
+			update member
+			set pw=#{pw}, memname=#{name}
+			where memid=#{id}
+		]]>
+	</update>
+	
+	<delete id="deleteMember" parameterType="String">
+		<![CDATA[
+			delete from member where memid=#{id}
+		]]>
+	
+	</delete>
+	
+
+</mapper> 
+

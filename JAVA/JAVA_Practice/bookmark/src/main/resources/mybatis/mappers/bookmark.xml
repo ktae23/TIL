@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="mapper.bookmark">
+	<resultMap type="bookmarkVO" id="bookmarkResult">
+		<result property="title" column="title" />
+		<result property="url" column="url" />
+		<result property="coment" column="coment" />
+		<result property="date" column="writedate" />
+		<result property="memid" column="memid" />
+	</resultMap>
+	
+	<select id="selectAllBookmarkList" resultMap="bookmarkResult" >
+		<![CDATA[
+			select * from bookmarks order by writedate desc
+		]]>
+	</select>
+	
+	<insert id="bookmarkInsert"   parameterType="java.util.Map" >
+		<![CDATA[
+			insert into bookmarks(title,url,coment,memid) 
+			values(#{title},#{url},#{coment},#{memid})
+		]]>
+	</insert>
+	
+	<update  id="updateBookmark"  parameterType="java.util.Map" >
+		<![CDATA[
+			update bookmarks
+			set title=#{title}, coment=#{coment}, url=#{url}
+			where memid=#{memid}
+		]]>
+	</update>
+	
+	<delete id="deleteBookmark" parameterType="String">
+		<![CDATA[
+			delete from bookmarks where title=#{title}
+		]]>
+	
+	</delete>
+	
+
+</mapper> 
+
