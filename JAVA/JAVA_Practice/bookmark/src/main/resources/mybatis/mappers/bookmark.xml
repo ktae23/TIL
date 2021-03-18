@@ -51,6 +51,13 @@
 	
 	</delete>
 	
+	
+	<delete id="deleteMember" parameterType="String">
+		<![CDATA[
+			delete from bookmarks where memid=#{memid}
+		]]>
+	
+	</delete>
 
 </mapper> 
 

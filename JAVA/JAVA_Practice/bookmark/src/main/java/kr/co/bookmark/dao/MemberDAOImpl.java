@@ -35,14 +35,17 @@ public class MemberDAOImpl implements MemberDAO{
 	@Override
 	public void memberDelete(MemberVO m) {
 		System.out.println("멤버 딜리트 호출");
-		sqlSession.insert("mapper.member.deleteMember",m);
+		String memid = m.getId();
+		sqlSession.delete("mapper.bookmark.deleteMember",memid);
+		sqlSession.delete("mapper.member.deleteMember",m);
+		
 	}
 
 
 	@Override
 	public void memberUpdate(MemberVO m) {
 		System.out.println("멤버 업데이트 호출");
-		sqlSession.insert("mapper.member.updateMember",m);
+		sqlSession.update("mapper.member.updateMember",m);
 	}
 
 }

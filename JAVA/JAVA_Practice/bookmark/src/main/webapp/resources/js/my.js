@@ -63,6 +63,9 @@ $(document).on("click", "#logoutBtn", function(event) {
 			  }
 		);
 	});
+	
+	
+	
 // 멤버 CRUD
 
 $(document).ready(function(){
@@ -131,13 +134,13 @@ $(document).ready(function(){
 			   
 			  },
 			  function(data, status){
-			  	alert(data);
-			    opener.parent.location.reload();
-				window.close();
+			  	opener.parent.$.removeCookie("logined");
+				opener.parent.$.removeCookie("logined4admin");
+				opener.parent.location.href='../../';	
+				window.close();					   
 			  });
 	});
 });
-
 
 
 
