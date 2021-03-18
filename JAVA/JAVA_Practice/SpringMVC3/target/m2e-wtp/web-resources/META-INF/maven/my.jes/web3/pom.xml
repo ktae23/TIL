@@ -152,18 +152,23 @@
     <version>1.1.0</version>
 </dependency>
     
-<!-- 
-<dependency>
-	<groupId>jdbc.oracle</groupId>
-	<artifactId>OracleDriver</artifactId>
-	<version>${jdbc.oracle-version}</version>
-	<scope>system</scope>
-	<systemPath>${basedir}/src/main/webapp/WEB-INF/lib/ojdbc6.jar</systemPath>
-</dependency> -->
-		     
+
+		<dependency>
+			<groupId>jdbc.oracle</groupId>
+			<artifactId>OracleDriver</artifactId>
+			<version>${jdbc.oracle-version}</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/ojdbc6.jar</systemPath>
+		</dependency>
 	</dependencies>
 	
-	
+	    <!-- 오라클 드라이버 라이센스 얻어오는 구문 -->
+    <repositories>
+       <repository>
+           <id>mesir-repo</id>
+           <url>http://mesir.googlecode.com/svn/trunk/mavenrepo</url>
+       </repository>
+      </repositories>
 	
     <build>
         <plugins>
