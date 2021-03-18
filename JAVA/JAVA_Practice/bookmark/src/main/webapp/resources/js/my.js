@@ -55,16 +55,11 @@ $(document).on("click", "#logoutBtn", function(event) {
 			   
 			  },
 			  function(data, status){		  	
-			  	if(id == 'admin' && pw =='0000'){
 					opener.parent.$.removeCookie("logined4admin");
-					opener.parent.location.href='../../';	
-					window.close();
-				}else{
 					opener.parent.$.removeCookie("logined");
 					opener.parent.location.href='../../';	
 					window.close();			
 				}		   
-			  }
 		);
 	});
 	

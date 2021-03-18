@@ -58,6 +58,7 @@ public class HomeController {
 
 			HttpSession session=request.getSession();
 			session.setMaxInactiveInterval(3600);
+			System.out.println(session.getMaxInactiveInterval());
 			session.setAttribute("member", member);
 			
 			json.put("name", name);
@@ -95,15 +96,6 @@ public class HomeController {
 	
 	
 	// Memeber CRUD
-	
-	/*
-	 * // Id check
-	 * 
-	 * @RequestMapping(value = "idCheck", method= {RequestMethod.POST}, produces =
-	 * "application/text; charset=utf8") public int idCheck(MemberVO memberVo)
-	 * throws Exception{ return memberService.idCheck(memberVo); }
-	 */
-	
 	// Memeber Create
 	@RequestMapping(value = "memberInsert", 
 			method= {RequestMethod.POST},
