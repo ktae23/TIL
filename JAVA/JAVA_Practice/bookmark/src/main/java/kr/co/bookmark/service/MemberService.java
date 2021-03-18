@@ -13,5 +13,6 @@ public interface MemberService {
 	public List<MemberVO> memberList() throws Exception;
 	public void memberDelete(MemberVO m)throws Exception;
 	public void memberUpdate(MemberVO m)throws Exception;
+	public int idCheck(MemberVO m)throws Exception;
 
 }

@@ -39,7 +39,7 @@ public class HomeController {
 
 	
 	
-	// 로그인
+	// Sign in
 	@RequestMapping(value = "memberlogin", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
@@ -76,7 +76,7 @@ public class HomeController {
 	
 	
 	
-	// 로그아웃
+	// Sign out
 	@RequestMapping(value = "logout", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")			
@@ -94,30 +94,47 @@ public class HomeController {
 	
 	
 	
-	// member CRUD
-	// Create
+	// Memeber CRUD
+	
+	/*
+	 * // Id check
+	 * 
+	 * @RequestMapping(value = "idCheck", method= {RequestMethod.POST}, produces =
+	 * "application/text; charset=utf8") public int idCheck(MemberVO memberVo)
+	 * throws Exception{ return memberService.idCheck(memberVo); }
+	 */
+	
+	// Memeber Create
 	@RequestMapping(value = "memberInsert", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
 	@ResponseBody
 	public String memberInsert(HttpServletRequest request,
 			HttpServletResponse response) {
+		
 		String id=request.getParameter("id");
 		String pw=request.getParameter("pw");
 		String name=request.getParameter("name");
 		
 		try {
 			MemberVO m=new MemberVO(id,pw,name); 
-			memberService.memberInsert(m);
+			int result = memberService.idCheck(m);
+			if(result != 1) {
+				memberService.memberInsert(m);
+				return name+"님 회원가입 되셨습니다";	
+			}else {
+				return "아이디가 중복입니다.";
+			}
 			
-			return name+"님 회원가입 되셨습니다";
 		}catch(Exception e) {
 			return e.getMessage();
 		}	
 	}		
 	
+	
+	
 
-	// Read
+	// Memeber Read
 	@RequestMapping(value = "/memberList", method = RequestMethod.GET)
 	public ModelAndView memberList( HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -125,13 +142,21 @@ public class HomeController {
 	
 			List<MemberVO> memberList = memberService.memberList();
 			ModelAndView mav = new ModelAndView();
-			mav.setViewName("memberList");
-			mav.addObject("memberList", memberList);
+			
+			HttpSession session = request.getSession(false);
+			MemberVO member = (MemberVO) session.getAttribute("member");
+			if(member != null) {
+				mav.setViewName("memberList");
+				mav.addObject("memberList", memberList);
+			}else {
+				mav.setViewName("index");
+			}
 			
 			return mav;
+			
 	}
 	
-	// Read	for admin
+	// Memeber Read	for admin
 	@RequestMapping(value = "/memberList4admin", method = RequestMethod.GET)
 	public ModelAndView memberList4admin( HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
@@ -147,45 +172,45 @@ public class HomeController {
 	
 	}
 
-	// Update
-		@RequestMapping(value = "/memberUpdate", method= {RequestMethod.POST}, 
-				produces = "application/text; charset=utf8")
-		@ResponseBody
-		public String memberUpdate( HttpServletRequest request,
-				HttpServletResponse response) throws Exception {
-				
-				String id=request.getParameter("id");
-				String pw=request.getParameter("pw");
-				String name=request.getParameter("name");
-				
-				try {
-					MemberVO m = new MemberVO(id, pw, name);
-					memberService.memberUpdate(m);
-				
-					return name+"님의 정보가 수정 되었습니다";
-				}catch(Exception e) {
-					return e.getMessage();
-				}	
+	// Memeber Update
+	@RequestMapping(value = "/memberUpdate", method= {RequestMethod.POST}, 
+			produces = "application/text; charset=utf8")
+	@ResponseBody
+	public String memberUpdate( HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+			
+			String id=request.getParameter("id");
+			String pw=request.getParameter("pw");
+			String name=request.getParameter("name");
+			
+			try {
+				MemberVO m = new MemberVO(id, pw, name);
+				memberService.memberUpdate(m);
+			
+				return name+"님의 정보가 수정 되었습니다";
+			}catch(Exception e) {
+				return e.getMessage();
+			}	
 		}	
 		
-		// Delete
-		@RequestMapping(value = "/memberDelete", method= {RequestMethod.POST},
-				produces = "application/text; charset=utf8")
-		@ResponseBody
-		public String memberDelete( HttpServletRequest request,
-				HttpServletResponse response) throws Exception {
-				
-				String id=request.getParameter("id");
-				String pw=request.getParameter("pw");
+	// Memeber Delete
+	@RequestMapping(value = "/memberDelete", method= {RequestMethod.POST},
+			produces = "application/text; charset=utf8")
+	@ResponseBody
+	public String memberDelete( HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+			
+			String id=request.getParameter("id");
+			String pw=request.getParameter("pw");
 
-				try {
-					MemberVO m = new MemberVO(id,pw);
-					memberService.memberDelete(m);
-				
-					return id+" 계정이 삭제 되었습니다";
-				}catch(Exception e) {
-					return e.getMessage();
-				}	
+			try {
+				MemberVO m = new MemberVO(id,pw);
+				memberService.memberDelete(m);
+			
+				return id+" 계정이 삭제 되었습니다";
+			}catch(Exception e) {
+				return e.getMessage();
+			}	
 		}	
 	
 	
@@ -194,8 +219,8 @@ public class HomeController {
 	
 	
 	
-	// bookmark CRUD
-	// Create
+	// Bookmark CRUD
+	// Bookmark Create
 	@RequestMapping(value = "/bookmarkInsert",method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
 	@ResponseBody
@@ -225,20 +250,29 @@ public class HomeController {
 	}	
 	
 	
-	// Read
+	// Bookmark Read
 	@RequestMapping(value = "/bookmarkList", method= RequestMethod.GET)
 	public ModelAndView bookmarkList( HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		
 			List<BookmarkVO> bookmarkList = bookmarkService.bookmarkList();
 			ModelAndView mav = new ModelAndView();
+			
+			HttpSession session = request.getSession(false);
+			MemberVO member = (MemberVO) session.getAttribute("member");
+			if(member != null) {
 			mav.setViewName("bookmarkList");
 			mav.addObject("bookmarkList", bookmarkList);
+			}else {
+				mav.setViewName("index");
+			}
 			
 			return mav;
-	}	
+	}
+	
+	
+	
 
-	// Update
+	// Bookmark Update
 	@RequestMapping(value = "/bookmarkUpdate", method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
 	@ResponseBody
@@ -272,7 +306,7 @@ public class HomeController {
 			
 	}	
 	
-	// Delete
+	// Bookmark Delete
 	@RequestMapping(value = "/bookmarkDelete", method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
 	@ResponseBody

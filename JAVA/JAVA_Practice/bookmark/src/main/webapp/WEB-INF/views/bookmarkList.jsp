@@ -81,8 +81,6 @@
           <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkRemoveForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">북마크 삭제</a>
         </div>
 
-
-
       </div>
       <!-- /.col-lg-3 -->
 
@@ -115,19 +113,22 @@
           </a>
         </div>
 
-        <div class="row">
+        <div class="row" align = "center">
 			  <c:if test='${!bookmarkList.isEmpty()}'>
 				<c:forEach var="bookmark" items="${bookmarkList }">
 			          <div class="col-lg-4 col-md-6 mb-4">
 			            <div class="card h-100">
 			              <div class="card-body">
 			                <h4 class="card-title">
-			                	<span>${bookmark.bookmark_no }</span>
+			                	<div>${bookmark.bookmark_no }</div>
+			                	<br>
 			                  <a href="https://${bookmark.url }" target="_blank">${bookmark.title }</a>
 			                </h4>
 			                <p class="card-text">${bookmark.coment }</p>
 			                <p class="card-text">작성자 : ${bookmark.memid }</p>
 			                <p class="card-text">작성일 : <fmt:formatDate value="${bookmark.date}" pattern="yyyy.MM.dd"/></p>
+			                <br>
+			                 
 			              </div>
 			            </div>
 			          </div>
@@ -183,5 +184,14 @@ $(function(){
 	var login=$.cookie('logined4admin');
 		$("#msgDiv").html(login);
 });
+
+if (cookie.logined.value == null && cookie.logined4admin.value == null){
+	$(function(){
+		location.href='index';
+	} 
+}
+	
+
+
 </script>
 </html>

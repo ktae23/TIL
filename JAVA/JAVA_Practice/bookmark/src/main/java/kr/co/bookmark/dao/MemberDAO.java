@@ -13,5 +13,6 @@ import kr.co.bookmark.vo.MemberVO;
 		public List<MemberVO> memberList();
 		public void memberDelete(MemberVO m);
 		public void memberUpdate(MemberVO m);
+		public int idCheck(MemberVO m);
 		}
 

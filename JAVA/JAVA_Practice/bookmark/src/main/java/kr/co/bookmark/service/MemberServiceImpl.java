@@ -41,5 +41,11 @@ public class MemberServiceImpl implements MemberService{
 		memberDAO.memberUpdate(m);
 		
 	}
+
+	@Override
+	public int idCheck(MemberVO m) throws Exception {
+		System.out.println("서비스 멤버 중복체크 호출");
+		return memberDAO.idCheck(m);
+	}
 	
 }

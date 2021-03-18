@@ -47,5 +47,12 @@ public class MemberDAOImpl implements MemberDAO{
 		System.out.println("멤버 업데이트 호출");
 		sqlSession.update("mapper.member.updateMember",m);
 	}
+	
+	@Override
+	public int idCheck(MemberVO m) {
+		System.out.println("멤버 중복 체크 호출");
+		int result = sqlSession.selectOne("mapper.member.idCheck",m);
+		return result;
+	}
 
 }

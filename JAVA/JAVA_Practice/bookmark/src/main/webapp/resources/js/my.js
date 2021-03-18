@@ -55,11 +55,15 @@ $(document).on("click", "#logoutBtn", function(event) {
 			   
 			  },
 			  function(data, status){		  	
-			  	
-			  	opener.parent.$.removeCookie("logined");
-				opener.parent.$.removeCookie("logined4admin");
-				opener.parent.location.href='../../';	
-				window.close();					   
+			  	if(id == 'admin' && pw =='0000'){
+					opener.parent.$.removeCookie("logined4admin");
+					opener.parent.location.href='../../';	
+					window.close();
+				}else{
+					opener.parent.$.removeCookie("logined");
+					opener.parent.location.href='../../';	
+					window.close();			
+				}		   
 			  }
 		);
 	});
@@ -82,9 +86,14 @@ $(document).ready(function(){
 			    pw:pw
 			  },
 			  function(data, status){
+			  if(data != "아이디가 중복입니다."){
 			    alert(data);
 			    opener.parent.location.reload();
 				window.close();
+				}else{
+					alert("아이디가 중복입니다.");
+					location.reload();	
+				}
 			  });
 	});
 });
@@ -160,7 +169,6 @@ $(document).ready(function(){
 			    title:title,
 			    url:url,
 			    coment:coment
-			   
 			  },
 			  function(data, status){
 			    alert(data);

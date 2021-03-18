@@ -29,40 +29,35 @@
 
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-  
     <div class="container">
       <a class="navbar-brand" href="/bookmark">Bookmark4U</a>
-      
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarResponsive">
-
         <ul class="navbar-nav ml-auto">
           <li class="nav-item active">
             <a class="nav-link" href="/bookmark">Home
               <span class="sr-only">(current)</span>
             </a>
           </li>
-          
-		<c:if test="${not empty  cookie.logined.value || not empty  cookie.logined4admin.value}">
-			<li class="nav-item">
-	          <a href="#" id="msgDiv" class="nav-link" ></a>
-	          </li>
-	          <li class="nav-item">
-   	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
-         		</li>
+			<c:if test="${not empty  cookie.logined.value || not empty  cookie.logined4admin.value}">
+				<li class="nav-item">
+					<a href="#" id="msgDiv" class="nav-link" ></a>
+				</li>
+				<li class="nav-item">
+					<a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
+				</li>
 			</c:if>
-          <c:if test="${ empty  cookie.logined.value && empty  cookie.logined4admin.value}">
-             <li class="nav-item">
-             <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
-          </li>
-          </c:if>
-          
-          
-          
+			<c:if test="${ empty  cookie.logined.value && empty  cookie.logined4admin.value}">
+    	         <li class="nav-item">
+					<a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
+				</li>
+				<li class="nav-item">
+					<a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/memberInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">sign up</a>
+				</li>
+			</c:if>
         </ul>
-       
       </div>
     </div>
   </nav>

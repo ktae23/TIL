@@ -112,7 +112,7 @@
           </a>
         </div>
 
-        <div class="row">
+        <div class="row"  align = "center">
 			 <c:if test='${!memberList.isEmpty()}'>
 				<c:forEach var="member" items="${memberList }">
 			          <div class="col-lg-4 col-md-6 mb-4">
@@ -179,5 +179,13 @@ $(function(){
 	var login=$.cookie('logined4admin');
 		$("#msgDiv").html(login);
 });
+
+
+if (cookie.logined.value == null && cookie.logined4admin.value == null){
+	$(function(){
+		location.href='index';
+	} 
+}
+
 </script>
 </html>

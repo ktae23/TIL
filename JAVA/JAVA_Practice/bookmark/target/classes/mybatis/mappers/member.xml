@@ -10,41 +10,35 @@
 		<result property="name" column="memname" />
 		<result property="date" column="memdate" />
 	</resultMap>
-	
-	<select id="selectAllMemberList" resultMap="memResult">
-		<![CDATA[
-			select * from member order by memdate desc
-		]]>
-	</select>
-	
-	<select id="login" resultType="String" parameterType="memberVO">
-		<![CDATA[
-			select memname from member where memid=#{id} and pw=#{pw}
-		]]>
-	</select>
-	
-	<select id="selectMemberById" resultMap="memResult" parameterType="String">
-		<![CDATA[
-			select memname from member where memid=#{id}
-		]]>
-	</select>
-	
-	<select id="selectMemberByPw"  resultMap="memResult" parameterType="String">
-		<![CDATA[
-			select * from member where pw=#{pw}
-		]]>
-	</select>
-	
-	
-	
-	
-	
+
 	<insert id="memberInsert"   parameterType="memberVO" >
 		<![CDATA[
 			insert into member(memid,pw,memname,memdate) 
 			values(#{id},#{pw},#{name}, SYSDATE)
 		]]>
 	</insert>
+	
+	
+	<select id="login" resultType="String" parameterType="memberVO">
+		<![CDATA[
+			select memname from member where memid=#{id} and pw=#{pw}
+		]]>
+	</select>
+		
+	<select id="selectAllMemberList" resultMap="memResult">
+		<![CDATA[
+			select * from member order by memdate desc
+		]]>
+	</select>
+	
+	<select id="idCheck" resultType="int">
+		<![CDATA[
+			select count(*) from member 
+			where memid = #{id}
+		]]>
+	</select>
+	
+	
 	
 	<update  id="updateMember"  parameterType="memberVO" >
 		<![CDATA[
