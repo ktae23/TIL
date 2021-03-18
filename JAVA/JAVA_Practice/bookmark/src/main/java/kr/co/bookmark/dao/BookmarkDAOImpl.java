@@ -33,7 +33,8 @@ public class BookmarkDAOImpl implements BookmarkDAO{
 
 	@Override
 	public void bookmarkUpdate(BookmarkVO bookmarkVO) throws Exception {
-		sqlSession.update("mapper.bookmark.bookmarkUpdate",bookmarkVO);
+		System.out.println("DAO 북마크 업데이트 호출");
+		sqlSession.update("mapper.bookmark.updateBookmark",bookmarkVO);
 		
 	}
 	
@@ -49,5 +50,7 @@ public class BookmarkDAOImpl implements BookmarkDAO{
 		sqlSession.delete("mapper.bookmark.deleteBookmark",bookmarkVO);
 		
 	}
+
+
 
 }

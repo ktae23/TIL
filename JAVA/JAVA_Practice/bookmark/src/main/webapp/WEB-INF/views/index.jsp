@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
 
@@ -21,7 +22,7 @@
 	
 	<!-- 알럿 창을 아름답게 -->
  	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
- 	
+
 </head>
 
 <body>
@@ -36,16 +37,32 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarResponsive">
+
         <ul class="navbar-nav ml-auto">
           <li class="nav-item active">
             <a class="nav-link" href="/bookmark">Home
               <span class="sr-only">(current)</span>
             </a>
           </li>
-          <li class="nav-item">
+          
+		<c:if test="${not empty  cookie.logined.value || not empty  cookie.logined4admin.value}">
+			<li class="nav-item">
+	          <a href="#" id="msgDiv" class="nav-link" ></a>
+	          </li>
+	          <li class="nav-item">
+   	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
+         		</li>
+			</c:if>
+          <c:if test="${ empty  cookie.logined.value && empty  cookie.logined4admin.value}">
+             <li class="nav-item">
              <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
           </li>
+          </c:if>
+          
+          
+          
         </ul>
+       
       </div>
     </div>
   </nav>
@@ -66,13 +83,21 @@
 		어떤 링크였는지 한눈에 파악 할 수 있죠.
 		</p>
         <div class="list-group">
-          <a href="memberList" class="list-group-item">회원 관리</a>
-          <a href="bookmarkList" class="list-group-item">북마크 게시판</a>
+        <c:if test="${not empty  cookie.logined.value || not empty cookie.logined4admin.value}">
+	      	<a href="memberList" class="list-group-item">회원 관리</a>
+          	<a href="bookmarkList" class="list-group-item">북마크 게시판</a>
+        </c:if>
+     
+        <c:if test="${empty  cookie.logined.value && empty cookie.logined4admin.value }">
+         	<a href="" class="list-group-item" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">회원 관리</a>
+          	<a href="" class="list-group-item" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">북마크 게시판</a>
+        </c:if>
+    	<c:if test="${not empty cookie.logined4admin.value}">
+	         <a href="memberList4admin" class="list-group-item">관리자용 회원 관리 페이지</a>
+	    </c:if>
+          
         </div>
-
-      </div>
-      
-      
+     </div>
       <!-- /.col-lg-3 -->
 
       <div class="col-lg-9">
@@ -167,10 +192,15 @@
   </footer>
 
 
+	
+
+
+</body>
 	<script type="text/javascript" src="../bookmark/resources/js/my.js"></script>
 	
   <!-- Bootstrap core JavaScript -->
   <script src="../bookmark/resources/vendor/jquery/jquery.min.js"></script>
+  
   <script src="../bookmark/resources/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 	 <!-- jQuery library -->
@@ -179,16 +209,19 @@
 	<!-- Latest compiled JavaScript -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 	  
-
-
-</body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" ></script>
 <script>
 $(function(){
 
 var login=$.cookie('logined');
 	$("#msgDiv").html(login);
 	});
+	
+$(function(){
+
+	var login=$.cookie('logined4admin');
+		$("#msgDiv").html(login);
+});
 </script>
 
 </html>

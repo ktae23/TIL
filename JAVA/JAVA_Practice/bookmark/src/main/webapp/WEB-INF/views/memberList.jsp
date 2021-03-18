@@ -45,12 +45,19 @@
               <span class="sr-only">(current)</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
+		 <c:if test="${not empty  cookie.logined.value || not empty cookie.logined4admin.value}">
+			<li class="nav-item">
+	          <a href="#" id="msgDiv" class="nav-link" ></a>
+	          </li>
+	          <li class="nav-item">
+   	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
+         		</li>
+			</c:if>
+          <c:if test="${empty  cookie.logined.value && empty cookie.logined4admin.value }">
+             <li class="nav-item">
+             <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
           </li>
-
-          
-          </li>
+          </c:if>
         </ul>
       </div>
     </div>
@@ -61,21 +68,15 @@
 
     <div class="row">
       <div class="col-lg-3">
-		<h1 class="my-4">북마크 게시판</h1>
+		<h1 class="my-4">회원 관리</h1>
 		<p class="card-text">
-		폴더 형태의 북마크가 아닌,
-		게시판 형태의 북마크입니다.
+		회원 정보를 생성, 조회, 수정, 삭제 할 수 있는 페이지입니다.
 		</p>
-		<p class="card-text">
-		짧은 설명을 첨부 할 수 있어서
-		어떤 링크였는지 한눈에 파악 할 수 있죠.
-		</p>
+
 		
         <div class="list-group">
-         <a href="bookmarkList" class="list-group-item">북마크 게시판으로 이동</a>
-          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">회원 가입</a>           
           <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberUpdateForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">회원 정보 수정</a>
-          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberRemoveForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">회원 삭제</a>
+          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberRemoveForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">회원 탈퇴</a>
          
         </div>
 
@@ -165,5 +166,18 @@
 
 
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" ></script>
+<script>
+$(function(){
 
+var login=$.cookie('logined');
+	$("#msgDiv").html(login);
+	});
+	
+$(function(){
+
+	var login=$.cookie('logined4admin');
+		$("#msgDiv").html(login);
+});
+</script>
 </html>

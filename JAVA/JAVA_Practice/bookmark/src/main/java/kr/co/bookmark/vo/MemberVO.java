@@ -75,7 +75,7 @@ private Date date;
 		if(name!=null) {
 			this.name = name;
 		}else {
-			throw new MyException("name가 입력되지 않았습니다");
+			throw new MyException("로그인 실패");
 		}
 	}
 

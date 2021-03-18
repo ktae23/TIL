@@ -4,7 +4,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +29,17 @@ public class HomeController {
 	@Autowired 
 	BookmarkService bookmarkService;
 	
+	
+	
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home() {
 		return "index";
 	}	
 	
+
 	
-	// 로그인, 로그아웃
+	
+	// 로그인
 	@RequestMapping(value = "memberlogin", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
@@ -43,16 +49,47 @@ public class HomeController {
 	String id=request.getParameter("id");
 	String pw=request.getParameter("pw");
 	
+	JSONObject json=new JSONObject();
 	try {
-		MemberVO m=new MemberVO(id,pw); 
-		String name = memberService.memberlogin(m);
+		String name = memberService.memberlogin(new MemberVO(id,pw));
+		MemberVO member=new MemberVO(id,pw,name);
 		
-		return name+"님 로그인 되셨습니다";
+		if(name!=null) {
+
+			HttpSession session=request.getSession();
+			session.setMaxInactiveInterval(3600);
+			session.setAttribute("member", member);
+			
+			json.put("name", name);
+			
+			System.out.println();
+		}else {
+			json.put("msg", "로그인 실패");
+		}
+
 		
 	}catch(Exception e) {
-		return e.getMessage();
-	}	
-}		
+		json.put("msg", e.getMessage());
+		}	
+		return json.toString();
+	}		
+	
+	
+	
+	// 로그아웃
+	@RequestMapping(value = "logout", 
+			method= {RequestMethod.POST},
+			produces = "application/text; charset=utf8")			
+	@ResponseBody
+	public String logout(HttpServletRequest request,
+			HttpServletResponse response){
+		
+			HttpSession session=request.getSession(false);
+			session.invalidate();
+			return "";
+	
+	}
+	
 	
 	
 	
@@ -91,12 +128,27 @@ public class HomeController {
 			mav.setViewName("memberList");
 			mav.addObject("memberList", memberList);
 			
-			return mav;	
+			return mav;
+	}
+	
+	// Read	for admin
+	@RequestMapping(value = "/memberList4admin", method = RequestMethod.GET)
+	public ModelAndView memberList4admin( HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+	
+			List<MemberVO> memberList = memberService.memberList();
+			ModelAndView mav = new ModelAndView();
+			mav.setViewName("memberList4admin");
+			mav.addObject("memberList", memberList);
+			
+			return mav;			
+			
 	
 	}
 
 	// Update
-		@RequestMapping(value = "/memberUpdate", method= {RequestMethod.POST},
+		@RequestMapping(value = "/memberUpdate", method= {RequestMethod.POST}, 
 				produces = "application/text; charset=utf8")
 		@ResponseBody
 		public String memberUpdate( HttpServletRequest request,
@@ -149,11 +201,14 @@ public class HomeController {
 	@ResponseBody
 	public String bookmarkInsert( HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-			
-			String title=request.getParameter("title");
-			String url=request.getParameter("url");
-			String coment=request.getParameter("coment");
-			String memid=request.getParameter("memid");
+				HttpSession session=request.getSession(false);
+				MemberVO member = (MemberVO) session.getAttribute("member");
+				String memid=member.getId();
+				
+				String title=request.getParameter("title");
+				String url=request.getParameter("url");
+				String coment=request.getParameter("coment");
+				
 			
 			try {
 				Long bookmark_no = bookmarkService.getBookmark_no();
@@ -189,22 +244,32 @@ public class HomeController {
 	@ResponseBody
 	public String bookmarkUpdate( HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+
+			HttpSession session=request.getSession(false);
+			MemberVO member = (MemberVO) session.getAttribute("member");
+			String pw=member.getPw();
 			
-			String str=request.getParameter("bookmark_no");
-			Long bookmark_no = Long.parseLong(str);
+			
+			Long bookmark_no = Long.parseLong(request.getParameter("bookmark_no"));
 			String title=request.getParameter("title");
 			String url=request.getParameter("url");
 			String coment=request.getParameter("coment");
-			String memid=request.getParameter("memid");
+			String getPw=request.getParameter("pw");
 			
-			try {
-				BookmarkVO b = new BookmarkVO(title, url, coment, memid,bookmark_no);
-				bookmarkService.bookmarkUpdate(b);
 			
-				return title+"이(가) 수정 되었습니다";
-			}catch(Exception e) {
-				return e.getMessage();
-			}	
+			if(getPw.equals(pw)) {
+				try {
+					BookmarkVO b = new BookmarkVO(title, url, coment, bookmark_no);
+					bookmarkService.bookmarkUpdate(b);
+				
+					return bookmark_no+"번 글이 수정 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}	
+			}else {
+				return "작성자가 아닙니다";
+			}
+			
 	}	
 	
 	// Delete
@@ -214,17 +279,28 @@ public class HomeController {
 	public String bookmarkDelete( HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 			
-			String memid=request.getParameter("memid");
-			String str=request.getParameter("bookmark_no");
-			Long bookmark_no = Long.parseLong(str);
-			try {
-				BookmarkVO b = new BookmarkVO(memid,bookmark_no);
-				bookmarkService.bookmarkDelete(b);
+		
+			HttpSession session=request.getSession(false);
+			MemberVO member = (MemberVO) session.getAttribute("member");
 			
-				return bookmark_no+"번 글이 삭제 되었습니다";
-			}catch(Exception e) {
-				return e.getMessage();
-			}	
+			String getPw=member.getPw();
+			String pw=request.getParameter("pw");
+			Long bookmark_no = Long.parseLong(request.getParameter("bookmark_no"));
+			System.out.println("북마크 삭제" + bookmark_no);
+			
+			if(getPw.equals(pw)) {
+				try {
+					BookmarkVO b = new BookmarkVO(bookmark_no);
+					bookmarkService.bookmarkDelete(b);
+				
+					return bookmark_no+"번 글이 삭제 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}	
+			}else {
+				return "비밀번호가 다릅니다";
+			}
+			
 	}	
 
 	

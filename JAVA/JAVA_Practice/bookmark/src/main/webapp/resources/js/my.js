@@ -1,5 +1,5 @@
 
-// 로그인, 로그아웃
+// 로그인
 
 $(document).ready(function(){
 	$("#loginBtn").click(function(){ // 로그인
@@ -7,37 +7,62 @@ $(document).ready(function(){
 		var id=$("#id").val();
 		var pw=$("#pw").val();
 		
-		
-		$.post("../../memberlogin",
-			  {			   
-			    id:id,
-			    pw:pw
-			  },
-			  function(data, status){
-			  	alert(data);
-			    opener.parent.location.reload();
-		  		window.close();   
-			  }
-		);
+		if(id == 'admin' && pw =='0000'){
+			$.post("../../memberlogin",
+				  {			   
+				    id:id,
+				    pw:pw
+				  },
+				  function(data, status){
+				    var obj=JSON.parse(data);			  
+			  	if(obj.name){
+				 	alert(obj.name + "님 환영합니다.");
+					opener.parent.$.cookie("logined4admin",obj.name + "님 환영합니다.");	
+					opener.parent.location.reload();
+					window.close();
+				}else{
+					alert(obj.msg);
+					location.reload();	
+				}	
+			});
+		}else{ 
+			$.post("../../memberlogin",
+				  {			   
+				    id:id,
+				    pw:pw
+				  },
+				  function(data, status){
+				  var obj=JSON.parse(data);			  
+			  	if(obj.name){
+				 	 alert(obj.name+ "님 환영합니다.");
+					opener.parent.$.cookie("logined",obj.name + "님 환영합니다.");	
+					opener.parent.location.reload();	
+					window.close();
+				  }else{
+					alert(obj.msg);
+					location.reload();	
+				}	
+			});
+		}
 	});
 });
 
+// 로그아웃
 
-
-$(document).on("click", "#logoutBtn", function(event) { // 로그아웃
-	
+$(document).on("click", "#logoutBtn", function(event) { 
 		$.post("../../logout",
 			  {			   
 			   
 			  },
 			  function(data, status){		  	
 			  	
-			  	$.removeCookie("logined");	    
-				location.reload();						   
+			  	opener.parent.$.removeCookie("logined");
+				opener.parent.$.removeCookie("logined4admin");
+				opener.parent.location.href='../../';	
+				window.close();					   
 			  }
 		);
 	});
-
 // 멤버 CRUD
 
 $(document).ready(function(){
@@ -122,7 +147,6 @@ $(document).ready(function(){
 $(document).ready(function(){
 	$("#bookmarkInsertBtn").click(function(){ // 북마크 추가
 	
-		var memid=$("#memid").val();
 		var title=$("#title").val();
 		var url=$("#url").val();
 		var coment=$("#coment").val();
@@ -130,7 +154,6 @@ $(document).ready(function(){
 			
 		$.post("../../bookmarkInsert",
 			  {
-			  	memid:memid,
 			    title:title,
 			    url:url,
 			    coment:coment
@@ -152,7 +175,7 @@ $(document).ready(function(){
 		var title=$("#title").val();
 		var url=$("#url").val();
 		var coment=$("#coment").val();
-
+		var pw=$("#pw").val();
 		
 			
 		$.post("../../bookmarkUpdate",
@@ -161,7 +184,8 @@ $(document).ready(function(){
 			  	memid:memid,
 			    title:title,
 			    url:url,
-			    coment:coment
+			    coment:coment,
+				pw:pw
 			   
 			  },
 			  function(data, status){
@@ -179,13 +203,12 @@ $(document).ready(function(){
 	$("#bookmarkDeleteBtn").click(function(){ // 북마크 삭제
 	
 		var bookmark_no=$("#bookmark_no").val();
-		var memid=$("#memid").val();
-		
+		var pw=$("#pw").val();		
 			
 		$.post("../../bookmarkDelete",
 			  {
-			  	memid:memid,
 			  	bookmark_no:bookmark_no,
+				pw:pw
 			  	
 			   
 			  },
@@ -195,8 +218,6 @@ $(document).ready(function(){
 				window.close();
 			  });
 	});
-});
-
-
-
-
+});/**
+ * 
+ */

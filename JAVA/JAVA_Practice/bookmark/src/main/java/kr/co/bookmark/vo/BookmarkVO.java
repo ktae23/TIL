@@ -35,6 +35,18 @@ public class BookmarkVO {
 		setMemid(memid);
 		setBookmark_no(bookmark_no);
 	}
+	
+	public BookmarkVO(String title, String url, String coment, Long bookmark_no) throws MyException {
+		super();
+		setTitle(title);
+		setUrl(url);
+		setComent(coment);
+		setBookmark_no(bookmark_no);
+	}
+	
+	public BookmarkVO(Long bookmark_no) throws MyException {
+		setBookmark_no(bookmark_no);
+		}
 	@Override
 	public String toString() {
 		return "BookmarkVO [title=" + title + ", coment=" + coment + ", url=" + url + ", memid=" + memid + ", date="

@@ -25,7 +25,7 @@
 	
 	<select id="selectMemberById" resultMap="memResult" parameterType="String">
 		<![CDATA[
-			select * from member where memid=#{id}
+			select memname from member where memid=#{id}
 		]]>
 	</select>
 	
@@ -34,6 +34,10 @@
 			select * from member where pw=#{pw}
 		]]>
 	</select>
+	
+	
+	
+	
 	
 	<insert id="memberInsert"   parameterType="memberVO" >
 		<![CDATA[

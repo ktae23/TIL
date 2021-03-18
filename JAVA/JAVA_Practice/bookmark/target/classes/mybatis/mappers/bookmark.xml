@@ -19,6 +19,8 @@
 		]]>
 	</select>
 	
+	
+	
 	<insert id="bookmarkInsert"   parameterType="java.util.Map" >
 		<![CDATA[
 			insert into bookmarks(title,url,coment,memid,bookmark_no) 

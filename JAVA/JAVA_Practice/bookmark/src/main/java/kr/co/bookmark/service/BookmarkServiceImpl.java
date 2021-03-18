@@ -31,6 +31,7 @@ public class BookmarkServiceImpl implements BookmarkService{
 
 	@Override
 	public void bookmarkUpdate(BookmarkVO bookmarkVO) throws Exception {
+		System.out.println("서비스 북마크 업데이트 호출");
 		bookmarkDAO.bookmarkUpdate(bookmarkVO);
 	}
 
@@ -45,5 +46,6 @@ public class BookmarkServiceImpl implements BookmarkService{
 		System.out.println("서비스 북마크 삭제");
 		bookmarkDAO.deleteBookmark(bookmarkVO);
 	}
+
 	
 }

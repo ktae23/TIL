@@ -25,8 +25,6 @@
 	<!-- 알럿 창을 아름답게 -->
  	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
- 	
- 	
 </head>
 
 <body>
@@ -35,7 +33,7 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   
     <div class="container">
-      <a class="navbar-brand" href="/bookmark">Bookmark4U</a>
+      <a class="navbar-brand" href="/bookmark">관리자 화면</a>
       
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -48,19 +46,15 @@
             </a>
           </li>
           <li class="nav-item">
-		 <c:if test="${not empty  cookie.logined.value || not empty cookie.logined4admin.value}">
-			<li class="nav-item">
-	          <a href="#" id="msgDiv" class="nav-link" ></a>
-	          </li>
+		<c:if test="${not empty  cookie.logined4admin.value || not empty cookie.logined4admin.value}">
 	          <li class="nav-item">
    	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
          		</li>
-			</c:if>
-          <c:if test="${empty  cookie.logined.value && empty cookie.logined4admin.value }">
-             <li class="nav-item">
-             <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
-          </li>
           </c:if>
+          <c:if test="${ empty  cookie.loginedadmin.value && empty cookie.logined4admin.value }}">
+             <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
+          </c:if>
+          </li>
         </ul>
       </div>
     </div>
@@ -71,17 +65,18 @@
 
     <div class="row">
       <div class="col-lg-3">
-		<h1 class="my-4">북마크 관리</h1>
+		<h1 class="my-4">회원 관리</h1>
 		<p class="card-text">
-		북마크를 생성, 조회, 수정, 삭제 할 수 있는 페이지입니다.
+		회원 정보를 생성, 조회, 수정, 삭제 할 수 있는 페이지입니다.
 		</p>
+
+		
         <div class="list-group">
-          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">북마크 생성</a>
-          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkUpdateForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=600');">북마크 수정</a>
-          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/bookmarkRemoveForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">북마크 삭제</a>
+          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">회원 생성</a>           
+          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberUpdateForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">회원 수정</a>
+          <a href="#" class="list-group-item" onclick="window.open('../bookmark/resources/html/memberRemoveForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">회원 삭제</a>
+         
         </div>
-
-
 
       </div>
       <!-- /.col-lg-3 -->
@@ -116,23 +111,22 @@
         </div>
 
         <div class="row">
-			  <c:if test='${!bookmarkList.isEmpty()}'>
-				<c:forEach var="bookmark" items="${bookmarkList }">
+			 <c:if test='${!memberList.isEmpty()}'>
+				<c:forEach var="member" items="${memberList }">
 			          <div class="col-lg-4 col-md-6 mb-4">
 			            <div class="card h-100">
 			              <div class="card-body">
 			                <h4 class="card-title">
-			                	<span>${bookmark.bookmark_no }</span>
-			                  <a href="https://${bookmark.url }" target="_blank">${bookmark.title }</a>
+			                  <a href="#">${member.name }</a>
 			                </h4>
-			                <p class="card-text">${bookmark.coment }</p>
-			                <p class="card-text">작성자 : ${bookmark.memid }</p>
-			                <p class="card-text">작성일 : <fmt:formatDate value="${bookmark.date}" pattern="yyyy.MM.dd"/></p>
+			                <p class="card-text"> id : ${member.id }</p>
+            			    <p class="card-text"> pw : ${member.pw }</p>
+			                <p class="card-text">가입일 : <fmt:formatDate value="${member.date}" pattern="yyyy.MM.dd"/></p>
 			              </div>
 			            </div>
 			          </div>
 				</c:forEach>
-				</c:if>
+			</c:if>
 
         </div>
         <!-- /.row -->
@@ -142,7 +136,8 @@
 
     </div>
     <!-- /.row -->
-
+ 
+ 
   </div>
   <!-- /.container -->
 
@@ -155,29 +150,23 @@
   </footer>
 
 
-	<script type="text/javascript" src="../bookmark/resources/js/my.js"></script>
+	<script type="text/javascript" src="../bookmark/resources/js/my.js" charset="UTF-8"></script>
 	
   <!-- Bootstrap core JavaScript -->
-  <script src="../bookmark/resources/vendor/jquery/jquery.min.js"></script>
-  <script src="../bookmark/resources/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../bookmark/resources/vendor/jquery/jquery.min.js" charset="UTF-8"></script>
+  <script src="../bookmark/resources/vendor/bootstrap/js/bootstrap.bundle.min.js" charset="UTF-8"></script>
 
 	 <!-- jQuery library -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" charset="UTF-8"></script>
 
 	<!-- Latest compiled JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" charset="UTF-8"></script>
 	  
 
 
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" ></script>
 <script>
-$(function(){
-
-var login=$.cookie('logined');
-	$("#msgDiv").html(login);
-	});
-	
 $(function(){
 
 	var login=$.cookie('logined4admin');
