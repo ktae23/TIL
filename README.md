@@ -198,11 +198,12 @@ ___
 ___
 
 <details>
-    <summary>DataBase</summary>
+    <summary>Others</summary>
 🟢 똑똑한 챗봇 만들기<br>
 🟢 커리어 스킬<br>
 🟢 프로그래머의 길 멘토에게 묻다<br>
 </details>
+
 
 ___
 
