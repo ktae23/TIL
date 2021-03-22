@@ -244,7 +244,33 @@ public class HomeController {
 			}
 		}
 	
-	
+	// Bookmark CRUD
+		// Bookmark Create
+		@RequestMapping(value = "/bookmarkInsert",method= {RequestMethod.POST},
+				produces = "application/text; charset=utf8")
+		@ResponseBody
+		public String bookmarkInsert( HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+					HttpSession session=request.getSession(false);
+					MemberVO member = (MemberVO) session.getAttribute("member");
+					String memid=member.getId();
+
+					String title=request.getParameter("title");
+					String url=request.getParameter("url");
+					String coment=request.getParameter("coment");
+				try {
+					Long bookmark_no = bookmarkService.getBookmark_no();
+					System.out.println("홈컨트롤러 북마크 번호");
+					BookmarkVO b = new BookmarkVO(title, url, coment, memid,bookmark_no);
+					bookmarkService.bookmarkInsert(b);
+					System.out.println("홈컨트롤러 북마크 인서트");
+
+					return title+"이(가) 작성 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}
+		}
+				
 	// Bookmark Read
 	@RequestMapping(value = "/bookmarkList", method= RequestMethod.GET)
 	public ModelAndView bookmarkList( HttpServletRequest request,
