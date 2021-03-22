@@ -2,7 +2,7 @@
 
 [출처](https://backlog.com/git-tutorial/kr/stepup/stepup1_1.html)
 
-![ブランチとは](https://backlog.com/git-tutorial/kr/img/post/stepup/capture_stepup1_1_1.png)
+![ブランチとは](https://backlog.com/git-tutorial/kr/img/post/stepup/capture_stepup1_1_1.png)ㅇ
 
 - 여러 명이서 동시에 작업을 할 때에 다른 사람의 작업에 영향을 주거나 받지 않도록, 먼저 메인 브랜치에서 자신의 작업 전용 브랜치를 만듭니다. 
 - 그리고 각자 작업을 진행한 후, 작업이 끝난 사람은 메인 브랜치에 자신의 브랜치의 변경 사항을 적용합니다. 
