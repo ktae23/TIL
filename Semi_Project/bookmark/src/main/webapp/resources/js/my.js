@@ -139,10 +139,18 @@ $(document).ready(function(){
 			   
 			  },
 			  function(data, status){
-			  	opener.parent.$.removeCookie("logined");
-				opener.parent.$.removeCookie("logined4admin");
-				opener.parent.location.href='../../';	
-				window.close();					   
+			  	alert(data);
+			  	if(data == "탈퇴 완료"){
+				  	opener.parent.$.removeCookie("logined");
+					opener.parent.location.href='../../';	
+					window.close();	
+			  	}else if(data == "삭제 완료"){
+			  		opener.parent.location.reload();
+					window.close();	
+			  	}else {
+			  		location.reload();
+			  	}
+			  					   
 			  });
 	});
 });

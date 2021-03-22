@@ -46,11 +46,22 @@
             </a>
           </li>
           <li class="nav-item">
-		<c:if test="${not empty  cookie.logined4admin.value || not empty cookie.logined4admin.value}">
+		 <c:if test="${not empty  cookie.logined.value}">
+			<li class="nav-item">
+	          <a href="#" id="msgDiv" class="nav-link" ></a>
+	          </li>
 	          <li class="nav-item">
    	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
          		</li>
-          </c:if>
+		</c:if>
+		 <c:if test="${not empty cookie.logined4admin.value}">
+			<li class="nav-item">
+	          <a href="#" id="msgDiv" class="nav-link" ></a>
+	          </li>
+	          <li class="nav-item">
+   	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
+         		</li>
+		</c:if>
           <c:if test="${ empty  cookie.loginedadmin.value && empty cookie.logined4admin.value }}">
              <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>
           </c:if>
@@ -167,6 +178,13 @@
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js" ></script>
 <script>
+
+
+var login=$.cookie('logined');
+	$("#msgDiv").html(login);
+});
+	
+
 $(function(){
 
 	var login=$.cookie('logined4admin');

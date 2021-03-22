@@ -45,14 +45,22 @@
               <span class="sr-only">(current)</span>
             </a>
           </li>
-		 <c:if test="${not empty  cookie.logined.value || not empty cookie.logined4admin.value}">
+		 <c:if test="${not empty  cookie.logined.value}">
 			<li class="nav-item">
 	          <a href="#" id="msgDiv" class="nav-link" ></a>
 	          </li>
 	          <li class="nav-item">
    	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
          		</li>
-			</c:if>
+		</c:if>
+		 <c:if test="${not empty cookie.logined4admin.value}">
+			<li class="nav-item">
+	          <a href="#" id="msgDiv" class="nav-link" ></a>
+	          </li>
+	          <li class="nav-item">
+   	          <a href="#" id='logoutBtn' class="nav-link" onclick="window.open('../bookmark/resources/html/memberlogoutForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=200');">sign out</a>
+         		</li>
+		</c:if>
           <c:if test="${empty  cookie.logined.value && empty cookie.logined4admin.value }">
              <li class="nav-item">
              <a href="#" class="nav-link" onclick="window.open('../bookmark/resources/html/selectMemberByIdForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=350');">sign in</a>

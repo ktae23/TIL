@@ -29,6 +29,13 @@
 		]]>
 	</select>
 	
+	<select id="checkWriter" parameterType="Long" resultType="String" >
+		<![CDATA[
+			select memid from bookmarks where bookmark_no = #{bookmark_no}
+		]]>
+	</select>
+	
+	
 	<select id="bookmark_no" resultType="long" >
 		<![CDATA[
 			select bookmark_no_seq.nextval from dual
