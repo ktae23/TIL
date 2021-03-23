@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="../js/my.js"></script>
+
+</head>
+<body>
+	<article class="container">
+            <div class="page-header">
+                <div class="col-md-6 col-md-offset-3">
+                <h3>주문 Form</h3>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-offset-3">
+                <form role="form">
+                    
+             		<div id="itemDiv"  class="form-group text-center"></div>
+
+                    <div class="form-group text-center">                        
+                        <input type="button" id="anotherBtn" class="btn btn-info" 
+                        value="다른 상품 추가 주문하기"> 
+                        <input type="button" id="orderBtn" class="btn btn-warning"
+                        value="주문하기">
+                      	<input type="button" id="cancelBtn" class="btn btn-primary"
+                        value="장바구니 비우기"> 
+                    </div>
+                </form>
+            </div>
+
+        </article>
+</body>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+	<script>
+		var basket=$.cookie("basket");
+		//alert(basket);
+		var obj=null;
+		if(basket){ //쿠키에 장바구니가 있으면
+			obj=JSON.parse(basket);//json을 javascript 객체로 바꿔서
+			let item_html="";
+			var items="";
+			obj.product.forEach(function(item){ // 하나씩의 아이템(품목)을 꺼내서				
+				
+				item_html += '<label for="inputName"> 품목 </label>';
+				item_html += '<input size="8" type="text"  id="name" value="'+item.name+'" disabled="disabled">';				
+				item_html += '<label for="InputEmail"> 수량 </label>';
+				item_html += '<input type="number" min="1"  max="100" step="1" value="'+item.quantity+'" id="number"/>';
+				item_html += '<br>';
+				
+				items += item.name +" : "+ item.quantity +"개\n";
+			});
+			$("#itemDiv").html(item_html);
+		}
+		
+		
+	</script>
+</html>
+
+
+
