@@ -1,7 +1,5 @@
 package com.mulcam.ai.web.vo;
 
-import org.springframework.stereotype.Repository;
-
 import com.mulcam.ai.util.CafeException;
 
 
