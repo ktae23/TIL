@@ -26,11 +26,4 @@ public class SecondController {
     public String helloRestApi() {
         return "hello rest api";
     }
-
-
-    @RequestMapping("/")
-    public String home() {
-        return "안녕 Spring Boot!";
-    }
-
 }
