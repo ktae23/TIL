@@ -1,4 +1,4 @@
-## 인텔리제이(CE)에서 이클립스 스프링부트 프로젝트 임포트하는 방법(2021 -03)
+인텔리제이(CE)에서 이클립스 스프링부트 프로젝트 임포트하는 방법(2021 -03)
 
 > How to Import eclipse springboot project into intellij(CE version)
 
@@ -16,35 +16,7 @@
 
 <br/>
 
-### 3. 서버 설정하기(포트 변경)
-
-![modify_port](C:\Users\zz238\TIL\JAVA\JAVA_Study\Study\imgs\modify_port.png)
-
-![modify_port2](C:\Users\zz238\TIL\JAVA\JAVA_Study\Study\imgs\modify_port2.png)
-
-- Name에 `server.port`
-- Value에 포트 번호
-
-<br/>
-
--  사용 중인 포트 확인 및 포트 종료 방법
-
-```shell
-C:\WINDOWS\system32>netstat -a -o
-
-[~~~ 주소 ~~~~~ PID]
-
-// 로컬 포트 주소에 해당하는 pid 번호를 아래 코드에 넣어서 태스크 킬
-
-C:\WINDOWS\system32>taskkill /f /pid 4524
-성공: 프로세스(PID 4524)가 종료되었습니다.
-```
-
-- 이후 재 빌드
-
-<br/>
-
-#### 4. 기존 프로젝트에서 파일 덮어 쓰기
+### 3. 기존 프로젝트에서 파일 덮어 쓰기
 
 > 주의 : 아래 두가지 자바 파일이 있어야 스프링부트 실행 가능
 
@@ -91,6 +63,31 @@ public class Sample1Application {
 
 <br/>
 
+#### 4. 서버 설정하기(포트 변경)
+
+![applicationproperties_serverport](C:\Users\zz238\TIL\JAVA\JAVA_Study\Study\imgs\applicationproperties_serverport.png)
+
+
+
+<br/>
+
+-  사용 중인 포트 확인 및 포트 종료 방법
+
+```shell
+C:\WINDOWS\system32>netstat -a -o
+
+[~~~ 주소 ~~~~~ PID]
+
+// 로컬 포트 주소에 해당하는 pid 번호를 아래 코드에 넣어서 태스크 킬
+
+C:\WINDOWS\system32>taskkill /f /pid 4524
+성공: 프로세스(PID 4524)가 종료되었습니다.
+```
+
+- 이후 재 빌드
+
+<br/>
+
 #### Spring Security 주입 시
 
 ```java
@@ -129,5 +126,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 - pw에 스프링부트 구동 시 나오는 비밀번호 입력
 
 ![springboot_security_pw](C:\Users\zz238\TIL\JAVA\JAVA_Study\Study\imgs\springboot_security_pw.png)
+
+<br/>
+
+#### index.html 만들기
+
+- src/main/resources/static/index.html
+
+
+
+![index_html](C:\Users\zz238\TIL\JAVA\JAVA_Study\Study\imgs\index_html.png)
+
+
+
+![index](C:\Users\zz238\TIL\JAVA\JAVA_Study\Study\imgs\index.png)
 
 <br/>
