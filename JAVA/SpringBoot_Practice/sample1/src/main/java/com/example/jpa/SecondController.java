@@ -28,9 +28,5 @@ public class SecondController {
     }
 
 
-    @RequestMapping("/")
-    public String home() {
-        return "안녕 Spring Boot!";
-    }
 
 }
