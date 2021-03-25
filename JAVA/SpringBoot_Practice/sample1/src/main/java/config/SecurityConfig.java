@@ -7,13 +7,14 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter{
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	//HTTP 접속에 대한 보안 설정 메서드 오버라이드
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+    //HTTP 접속에 대한 보안 설정 메서드 오버라이드
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
 
-		// 모든 경로의 어떤 접속에 대해서도 허용 하겠다는 설정
-		http.authorizeRequests().anyRequest().permitAll();
-		}
+        // 모든 경로의 어떤 접속에 대해서도 허용 하겠다는 설정
+        http.authorizeRequests()
+                .anyRequest().permitAll();
+    }
 }
