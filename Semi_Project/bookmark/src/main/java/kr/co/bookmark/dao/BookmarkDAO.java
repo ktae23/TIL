@@ -15,4 +15,5 @@ public interface BookmarkDAO {
 	public void bookmarkUpdate(BookmarkVO bookmarkVO)throws Exception;
 	public Long getBookmark_no() throws Exception;
 	public void deleteBookmark(BookmarkVO bookmarkVO)throws Exception;
+	public String checkWriter(Long bookmark_no) throws Exception;
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.mulcam.ai.web.dao.MemberDAO">
+<!-- <resultMap type="memberVO" id="memResult">
+		<result property="id" column="memid" />
+		<result property="pw" column="pw" />
+		<result property="name" column="memname" />
+		<result property="date" column="memdate" />
+	</resultMap>
+	
+ -->
+ <!-- 컬럼명과 일치시켜서 사용할 예정이기 때문에 그대로 입력 -->
+ 
+ 	<insert id="memberInsert"   parameterType="memberVO" >
+		<![CDATA[
+			insert into member(id,pw,name) 
+			values(#{id},#{pw},#{name})
+		]]>
+	</insert>
+	
+ 	<select id="login"   resultType="String" parameterType="memberVO" >
+		<![CDATA[
+			select name from member where id=#{id} and pw=#{pw}
+		]]>
+	</select>
+ 
+</mapper>

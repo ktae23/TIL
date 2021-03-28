@@ -175,16 +175,38 @@ public class HomeController {
 			String pw=request.getParameter("pw");
 			String name=request.getParameter("name");
 			
-			try {
-				MemberVO m = new MemberVO(id, pw, name);
-				memberService.memberUpdate(m);
 			
-				return name+"님의 정보가 수정 되었습니다";
-			}catch(Exception e) {
-				return e.getMessage();
-			}	
-		}	
-		
+			HttpSession session=request.getSession(false);
+			MemberVO member = (MemberVO) session.getAttribute("member");
+			String getId = member.getId();
+			String getPw = member.getPw();
+			
+			if(getPw.equals(pw) && getId.equals(id)) {
+				try {
+					MemberVO m = new MemberVO(id, pw, name);
+					memberService.memberUpdate(m);
+				
+					return "정보가 수정 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}	
+			}else if(getId.equals("admin")){
+				try {
+					MemberVO m = new MemberVO(id, pw, name);
+					memberService.memberUpdate(m);
+				
+					return "정보가 수정 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}
+			}
+			else {
+
+				return "다른 사용자 계정을 수정 할 수 없습니다.";
+			}
+		}
+	
+	
 	// Memeber Delete
 	@RequestMapping(value = "/memberDelete", method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
@@ -194,54 +216,61 @@ public class HomeController {
 			
 			String id=request.getParameter("id");
 			String pw=request.getParameter("pw");
-
-			try {
-				MemberVO m = new MemberVO(id,pw);
-				memberService.memberDelete(m);
+			HttpSession session=request.getSession(false);
+			MemberVO member = (MemberVO) session.getAttribute("member");
+			String getId = member.getId();
+			String getPw = member.getPw();
 			
-				return id+" 계정이 삭제 되었습니다";
-			}catch(Exception e) {
-				return e.getMessage();
-			}	
-		}	
-	
-	
-	
-	
-	
-	
+			if(getPw.equals(pw) && getId.equals(id)) {
+				try {
+					MemberVO m = new MemberVO(id,pw);
+					memberService.memberDelete(m);
+				
+					return "탈퇴 완료";
+				}catch(Exception e) {
+					return e.getMessage();
+				}	
+			}else if(getId.equals("admin")){
+				try {
+					MemberVO m = new MemberVO(id,pw);
+					memberService.memberDelete(m);
+				
+					return "삭제 완료";
+				}catch(Exception e) {
+					return e.getMessage();
+				}
+			}else {
+				return "다른 사용자 계정을 탈퇴 할 수 없습니다.";
+			}
+		}
 	
 	// Bookmark CRUD
-	// Bookmark Create
-	@RequestMapping(value = "/bookmarkInsert",method= {RequestMethod.POST},
-			produces = "application/text; charset=utf8")
-	@ResponseBody
-	public String bookmarkInsert( HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-				HttpSession session=request.getSession(false);
-				MemberVO member = (MemberVO) session.getAttribute("member");
-				String memid=member.getId();
+		// Bookmark Create
+		@RequestMapping(value = "/bookmarkInsert",method= {RequestMethod.POST},
+				produces = "application/text; charset=utf8")
+		@ResponseBody
+		public String bookmarkInsert( HttpServletRequest request,
+				HttpServletResponse response) throws Exception {
+					HttpSession session=request.getSession(false);
+					MemberVO member = (MemberVO) session.getAttribute("member");
+					String memid=member.getId();
+
+					String title=request.getParameter("title");
+					String url=request.getParameter("url");
+					String coment=request.getParameter("coment");
+				try {
+					Long bookmark_no = bookmarkService.getBookmark_no();
+					System.out.println("홈컨트롤러 북마크 번호");
+					BookmarkVO b = new BookmarkVO(title, url, coment, memid,bookmark_no);
+					bookmarkService.bookmarkInsert(b);
+					System.out.println("홈컨트롤러 북마크 인서트");
+
+					return title+"이(가) 작성 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}
+		}
 				
-				String title=request.getParameter("title");
-				String url=request.getParameter("url");
-				String coment=request.getParameter("coment");
-				
-			
-			try {
-				Long bookmark_no = bookmarkService.getBookmark_no();
-				System.out.println("홈컨트롤러 북마크 번호");
-				BookmarkVO b = new BookmarkVO(title, url, coment, memid,bookmark_no);
-				bookmarkService.bookmarkInsert(b);
-				System.out.println("홈컨트롤러 북마크 인서트");
-			
-				return title+"이(가) 작성 되었습니다";
-			}catch(Exception e) {
-				return e.getMessage();
-			}	
-				
-	}	
-	
-	
 	// Bookmark Read
 	@RequestMapping(value = "/bookmarkList", method= RequestMethod.GET)
 	public ModelAndView bookmarkList( HttpServletRequest request,
@@ -273,17 +302,27 @@ public class HomeController {
 
 			HttpSession session=request.getSession(false);
 			MemberVO member = (MemberVO) session.getAttribute("member");
-			String pw=member.getPw();
+			String getId=member.getId();
+			String getPw=member.getPw();
 			
 			
 			Long bookmark_no = Long.parseLong(request.getParameter("bookmark_no"));
 			String title=request.getParameter("title");
 			String url=request.getParameter("url");
 			String coment=request.getParameter("coment");
-			String getPw=request.getParameter("pw");
+			String pw=request.getParameter("pw");
 			
-			
-			if(getPw.equals(pw)) {
+			String id = bookmarkService.checkWriter(bookmark_no);
+			if(getPw.equals(pw) && getId.equals(id)) {
+				try {
+					BookmarkVO b = new BookmarkVO(title, url, coment, bookmark_no);
+					bookmarkService.bookmarkUpdate(b);
+				
+					return bookmark_no+"번 글이 수정 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}	
+			}else if(getId.equals("admin")){
 				try {
 					BookmarkVO b = new BookmarkVO(title, url, coment, bookmark_no);
 					bookmarkService.bookmarkUpdate(b);
@@ -309,12 +348,24 @@ public class HomeController {
 			HttpSession session=request.getSession(false);
 			MemberVO member = (MemberVO) session.getAttribute("member");
 			
-			String getPw=member.getPw();
+			String getPw = member.getPw();
+			String getId = member.getId();
 			String pw=request.getParameter("pw");
+			
 			Long bookmark_no = Long.parseLong(request.getParameter("bookmark_no"));
+			String id = bookmarkService.checkWriter(bookmark_no);
 			System.out.println("북마크 삭제" + bookmark_no);
 			
-			if(getPw.equals(pw)) {
+			if(getPw.equals(pw) && getId.equals(id)) {
+				try {
+					BookmarkVO b = new BookmarkVO(bookmark_no);
+					bookmarkService.bookmarkDelete(b);
+				
+					return bookmark_no+"번 글이 삭제 되었습니다";
+				}catch(Exception e) {
+					return e.getMessage();
+				}	
+			}else if(getId.equals("admin")){
 				try {
 					BookmarkVO b = new BookmarkVO(bookmark_no);
 					bookmarkService.bookmarkDelete(b);
@@ -324,7 +375,7 @@ public class HomeController {
 					return e.getMessage();
 				}	
 			}else {
-				return "비밀번호가 다릅니다";
+				return "작성자가 아닙니다";
 			}
 			
 	}	

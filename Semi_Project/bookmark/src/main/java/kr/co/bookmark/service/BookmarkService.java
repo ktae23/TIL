@@ -14,4 +14,5 @@ public interface BookmarkService {
 	public void bookmarkUpdate(BookmarkVO bookmarkVO)throws Exception;
 	public Long getBookmark_no()throws Exception;
 	public void bookmarkDelete(BookmarkVO bookmarkVO)throws Exception;
+	public String checkWriter(Long bookmark_no) throws Exception;
 }

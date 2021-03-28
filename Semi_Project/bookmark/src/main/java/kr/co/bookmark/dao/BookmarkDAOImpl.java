@@ -29,6 +29,13 @@ public class BookmarkDAOImpl implements BookmarkDAO{
 		return sqlSession.selectList("mapper.bookmark.selectAllBookmarkList");
 
 	}
+	
+	
+	@Override
+	public String checkWriter(Long bookmark_no) throws Exception {
+		System.out.println("북마크 DAO 작성자 체크 호출");
+		return sqlSession.selectOne("mapper.bookmark.checkWriter", bookmark_no);		
+	}
 
 
 	@Override
