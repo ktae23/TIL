@@ -14,7 +14,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
 
         // 모든 경로의 어떤 접속에 대해서도 허용 하겠다는 설정
-        http.authorizeRequests()
-                .anyRequest().permitAll();
+        http.authorizeRequests().anyRequest().permitAll();
     }
 }
