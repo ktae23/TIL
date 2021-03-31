@@ -5,43 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d5e64228-a6f9-406b-93ff-7fc14817f2ae" name="Default Changelist" comment="build.gradle">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jpa/FirstController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jpa/SecondController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jpa/hello/Controller.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jpa/hello/FirstController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/jpa/hello/SecondController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/config/SecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/notice/ApiNoticeConroller.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/sample1/Sample1Application.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/sample1/ServletInitializer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/static/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/example/jpa/sample1/Sample1ApplicationTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../STS4_practice/SpringBoot_MyBatis_Cafe2/newfile.ucd" beforeDir="false" afterPath="$PROJECT_DIR$/../../STS4_practice/SpringBoot_MyBatis_Cafe2/newfile.ucd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Q6-10 문제만.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/settings.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/src/main/java/com/example/jpa/SampleApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/src/main/java/com/example/jpa/config/SecurityCofig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/src/main/java/com/example/jpa/hello/FirstController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/src/main/java/com/example/jpa/hello/SecondController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/src/main/resources/application.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample-6-10/src/test/java/com/example/jpa/SampleApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/jpa/FirstController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/jpa/FirstController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/notice/ApiNoticeConroller.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/notice/ApiNoticeController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,8 +49,14 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="reference.projectsettings.compiler.javacompiler" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/resources/templates" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\zz238\TIL\JAVA\SpringBoot_Practice\sample1\src\main\resources\templates" />
+      <recent name="C:\Users\zz238\TIL\JAVA\SpringBoot_Practice\sample1\src\main\resources\static" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="Sample1Application" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">

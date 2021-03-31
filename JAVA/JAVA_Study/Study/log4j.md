@@ -2,37 +2,6 @@
 
 - 애플리케이션에서는 웹 사이트에 접속한 사용자 정보나 각 클래스의 메서드 호출 시각 등 여러가지 정보를 파일로 저장해서 관리 함
 - 로그 관련 기능을 제공하는 것이 log4j로 독립적으로 라이브러리를 설치해서 사용 할 수 있고 메이븐과 같은 빌드 툴에서는 자동으로 설치 됨
-- 기능 관련 설정은 log4j.xml 파일에서 수행
-  - 한번이라도 열면 에러 표시 남
-    - 이클립스 버그
-- 콘솔에 검은 글씨로 나오는 것이 스프링에서 찍어주는 로그
-
-<br/>
-
-##### 기존 1~3라인 코드
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
-```
-
-<br/>
-
-##### 수정 1~3라인 코드
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
-```
-
-<br/>
-
-- local DTD를 URL로 변경해줌
-- 수정 이후 에러 나오지 않음
 
 <br/>
 
