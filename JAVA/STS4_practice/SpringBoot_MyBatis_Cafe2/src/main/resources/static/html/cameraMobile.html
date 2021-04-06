@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+
+
+	$(document).ready(function(){
+		$(function(){
+            $('#camera').change(function(e){
+                $('#pic').attr('src', URL.createObjectURL(e.target.files[0]));
+            });
+        });
+		
+		
+		$("#uploadBtn").click(function(){
+			$("#msg").html("click");
+			let formData = new FormData();
+			formData.append('file', $("#camera")[0].files[0]);
+			
+			$.ajax({
+				type : 'post',
+				url : '../upload',
+				cache : false,
+				data : formData,
+				processData : false,
+				contentType : false,
+				success : function(data) {
+					$("#msg").html('Uploaded !!');
+				}
+			});
+		});
+
+
+	});
+
+		
+
+
+</script>
+
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+ 
+ 
+    <style>
+        .btn-file{
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-file input[type=file] {
+            position: absolute;
+            top: 0;
+                right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: inherit;
+            display: block;
+        }
+    </style>
+
+
+</head>
+<body>
+	<center>
+		<br><br><br>
+		<div style="width:75%;"">먼저 아래의 카메라 켜기 버튼을 눌러 카메라 앱을 실행시키시고 사진을 찍은 뒤 아래의 전송 버튼을 누르세요</div>
+		
+		<br><br>
+		
+		<label class="btn btn-danger btn-file">
+		 카메라 켜기 <input type="file" id="camera" capture="camera" accept="image/*" style="display: none;" />
+		</label>
+		
+        <br/><br/>
+        <img id="pic" style="width:320px;height:240px;border:solid 1px black" />
+		<br/><br/>
+		<input type="button" value="전송" id="uploadBtn">
+		<br/><br/>
+		<div id="msg"></div>
+	</center>
+	
+
+	
+	
+</body>
+</html>

@@ -2,14 +2,11 @@ package com.mulcam.ai.web.vo;
 
 import com.mulcam.ai.util.CafeException;
 
-
 public class MemberVO {
-
+	
 	private String id,pw,name;
 	
-
 	public MemberVO(String id, String pw, String name) throws CafeException {
-		
 		this(id,pw);
 		setName(name);
 	}
@@ -22,7 +19,6 @@ public class MemberVO {
 
 	public MemberVO() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public String getId() {
@@ -33,7 +29,7 @@ public class MemberVO {
 		if(id!=null) {
 			this.id = id;
 		}else {
-			throw new CafeException("id가 입력되지 않았습니다");
+			throw new CafeException("id가 입력되지 않았습니다.");
 		}
 	}
 
@@ -45,7 +41,7 @@ public class MemberVO {
 		if(pw!=null) {
 			this.pw = pw;
 		}else {
-			throw new CafeException("pw가 입력되지 않았습니다");
+			throw new CafeException("pw가 입력되지 않았습니다.");
 		}
 	}
 
@@ -57,7 +53,7 @@ public class MemberVO {
 		if(name!=null) {
 			this.name = name;
 		}else {
-			throw new CafeException("name가 입력되지 않았습니다");
+			throw new CafeException("name이 입력되지 않았습니다.");
 		}
 	}
 

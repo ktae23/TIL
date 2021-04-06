@@ -17,63 +17,10 @@ import com.mulcam.ai.web.vo.MemberVO;
 @Controller
 public class MemberController {
 	
-	@Autowired 
+	@Autowired
 	MemberService memberService;
-
 	
-	@RequestMapping(value = "memberInsert", 
-			method= {RequestMethod.POST},
-			produces = "application/text; charset=utf8")
-	@ResponseBody
-	public String memberInsert(HttpServletRequest request,
-			HttpServletResponse response)throws Exception{
-		String id=request.getParameter("id");
-		String pw=request.getParameter("pw");
-		String name=request.getParameter("name");
-		System.out.println("memberInsert:"+id+"\t"+pw+"\t"+name);
-
-		try {
-			MemberVO m=new MemberVO(id,pw,name); 
-			memberService.memberInsert(m);
-			return name+"님 회원가입 되셨습니다";
-		}catch(Exception e) {
-			return e.getMessage();
-		}		
-	}
-	
-	
-	@RequestMapping(value = "login", 
-			method= {RequestMethod.POST},
-			produces = "application/text; charset=utf8")			
-	@ResponseBody
-	public String login(HttpServletRequest request,
-			HttpServletResponse response){
-		String id=request.getParameter("id");
-		String pw=request.getParameter("pw");		
-		JSONObject json=new JSONObject();
-
-		try {
-			MemberVO m=new MemberVO(id,pw); 
-			String name=memberService.login(m);
-			if(name!=null) {
-				HttpSession session=request.getSession();
-				session.setAttribute("member", m);
-				json.put("name", name);
-			}else {
-				json.put("msg", "로그인 실패");
-
-			}
-		}catch(Exception e) {
-			json.put("msg", e.getMessage());
-
-		}
-		return json.toJSONString();
-
-	}
-	 
-	
-	
-	@RequestMapping(value = "logout", 
+	@RequestMapping(value = "logout.chr", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")			
 	@ResponseBody
@@ -83,9 +30,56 @@ public class MemberController {
 			HttpSession session=request.getSession(false);
 			session.invalidate();
 			return "";
+	}
+	
+	@RequestMapping(value = "login.chr", 
+			method= {RequestMethod.POST},
+			produces = "application/text; charset=utf8")			
+	@ResponseBody
+	public String login(HttpServletRequest request,
+			HttpServletResponse response){
+		String id=request.getParameter("id");
+		String pw=request.getParameter("pw");	
 		
+		JSONObject json=new JSONObject();
+		
+		try {
+			MemberVO m=new MemberVO(id,pw); 
+			String name=memberService.login(m);
+			if(name!=null) {
+				HttpSession session=request.getSession();
+				session.setAttribute("member", m);
+				json.put("name", name); // {"name":"최혜린"}
+			}else {
+				json.put("msg", "로그인 실패"); // {"msg":"로그인 실패"}
+			}
+		}catch(Exception e) {
+			json.put("msg", e.getMessage()); // {"msg":"SQLException"}
+		}
+		return json.toJSONString();
 	}
 
-
+	
+	@RequestMapping(value = "memberInsert.chr", 
+			method= {RequestMethod.POST},
+			produces = "application/text; charset=utf8")
+			
+	@ResponseBody
+	public String memberInsert(HttpServletRequest request,
+			HttpServletResponse response)throws Exception{
+		String id=request.getParameter("id");
+		String pw=request.getParameter("pw");
+		String name=request.getParameter("name");
+		System.out.println("memberInsert:"+id+"\t"+pw+"\t"+name);
+	
+		try {
+			MemberVO m=new MemberVO(id,pw,name); 
+			memberService.memberInsert(m);
+			return name+"님 회원가입 되셨습니다.";
+		}catch(Exception e) {
+			return e.getMessage();
+		}
+		
+	}
 	
 }

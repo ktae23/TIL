@@ -7,9 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.mulcam.ai.web.vo.OrderVO;
 
-@Repository
-@Mapper
+//@Mapper
+//@Repository
 public interface OrderDAO {
-
-	public long insert(ArrayList<OrderVO> list);
+	
+	//public void insert(ArrayList<OrderVO> list);
+	
 }

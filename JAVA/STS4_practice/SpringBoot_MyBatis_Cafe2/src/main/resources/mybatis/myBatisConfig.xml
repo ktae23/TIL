@@ -5,10 +5,9 @@
 
 <configuration>
 
-
 	<mappers>
-		<mapper resource="mybatis/mapper/member.xml"/>
-		<mapper resource="mybatis/mapper/order.xml"/>
+		<mapper resource="mybatis/mappers/member.xml"/>
+		<mapper resource="mybatis/mappers/order.xml"/>
 	</mappers>	
 
 </configuration>

@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
@@ -10,15 +9,36 @@
 
   <title>Shop Homepage - Start Bootstrap Template</title>
 
-  <!-- Bootstrap core CSS -->
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap core CSS -->
+	<link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Custom styles for this template -->
-  <link href="css/shop-homepage.css" rel="stylesheet">
+	<!-- Custom styles for this template -->
+	<link href="css/shop-homepage.css" rel="stylesheet">
 
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript" src="js/my.js"></script>
 </head>
 
 <body>
+	<!-- 카카오 지도 영역
+	<div id="map" style="width:500px;height:400px;"></div>
+	
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=1463a13ae73adb6c48248d946a7a4646"></script>
+	
+	<script>
+		var container = document.getElementById('map');
+		var options = {
+			center: new kakao.maps.LatLng(33.450701, 126.570667),
+			level: 3
+		};
+
+		var map = new kakao.maps.Map(container, options);
+	</script> -->
 
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
@@ -30,7 +50,6 @@
       		<input type="button" id="loginBtn" value="login">
       	</div>
       </div>
-
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -42,13 +61,19 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">About</a>
+            <a class="nav-link" href="#" onclick="window.open('html/fileUpload.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=750,height=400');">파일 전송</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Services</a>
+            <a class="nav-link" href="#" onclick="window.open('html/cameraMobile.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=750,height=400');">모바일캠</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" onclick="window.open('html/memberInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=500');">회원가입</a>
+            <a class="nav-link" href="#" onclick="window.open('html/camera.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=750,height=400');">웹캠</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="window.open('html/event.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=750,height=400');">이벤트 지점 찾기</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" onclick="window.open('html/memberInsertForm.html', '_blank', 'toolbar=yes,scrollbars=yes,resizable=yes,top=50,left=500,width=400,height=750');">회원가입</a>
           </li>
         </ul>
       </div>
@@ -108,9 +133,9 @@
               <a href="#"><img class="card-img-top" src="img/americano.png" alt=""></a>
               <div class="card-body">
                 <h4 class="card-title">
-                  <a href="#" class="orderForm" name = "아메리카노">아메리카노</a>
+                  <a href="#" class="orderForm" name="아메리카노">아메리카노</a>
                 </h4>
-                <h5>1,500원</h5>
+                <h5>2500원</h5>
                 <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur!</p>
               </div>
               <div class="card-footer">
@@ -124,10 +149,26 @@
               <a href="#"><img class="card-img-top" src="img/cafelatte.png" alt=""></a>
               <div class="card-body">
                 <h4 class="card-title">
-                   <a href="#" class="orderForm" name="카페라떼">카페라떼</a>
+                  <a href="#" class="orderForm" name="카페라떼">카페라떼</a>
                 </h4>
-                <h5>2,500원</h5>
+                <h5>3000원</h5>
                 <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur! Lorem ipsum dolor sit amet.</p>
+              </div>
+              <div class="card-footer">
+                <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+              <a href="#"><img class="card-img-top" src="img/cafemocha.png" alt=""></a>
+              <div class="card-body">
+                <h4 class="card-title">
+                  <a href="#" class="orderForm" name="카페모카">카페모카</a>
+                </h4>
+                <h5>3500원</h5>
+                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur!</p>
               </div>
               <div class="card-footer">
                 <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
@@ -140,9 +181,9 @@
               <a href="#"><img class="card-img-top" src="img/cappuccino.png" alt=""></a>
               <div class="card-body">
                 <h4 class="card-title">
-                   <a href="#" class="orderForm" name="카푸치노">카푸치노</a>
+                  <a href="#" class="orderForm" name="카푸치노">카푸치노</a>
                 </h4>
-                <h5>2,800원</h5>
+                <h5>3800원</h5>
                 <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur!</p>
               </div>
               <div class="card-footer">
@@ -153,23 +194,7 @@
 
           <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100">
-              <a href="#"><img class="card-img-top" src="img/CuatroCheesePizza.jpg" alt=""></a>
-              <div class="card-body">
-                <h4 class="card-title">
-                  <a href="#">Item Four</a>
-                </h4>
-                <h5>$24.99</h5>
-                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam aspernatur!</p>
-              </div>
-              <div class="card-footer">
-                <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card h-100">
-              <a href="#"><img class="card-img-top" src="img/dutchcoffee.png" alt=""></a>
+              <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
               <div class="card-body">
                 <h4 class="card-title">
                   <a href="#">Item Five</a>
@@ -185,7 +210,7 @@
 
           <div class="col-lg-4 col-md-6 mb-4">
             <div class="card h-100">
-              <a href="#"><img class="card-img-top" src="img/englishmuffin.png" alt=""></a>
+              <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
               <div class="card-body">
                 <h4 class="card-title">
                   <a href="#">Item Six</a>
@@ -219,26 +244,18 @@
     <!-- /.container -->
   </footer>
 
-</body>
-  <!-- jQuery library -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-<!-- Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  
-  <script type="text/javascript" src="js/my.js"></script>
-
   <!-- Bootstrap core JavaScript -->
   <script src="vendor/jquery/jquery.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 
-<script>
-$(function(){
+</body>
 
-var login=$.cookie('logined');
-$("#msgDiv").html(login);
-});
-</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+	<script>
+		$(function(){
+			var login=$.cookie('logined');
+			$("#msgDiv").html(login);
+		});
+	</script>
 
 </html>
