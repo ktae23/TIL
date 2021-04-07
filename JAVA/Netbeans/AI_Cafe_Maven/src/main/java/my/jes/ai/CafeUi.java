@@ -5,13 +5,22 @@
  */
 package my.jes.ai;
 
+import java.awt.Dimension;
 import java.awt.Label;
+import java.awt.Point;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -19,6 +28,7 @@ import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import my.jes.ai.engine.STT;
+import my.jes.ai.engine.TTS;
 import my.jes.ai.engine.VoiceOrders;
 
 /**
@@ -26,16 +36,51 @@ import my.jes.ai.engine.VoiceOrders;
  * @author javan_000
  */
 public class CafeUi extends javax.swing.JFrame {
-
+    JFXPanel fxPanel;
     /**
      * Creates new form CafeUi
      */
     public CafeUi() {
         initComponents();
         setUi();
+        System.out.println("생성자");
         startAI();
+        initFX();
+        
+    }
+    
+    private void initFX() {
+           JFrame frame = new JFrame("FX");
+           //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+           frame.getContentPane().setLayout(null);
+           final JButton jButton = new JButton("취소");
+           fxPanel = new JFXPanel();
+           frame.add(jButton);
+           frame.add(fxPanel);
+           //frame.setVisible(true);.
+           jButton.setSize(new Dimension(200, 27));
+           fxPanel.setSize(new Dimension(300, 300));
+           fxPanel.setLocation(new Point(0, 27));
+           frame.getContentPane().setPreferredSize(new Dimension(300, 327));
+           frame.pack();
+           frame.setResizable(false);
+   }
+
+     private void initAndLoadWebView(final JFXPanel fxPanel) {
+	Group group = new Group();
+	Scene scene = new Scene(group);
+	fxPanel.setScene(scene);
+	WebView webView = new WebView();
+	group.getChildren().add(webView);
+	webView.setMinSize(300, 300);
+	webView.setMaxSize(300, 300);
+	WebEngine webEngine = webView.getEngine();
+
+	webEngine.load("file:///C:/Users/zz238/TIL/JAVA/Netbeans/AI_Cafe_Maven/index.html");
+
     }
 
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -769,20 +814,24 @@ Hashtable<String,Integer> basket=new Hashtable();
 
         @Override
         public String doInBackground() {   
-            String stt=STT.process();
-            System.out.println("==="+stt);             
-            VoiceOrders.process(stt);            
+            String stt=STT.process();      
+            String chatbotMsg=VoiceOrders.process(stt);
+            TTS.process(chatbotMsg);            
             return "";
-        }
+
 
         
 
         @Override
         protected void done() {
             jLabel8.setIcon(new ImageIcon("img\\mic.png"));
+            Platform.runLater(new Runnable() {
+                public void run() {
+                        initAndLoadWebView(fxPanel);
+                }
+            });       
         }
-        
-        
+  
         
     }
  

@@ -12,6 +12,20 @@
     </properties>
     
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-web</artifactId>
+    <version>17-ea+6</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
+<dependency>
+    <groupId>org.openjfx</groupId>
+    <artifactId>javafx-swing</artifactId>
+    <version>17-ea+6</version>
+</dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>

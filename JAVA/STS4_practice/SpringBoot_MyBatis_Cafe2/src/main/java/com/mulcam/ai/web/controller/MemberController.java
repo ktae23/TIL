@@ -20,7 +20,7 @@ public class MemberController {
 	@Autowired
 	MemberService memberService;
 	
-	@RequestMapping(value = "logout.chr", 
+	@RequestMapping(value = "logout", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")			
 	@ResponseBody
@@ -32,7 +32,7 @@ public class MemberController {
 			return "";
 	}
 	
-	@RequestMapping(value = "login.chr", 
+	@RequestMapping(value = "login", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")			
 	@ResponseBody
@@ -60,7 +60,7 @@ public class MemberController {
 	}
 
 	
-	@RequestMapping(value = "memberInsert.chr", 
+	@RequestMapping(value = "memberInsert", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
 			

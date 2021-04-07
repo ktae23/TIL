@@ -30,7 +30,7 @@ import org.json.JSONObject;
  */
 public class VoiceOrders {
 
-     public static void process(String voiceMessage) {
+     public static String process(String voiceMessage) {
 
         String chatbotMessage = "";
 
@@ -77,11 +77,19 @@ public class VoiceOrders {
             } else {  // Error occurred
                 chatbotMessage = con.getResponseMessage();
             }
-            System.out.println("하이");
-
-            System.out.println(chatbotMessage);
+            //System.out.println(chatbotMessage);//JSON
+            //JSON parsing
+            
+            JSONObject o=new JSONObject(chatbotMessage);
+            JSONArray bubbles = o.getJSONArray("bubbles");
+            JSONObject bubbles0 = bubbles.getJSONObject(0);
+            JSONObject data = bubbles0.getJSONObject("data");
+            String description =(String)data.get("description");
+            System.out.println("챗봇---->"+description);
+            return description;
         } catch (Exception e) {
             System.out.println(e);
+            return "죄송합니다. 다시 말씀해 주세요";
         }
 
         

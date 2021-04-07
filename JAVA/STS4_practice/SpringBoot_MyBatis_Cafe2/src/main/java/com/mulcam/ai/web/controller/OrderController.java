@@ -27,7 +27,7 @@ public class OrderController {
 	OrderService orderService;
 	
 	///////////// 주문 처리 //////////////////
-	@RequestMapping(value = "order.chr", 
+	@RequestMapping(value = "order", 
 			method= {RequestMethod.POST},
 			produces = "application/text; charset=utf8")
 	
@@ -76,7 +76,7 @@ public class OrderController {
 		return json.toJSONString();		
 	}
 	///////////// 출고 처리 //////////////////
-	@RequestMapping(value = "output.chr", method = { RequestMethod.GET }, produces = "application/text; charset=utf8")
+	@RequestMapping(value = "output", method = { RequestMethod.GET }, produces = "application/text; charset=utf8")
 	@ResponseBody
 	public String output(HttpServletRequest request, HttpServletResponse response) {
 	JSONObject json = null;
