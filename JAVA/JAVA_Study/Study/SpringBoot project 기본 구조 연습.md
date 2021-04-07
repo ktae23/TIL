@@ -273,3 +273,13 @@ public class MemberDTO{
 ![DB](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.04.07/memberList.png)
 
 ![결과 화면](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.04.07/memberList.png)
+
+
+
+[타임리프 참조 블로그](https://sidepower.tistory.com/145)
+
+[롬복 설치 참조 블로그](https://duzi077.tistory.com/142)
+
+* 롬복 반디집 등 압축 풀기로만 나올 경우
+
+![롬복_jar 풀기](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.04.07/Lombok_jar.png)
