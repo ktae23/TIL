@@ -1,5 +1,9 @@
 ## SpringBoot project 기본 구조 연습
 
+![프로젝트구조](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.04.07/springboot_project.png)
+
+
+
 #### application.properties
 
 ```properties
@@ -266,3 +270,6 @@ public class MemberDTO{
 </html>
 ```
 
+![DB](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.04.07/memberList.png)
+
+![결과 화면](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.04.07/memberList.png)
