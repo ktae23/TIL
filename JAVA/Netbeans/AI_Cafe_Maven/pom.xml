@@ -7,12 +7,13 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>15</maven.compiler.source>
-        <maven.compiler.target>15</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
     
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
+
+<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
 <dependency>
     <groupId>org.openjfx</groupId>
     <artifactId>javafx-web</artifactId>
@@ -26,6 +27,11 @@
     <version>17-ea+6</version>
 </dependency>
 
+
+
+
+
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -36,6 +42,7 @@
 		<artifactId>android-util</artifactId>
 		<version>2.7.1</version>
 	</dependency>
+
 
         
     </dependencies>

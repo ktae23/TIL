@@ -4,6 +4,9 @@
  * and open the template in the editor.
  */
 package my.jes.ai.engine;
+
+
+import com.mulcam.ai.web.vo.ProductVO;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,11 +22,18 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
+import my.jes.ai.CafeUi;
 import org.json.JSONObject;
 
 public class STT {
 
-	public static String process() {
+    CafeUi cafeUi;
+    
+    public STT(CafeUi cafeUi) {
+        this.cafeUi=cafeUi;
+    }
+
+	public  String process() {
 		try {
 			AudioFormat format=new AudioFormat(16000,8,2,true,true);
 			DataLine.Info info=new DataLine.Info(TargetDataLine.class, format);
@@ -56,7 +66,9 @@ public class STT {
 			
 			
 			////////////////////////////
-	
+			
+			//String clientId = "4fl0k53shk";             // Application Client ID";
+	        //String clientSecret = "tFSMyBfocPoGkM1vagG6rBuX1KEiS6ss3vGREN5b";     // Application Client Secret";
 			String clientId ="qtjt23f1yd";
 			String clientSecret = "GWaTQHkkQmY4ibbiB2hiKvgZAJm39FadacZ1L7sI";
 	        try {
@@ -100,24 +112,27 @@ public class STT {
 	                    response.append(inputLine);
 	                }
 	                br.close();
-                               
-                        String msg=response.toString();//JSON
-                        JSONObject o=new JSONObject(msg);
+	                JSONObject o=new JSONObject(response.toString());
                         String stt=o.getString("text");
-                        System.out.println("사용자:"+stt);//사용자:커피주문
+                        System.out.println("사용자:"+stt);
+                        if(stt.contains("네") || stt.contains("예")){
+                            VoiceOrders.flag=true;
+                            ProductVO p=VoiceOrders.productList.get(0);
+                            cafeUi.basket(p.getProduct_name(),p.getQuantity());
+                        }
                         return stt;
 	            } else {
-	                System.out.println("error !!!");
-                        return null;
+	                System.out.println("음성인식 에러 !!!");
+                        return "죄송합니다. 다시 말씀해주시겠어요?";
 	            }
 	        } catch (Exception e) {
 	            System.out.println(e);
 	        }
             }catch(Exception e) {
-                    e.printStackTrace();
+                System.out.println(e);
+                    //e.printStackTrace();
             }
                 return null;
 	}
 
 }
-

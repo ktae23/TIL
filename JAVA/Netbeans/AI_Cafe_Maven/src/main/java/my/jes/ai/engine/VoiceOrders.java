@@ -16,8 +16,9 @@ import java.util.Date;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import android.util.Base64;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import com.mulcam.ai.web.vo.ProductVO;
+import java.util.ArrayList;
+
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,21 +30,23 @@ import org.json.JSONObject;
  * @author javanism
  */
 public class VoiceOrders {
+    public static ArrayList<ProductVO> productList=new ArrayList<ProductVO>();
+    public static boolean flag;
 
      public static String process(String voiceMessage) {
 
         String chatbotMessage = "";
 
         try {
-            String apiURL = "https://d824e41f1cec46459f62bfec071f9dc3.apigw.ntruss.com/custom/v1/4322/d314e1faad28dcc238a72d65f795f511655c560173418eaab741927bacaf496e";
+            String apiURL = "https://854974ea07194c61ba70fdb1b3859611.apigw.ntruss.com/custom/v1/4325/1cbcb3f23d28a923b593568e6d5e79dcc52babe8684755ed53b13360db148a00";
 
             URL url = new URL(apiURL);
 
            // String voiceMessage="문 열어요?";
             String message = getReqMessage(voiceMessage);
-            System.out.println("##" + message);
+            //System.out.println("##" + message);
 
-            String secretKey="QVJJVUdTTVZWT3hiRUxLb1RFY1hLYXZlbW5IQk1ucU4=";
+            String secretKey="SVJUQnJxY3FFUUNGbVB2cFFnWVhkcEhxUWd0WnZNY0w=";
             String encodeBase64String = makeSignature(message, secretKey);
 
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -62,7 +65,7 @@ public class VoiceOrders {
             BufferedReader br;
 
             if(responseCode==200) { // Normal call
-                System.out.println(con.getResponseMessage());
+                //System.out.println(con.getResponseMessage());
 
                 BufferedReader in = new BufferedReader(
                         new InputStreamReader(
@@ -76,24 +79,73 @@ public class VoiceOrders {
 
             } else {  // Error occurred
                 chatbotMessage = con.getResponseMessage();
-            }
-            //System.out.println(chatbotMessage);//JSON
-            //JSON parsing
-            
+            }         
+
+            System.out.println(chatbotMessage);
+            /*
+            {"version":"v2",
+            "userId":"U47b00b58c90f8e47428af8b7bddc1231heo2jes",
+            "timestamp":1617767683948,
+            "bubbles":[{
+                        "type":"text",
+                        "data":{"description":"아이스 아메리카노 그란데 한잔을(를) 주문하시겠습니까?"},
+                        "slot":[{"name":"커피종류","value":"아메리카노"},
+                                {"name":"커피온도","value":"아이스"},
+                                {"name":"커피사이즈","value":"그란데"},
+                                {"name":"커피수량","value":"한잔"}
+                                ],
+                        "context":[]
+                        }],
+            "scenario":{"name":"커피주문","intent":["주문"]},
+            "entities":[{"word":"한잔","name":"커피수량"}],
+            "keywords":[],
+            "event":"send"}
+            */
             JSONObject o=new JSONObject(chatbotMessage);
-            JSONArray bubbles = o.getJSONArray("bubbles");
-            JSONObject bubbles0 = bubbles.getJSONObject(0);
-            JSONObject data = bubbles0.getJSONObject("data");
-            String description =(String)data.get("description");
-            System.out.println("챗봇---->"+description);
+            JSONArray bubbles=o.getJSONArray("bubbles");
+            JSONObject bubbles0=bubbles.getJSONObject(0);
+            JSONObject data=bubbles0.getJSONObject("data");
+            String description=(String) data.get("description");
+            System.out.println("--->"+description);
+            
+            if(description.contains("주문하시겠습니까")){
+                JSONArray slot=bubbles0.getJSONArray("slot");
+                ProductVO p=new ProductVO();
+                slot.forEach((item)->{
+                    System.out.print("item:"+item+"\t"+p+"\n");
+                    JSONObject jo=(JSONObject)item;
+                    String name=jo.getString("name");
+                    if(name.contains("커피종류")){
+                        p.setProduct_name(jo.getString("value"));
+                    }else if(name.contains("커피온도")){
+                        p.setProduct_name(jo.getString("value")+" "+p.getProduct_name());
+                    }else if(name.contains("커피수량")){
+                        String quantity_str=jo.getString("value");
+                        int quantity=0;
+                        if(quantity_str.contains("한")){
+                            quantity=1;
+                        }else if(quantity_str.contains("두")){
+                            quantity=2;
+                        }else if(quantity_str.contains("세")){
+                            quantity=3;
+                        }else if(quantity_str.contains("네")){
+                            quantity=4;
+                        }else if(quantity_str.contains("다섯")){
+                            quantity=5;
+                        }else{
+                            System.out.println("커피수량 입력 오류");
+                        }
+                        p.setQuantity(quantity);                        
+                    }
+                });//end foreach
+                productList.add(p);
+            }
             return description;
         } catch (Exception e) {
             System.out.println(e);
-            return "죄송합니다. 다시 말씀해 주세요";
-        }
-
+            return "죄송합니다. 다시 말씀해주세요";
+        }       
         
-        //return chatbotMessage;
     }
 
     public static String makeSignature(String message, String secretKey) {
@@ -130,7 +182,7 @@ public class VoiceOrders {
 
             long timestamp = new Date().getTime();
 
-            System.out.println("##"+timestamp);
+            //System.out.println("##"+timestamp);
 
             obj.put("version", "v2");
             obj.put("userId", "U47b00b58c90f8e47428af8b7bddc1231heo2jes");
