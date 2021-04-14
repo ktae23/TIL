@@ -66,6 +66,20 @@
 		    <artifactId>spring-boot-devtools</artifactId>
 		    <version>2.4.4</version>
 		</dependency>
+		    <dependency>
+	        <groupId>org.apache.tomcat.embed</groupId>
+	        <artifactId>tomcat-embed-jasper</artifactId>
+	        <scope>provided</scope>
+	    </dependency>
+	    <dependency>
+	        <groupId>jstl</groupId>
+	        <artifactId>jstl</artifactId>
+	        <version>1.2</version>
+	    </dependency>
+		
+		
+		
+		
 		
 	</dependencies>
 
