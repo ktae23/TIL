@@ -236,8 +236,10 @@ public class Ui extends javax.swing.JFrame {
             String status = comboBox.getSelectedItem().toString();
             if(status.equals("완료")){
                 try {
-                    System.out.println("QR생성");
-                    URL url = new URL("http://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://192.168.0.30:8090/output.chr?order_group_no="+order_group_no);
+                    Properties prop = new Properties();
+                    prop.load(new FileReader("config.properties"));
+                    String ip=(String) prop.get("server.ip");
+                    URL url = new URL("http://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://" + ip +":8090//output.chr?order_group_no="+order_group_no);
                      HttpURLConnection con = (HttpURLConnection) url.openConnection();
                      con.setRequestMethod("GET");
                      
