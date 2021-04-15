@@ -1,0 +1,5 @@
+package com.mulcam.ai.web.service;
+
+public class BoardService {
+
+}

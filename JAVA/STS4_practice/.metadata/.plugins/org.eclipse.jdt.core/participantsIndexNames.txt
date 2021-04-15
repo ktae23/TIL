@@ -1,0 +1,5 @@
+INDEX VERSION 1.131
+C:\Users\zz238\TIL\JAVA\STS4_practice\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\3800048253.index
+\SpringBoot_MyBatis_Cafe2\src\main\java
+C:\Users\zz238\TIL\JAVA\STS4_practice\.metadata\.plugins\org.eclipse.jst.jsp.core\jspsearch\4157706795.index
+\SpringBoot_MyBatis_Cafe2_EC2\src\main\java
