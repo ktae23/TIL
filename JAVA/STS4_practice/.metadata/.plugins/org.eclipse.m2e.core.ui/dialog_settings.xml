@@ -30,10 +30,15 @@
 	</section>
 	<section name="Maven2ProjectWizardArchifactPage">
 		<list key="package">
+			<item value="com.my.ai.pkt"/>
+			<item value="com.pkt.my.ai"/>
 		</list>
 		<list key="groupId">
+			<item value="com.my.ai"/>
+			<item value="com.pkt.my.ai"/>
 		</list>
 		<list key="artifactId">
+			<item value="pkt"/>
 		</list>
 		<list key="projectNameTemplate">
 			<item value="[artifactId]"/>

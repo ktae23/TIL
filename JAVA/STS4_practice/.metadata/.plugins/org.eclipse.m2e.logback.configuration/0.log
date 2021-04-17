@@ -4662,3 +4662,867 @@ org.eclipse.core.runtime.CoreException: Could not resolve artifact oracle.jdbc:O
 2021-04-15 15:37:25,890 [Worker-10: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
 2021-04-15 15:37:25,891 [Worker-10: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\SpringBoot_MyBatis_Cafe2_EC2\src\test\resources
 2021-04-15 16:24:37,817 [Worker-3: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+2021-04-16 23:34:20,130 [Worker-1: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+2021-04-16 23:37:57,169 [Worker-3: Building] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: my.chr:ai:0.0.1-SNAPSHOT @ C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\pom.xml.
+2021-04-16 23:37:57,771 [Worker-3: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:37:57,771 [Worker-3: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:37:57,772 [Worker-3: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:37:57,773 [Worker-3: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:37:58,380 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:37:58,380 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:37:58,381 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:37:58,381 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:37:59,384 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:37:59,384 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:37:59,387 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2021-04-16 23:37:59,397 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2021-04-16 23:37:59,404 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:37:59,404 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:37:59,405 [Worker-8: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\SpringBootStarter1\src\test\resources
+2021-04-16 23:38:02,151 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:02,151 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:38:02,152 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2021-04-16 23:38:02,156 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 52 resources
+2021-04-16 23:38:02,419 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:02,420 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:38:02,420 [Worker-4: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\SpringBoot_MyBatis_Cafe2\src\test\resources
+2021-04-16 23:38:03,943 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:03,943 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:38:03,944 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2021-04-16 23:38:03,947 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 52 resources
+2021-04-16 23:38:04,228 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:04,228 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:38:04,228 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\SpringBoot_MyBatis_Cafe2_EC2\src\test\resources
+2021-04-16 23:38:05,073 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:05,073 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:38:05,074 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2021-04-16 23:38:05,076 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 3 resources
+2021-04-16 23:38:05,092 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:05,093 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
+2021-04-16 23:38:05,093 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\SpringBoot_MyBatis_template\src\test\resources
+2021-04-16 23:38:05,479 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:05,479 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-16 23:38:05,480 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:38:05,480 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-16 23:43:39,680 [Worker-2: Creating maven-archetype-quickstart] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Collecting project info '/pom.xml' C:\Users\zz238\TIL\JAVA\STS4_practice\pkt\pom.xml
+2021-04-16 23:43:40,044 [Worker-2: Creating maven-archetype-quickstart] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.my.ai:pkt:0.0.1-SNAPSHOT @ C:\Users\zz238\TIL\JAVA\STS4_practice\pkt\pom.xml.
+2021-04-16 23:43:40,530 [Worker-2: Creating maven-archetype-quickstart] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /pkt/src/main/java
+2021-04-16 23:43:40,534 [Worker-2: Creating maven-archetype-quickstart] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /pkt/src/test/java
+2021-04-16 23:43:40,599 [Worker-2: Creating maven-archetype-quickstart] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Imported and configured 1 project(s) in 0 sec
+2021-04-16 23:43:41,062 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:43:41,063 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\pkt\src\main\resources
+2021-04-16 23:43:41,064 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:43:41,064 [Worker-2: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\pkt\src\test\resources
+2021-04-16 23:44:21,804 [Worker-14: Building] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.my.ai:pkt:0.0.1-SNAPSHOT @ C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\pom.xml.
+2021-04-16 23:44:21,894 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:21,894 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:44:21,895 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:21,895 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:44:23,201 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:23,201 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:44:23,202 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:23,202 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:44:43,768 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:43,768 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:44:43,769 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:43,769 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:44:50,528 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:50,528 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:44:50,529 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:44:50,529 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:45:01,330 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:45:01,331 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:45:01,332 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:45:01,332 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:45:16,940 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:45:16,941 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:45:16,941 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:45:16,941 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:46:35,623 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:46:35,624 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:46:35,625 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:46:35,625 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:47:04,197 [Worker-5: Building] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.my.ai:pkt:0.0.1-SNAPSHOT @ C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\pom.xml.
+2021-04-16 23:47:04,428 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:04,428 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:47:04,430 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:04,430 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:47:05,106 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:05,106 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:47:05,107 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:05,107 [Worker-16: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:47:14,995 [Worker-15: Updating Maven Project] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update started
+2021-04-16 23:47:15,265 [Worker-15: Updating Maven Project] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.my.ai:pkt:0.0.1-SNAPSHOT @ C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\pom.xml.
+2021-04-16 23:47:15,485 [Worker-15: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /AI_과제1_박경태/src/main/java
+2021-04-16 23:47:15,485 [Worker-15: Updating Maven Project] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /AI_과제1_박경태/src/test/java
+2021-04-16 23:47:15,767 [Worker-15: Updating Maven Project] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Update completed: 0 sec
+2021-04-16 23:47:16,009 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:16,009 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:47:16,011 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:16,011 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:47:45,352 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:45,352 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:47:45,353 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:47:45,353 [Worker-5: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:48:29,909 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:48:29,909 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:48:29,910 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:48:29,910 [Worker-15: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:48:59,498 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:48:59,499 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:48:59,499 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:48:59,499 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:49:33,570 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:49:33,570 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:49:33,571 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:49:33,571 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:49:50,725 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:49:50,726 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:49:50,726 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:49:50,726 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:51:37,405 [Worker-12: Building] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.my.ai:pkt:0.0.1-SNAPSHOT @ C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\pom.xml.
+2021-04-16 23:51:37,568 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:37,569 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-16 23:51:37,569 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:37,570 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-16 23:51:38,925 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:38,925 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-16 23:51:38,926 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:38,926 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-16 23:51:45,325 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:45,326 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:51:45,326 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:45,327 [Worker-12: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:51:48,531 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:48,531 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-16 23:51:48,532 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:51:48,532 [Worker-13: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-16 23:53:14,517 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:53:14,518 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:53:14,518 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:53:14,518 [Worker-14: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:57:01,315 [Worker-18: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:57:01,315 [Worker-18: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:57:01,316 [Worker-18: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:57:01,316 [Worker-18: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-16 23:59:41,225 [Worker-19: Building Project AI_과제1_박경태] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:59:41,226 [Worker-19: Building Project AI_과제1_박경태] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-16 23:59:41,226 [Worker-19: Building Project AI_과제1_박경태] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-16 23:59:41,226 [Worker-19: Building Project AI_과제1_박경태] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:03:59,793 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:03:59,793 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:03:59,794 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:03:59,794 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:04:10,450 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:04:10,450 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:04:10,451 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:04:10,451 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:04:18,207 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:04:18,207 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:04:18,208 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:04:18,208 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:04:35,680 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:04:35,681 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:04:35,681 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:04:35,681 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:05:35,203 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:35,204 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:05:35,204 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:35,204 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:05:37,820 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:37,821 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:05:37,821 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:37,821 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:05:51,237 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:51,237 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:05:51,238 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:51,238 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:05:56,590 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:56,590 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:05:56,590 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:05:56,591 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:06:03,085 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:03,086 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:06:03,086 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:03,086 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:06:12,510 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:12,510 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:06:12,511 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:12,511 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:06:18,582 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:18,582 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:06:18,582 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:18,582 [Worker-24: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:06:41,851 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:41,852 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:06:41,852 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:06:41,852 [Worker-25: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:07:16,099 [Worker-23: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:07:16,099 [Worker-23: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:07:16,100 [Worker-23: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:07:16,100 [Worker-23: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:08:02,316 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:08:02,316 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:08:02,317 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:08:02,317 [Worker-20: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:09:22,137 [Worker-27: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:09:22,138 [Worker-27: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:09:22,138 [Worker-27: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:09:22,138 [Worker-27: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:13:35,720 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:13:35,721 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:13:35,721 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:13:35,721 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:14:01,192 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:14:01,192 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:14:01,193 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:14:01,193 [Worker-21: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:14:03,584 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:14:03,585 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:14:03,585 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:14:03,585 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:15:21,528 [Worker-30: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:15:21,528 [Worker-30: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:15:21,529 [Worker-30: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:15:21,529 [Worker-30: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:15:42,687 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:15:42,687 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:15:42,688 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:15:42,688 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:17:28,480 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:17:28,480 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:17:28,481 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:17:28,481 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:17:35,362 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:17:35,363 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:17:35,363 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:17:35,363 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:00,860 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:00,860 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:00,861 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:00,861 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:15,287 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:15,287 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:15,287 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:15,288 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:18,012 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:18,013 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:18,013 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:18,013 [Worker-31: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:22,634 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:22,634 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:22,635 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:22,635 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:26,347 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:26,347 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:26,347 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:26,348 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:40,262 [Worker-33: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:40,262 [Worker-33: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:40,262 [Worker-33: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:40,263 [Worker-33: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:46,981 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:46,981 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:46,981 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:46,982 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:18:55,728 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:55,729 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:18:55,729 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:18:55,729 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:20:28,694 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:20:28,694 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:20:28,694 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:20:28,694 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:21:56,988 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:21:56,988 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:21:56,989 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:21:56,989 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:22:17,299 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:22:17,299 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:22:17,300 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:22:17,300 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:22:37,718 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:22:37,718 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:22:37,719 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:22:37,719 [Worker-32: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:22:40,359 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:22:40,359 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:22:40,360 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:22:40,360 [Worker-34: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:28:37,770 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:28:37,770 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-17 00:28:37,771 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:28:37,771 [Worker-28: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-17 00:29:44,605 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:29:44,605 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-17 00:29:44,605 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:29:44,605 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-17 00:30:57,409 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:30:57,410 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-17 00:30:57,410 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:30:57,410 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-17 00:31:57,986 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:31:57,986 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:31:57,987 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:31:57,987 [Worker-29: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:35:36,796 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:35:36,796 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:35:36,797 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:35:36,797 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:36:12,498 [Worker-35: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:36:12,498 [Worker-35: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:36:12,499 [Worker-35: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:36:12,499 [Worker-35: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:36:47,090 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:36:47,090 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:36:47,091 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:36:47,091 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:36:53,219 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:36:53,219 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-17 00:36:53,219 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:36:53,220 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-17 00:39:09,249 [Worker-38: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:39:09,250 [Worker-38: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:39:09,250 [Worker-38: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:39:09,250 [Worker-38: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:39:56,744 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:39:56,745 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:39:56,745 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:39:56,745 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:40:13,901 [Worker-41: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:40:13,901 [Worker-41: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:40:13,901 [Worker-41: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:40:13,901 [Worker-41: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:40:40,627 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:40:40,627 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:40:40,627 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:40:40,628 [Worker-40: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:42:40,809 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:42:40,810 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:42:40,810 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:42:40,810 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:43:08,012 [Worker-44: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:43:08,012 [Worker-44: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:43:08,013 [Worker-44: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:43:08,013 [Worker-44: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:43:11,474 [Worker-46: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:43:11,474 [Worker-46: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:43:11,475 [Worker-46: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:43:11,475 [Worker-46: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:46:01,252 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:46:01,252 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-17 00:46:01,253 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:46:01,253 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-17 00:46:23,138 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:46:23,138 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\main\resources
+2021-04-17 00:46:23,138 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:46:23,138 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\ai\src\test\resources
+2021-04-17 00:47:32,906 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:47:32,907 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:47:32,907 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:47:32,907 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:48:09,372 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:48:09,372 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:48:09,373 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:48:09,373 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:48:56,301 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:48:56,302 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:48:56,302 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:48:56,302 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:49:26,874 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:49:26,874 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:49:26,874 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:49:26,875 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:50:19,624 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:19,624 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:50:19,625 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:19,625 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:50:47,521 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:47,521 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:50:47,522 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:47,522 [Worker-48: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:50:51,227 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:51,228 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:50:51,228 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:51,228 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:50:54,588 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:54,589 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:50:54,589 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:50:54,590 [Worker-49: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:51:04,937 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:51:04,938 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:51:04,938 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:51:04,938 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:51:14,912 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:51:14,913 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 00:51:14,913 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:51:14,913 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 00:53:06,267 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:53:06,268 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:53:06,268 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:53:06,268 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:56:20,256 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:56:20,256 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:56:20,257 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:56:20,257 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 00:56:21,761 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:56:21,761 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 00:56:21,762 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 00:56:21,762 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:00:08,401 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:00:08,402 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:00:08,402 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:00:08,402 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:00:59,099 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:00:59,100 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:00:59,100 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:00:59,100 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:01:03,427 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:03,428 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:01:03,428 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:03,428 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:01:05,718 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:05,719 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:01:05,719 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:05,719 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:01:29,392 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:29,392 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:01:29,392 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:29,392 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:01:44,582 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:44,582 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:01:44,583 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:44,583 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:01:53,213 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:53,213 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:01:53,213 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:01:53,214 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:02:12,150 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:02:12,151 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:02:12,151 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:02:12,151 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:02:22,580 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:02:22,580 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:02:22,580 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:02:22,580 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:02:52,130 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:02:52,130 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:02:52,131 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:02:52,131 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:03:43,734 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:03:43,734 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:03:43,735 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:03:43,735 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:03:45,780 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:03:45,781 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:03:45,781 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:03:45,781 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:03:55,544 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:03:55,544 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:03:55,545 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:03:55,545 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:04:02,209 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:02,209 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:04:02,210 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:02,210 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:04:05,540 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:05,540 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:04:05,541 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:05,541 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:04:22,845 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:22,845 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:04:22,846 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:22,846 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:04:31,828 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:31,828 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:04:31,829 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:31,829 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:04:49,795 [Worker-54: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:49,795 [Worker-54: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:04:49,795 [Worker-54: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:49,795 [Worker-54: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:04:56,628 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:56,628 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:04:56,628 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:04:56,629 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:06:32,026 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:06:32,026 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:06:32,027 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:06:32,027 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:07:06,302 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:07:06,302 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:07:06,303 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:07:06,303 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:08:06,089 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:06,090 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:08:06,090 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:06,090 [Worker-47: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:08:23,483 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:23,483 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:08:23,483 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:23,484 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:08:33,131 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:33,131 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:08:33,132 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:33,132 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:08:44,767 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:44,767 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:08:44,767 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:44,767 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:08:48,003 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:48,003 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:08:48,003 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:08:48,004 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:09:08,423 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:09:08,423 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:09:08,423 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:09:08,424 [Worker-50: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:09:14,246 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:09:14,246 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:09:14,246 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:09:14,247 [Worker-53: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:10:06,649 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:10:06,649 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:10:06,650 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:10:06,650 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:11:02,350 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:11:02,351 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:11:02,351 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:11:02,351 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:13:22,404 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:13:22,404 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:13:22,404 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:13:22,405 [Worker-39: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:13:27,788 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:13:27,788 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:13:27,789 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:13:27,789 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:13:51,683 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:13:51,683 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:13:51,683 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:13:51,684 [Worker-52: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:15:50,994 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:15:50,994 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:15:50,994 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:15:50,995 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:17:18,166 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:17:18,166 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:17:18,167 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:17:18,167 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:17:31,845 [Worker-56: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:17:31,845 [Worker-56: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:17:31,845 [Worker-56: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:17:31,846 [Worker-56: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:17:48,331 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:17:48,331 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:17:48,332 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:17:48,332 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:18:05,789 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:18:05,790 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:18:05,790 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:18:05,790 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:19:24,188 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:24,188 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:19:24,189 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:24,189 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:19:37,183 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:37,183 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:19:37,184 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:37,184 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:19:38,482 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:38,482 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:19:38,482 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:38,482 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:19:57,426 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:57,426 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:19:57,427 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:19:57,427 [Worker-57: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:20:06,202 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:20:06,202 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:20:06,203 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:20:06,203 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:20:17,714 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:20:17,715 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:20:17,715 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:20:17,715 [Worker-42: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:21:13,483 [Worker-58: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:21:13,483 [Worker-58: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:21:13,484 [Worker-58: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:21:13,484 [Worker-58: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:22:45,107 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:22:45,107 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:22:45,108 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:22:45,108 [Worker-45: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:22:48,192 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:22:48,192 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:22:48,192 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:22:48,192 [Worker-51: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:23:14,348 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:23:14,349 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:23:14,349 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:23:14,349 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:28:49,748 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:28:49,749 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:28:49,749 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:28:49,749 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:28:55,844 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:28:55,844 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:28:55,845 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:28:55,845 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:29:02,815 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:29:02,816 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:29:02,816 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:29:02,816 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:29:05,639 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:29:05,639 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\main\resources
+2021-04-17 01:29:05,640 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:29:05,640 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제1_박경태\src\test\resources
+2021-04-17 01:31:16,924 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:31:16,925 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:31:16,925 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:31:16,925 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:31:45,980 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:31:45,980 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:31:45,980 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:31:45,981 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:32:05,746 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:05,746 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:32:05,747 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:05,747 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:32:12,496 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:12,496 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:32:12,496 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:12,497 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:32:17,205 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:17,205 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:32:17,205 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:17,205 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:32:23,748 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:23,749 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:32:23,749 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:23,749 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:32:30,202 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:30,202 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:32:30,203 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:30,203 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:32:41,752 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:41,752 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:32:41,752 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:32:41,752 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:34:00,280 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:34:00,280 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:34:00,281 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:34:00,281 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:34:06,267 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:34:06,267 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:34:06,268 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:34:06,268 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:34:26,269 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:34:26,270 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:34:26,270 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:34:26,270 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:35:48,526 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:35:48,526 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:35:48,527 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:35:48,527 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:36:33,058 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:36:33,058 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:36:33,059 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:36:33,059 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:37:40,783 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:37:40,783 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:37:40,783 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:37:40,783 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:37:46,835 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:37:46,835 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:37:46,835 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:37:46,836 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:37:59,026 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:37:59,026 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:37:59,026 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:37:59,027 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:38:02,531 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:38:02,532 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:38:02,532 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:38:02,532 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:38:08,379 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:38:08,379 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:38:08,380 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:38:08,380 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:38:34,984 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:38:34,985 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:38:34,985 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:38:34,985 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:39:40,043 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:39:40,043 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:39:40,043 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:39:40,043 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:40:26,799 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:40:26,800 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:40:26,800 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:40:26,800 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:40:32,190 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:40:32,190 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:40:32,190 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:40:32,190 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:40:48,588 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:40:48,588 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:40:48,589 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:40:48,589 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:41:18,852 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:41:18,852 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:41:18,853 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:41:18,853 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:41:24,340 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:41:24,340 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:41:24,340 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:41:24,341 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:41:53,108 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:41:53,108 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:41:53,109 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:41:53,109 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:42:15,071 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:15,071 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:42:15,071 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:15,072 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:42:28,213 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:28,213 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:42:28,214 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:28,214 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:42:44,324 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:44,324 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:42:44,325 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:44,325 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:42:55,566 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:55,566 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:42:55,567 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:42:55,567 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:43:14,137 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:43:14,137 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:43:14,138 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:43:14,138 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:43:22,074 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:43:22,074 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:43:22,074 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:43:22,075 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:43:29,009 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:43:29,009 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:43:29,010 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:43:29,010 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:44:28,948 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:44:28,948 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:44:28,949 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:44:28,949 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:44:52,044 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:44:52,045 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:44:52,045 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:44:52,045 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:44:59,115 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:44:59,116 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:44:59,116 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:44:59,116 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:45:04,041 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:04,041 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:45:04,041 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:04,042 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:45:09,043 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:09,044 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:45:09,044 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:09,044 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:45:21,796 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:21,796 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:45:21,796 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:21,796 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:45:47,992 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:47,992 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:45:47,993 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:47,993 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:45:49,821 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:49,821 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:45:49,821 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:49,821 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:45:59,012 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:59,013 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:45:59,013 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:45:59,013 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:46:13,790 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:46:13,791 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:46:13,791 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:46:13,791 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:47:10,340 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:10,340 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:47:10,341 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:10,341 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:47:12,796 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:12,797 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:47:12,797 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:12,797 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:47:22,401 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:22,401 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:47:22,402 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:22,402 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:47:33,156 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:33,156 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:47:33,156 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:33,156 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:47:49,810 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:49,810 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:47:49,811 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:47:49,811 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:48:49,332 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:48:49,333 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:48:49,333 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:48:49,333 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:49:01,581 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:01,581 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:49:01,581 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:01,581 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:49:11,644 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:11,645 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:49:11,645 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:11,645 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:49:38,580 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:38,581 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:49:38,581 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:38,581 [Worker-60: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:49:49,052 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:49,052 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:49:49,052 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:49,052 [Worker-69: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:49:50,108 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:50,109 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:49:50,109 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:49:50,109 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:50:41,664 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:50:41,665 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:50:41,665 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:50:41,665 [Worker-65: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:50:59,521 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:50:59,522 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:50:59,522 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:50:59,522 [Worker-61: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:51:00,529 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:00,530 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:51:00,530 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:00,530 [Worker-64: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:51:03,202 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:03,202 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:51:03,203 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:03,203 [Worker-67: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:51:34,297 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:34,297 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:51:34,297 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:34,297 [Worker-68: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:51:44,603 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:44,604 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:51:44,604 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:44,604 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:51:54,299 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:54,299 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:51:54,300 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:54,300 [Worker-66: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 01:51:56,133 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:56,133 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\main\resources
+2021-04-17 01:51:56,133 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2021-04-17 01:51:56,133 [Worker-55: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\AI_과제2_박경태\src\test\resources
+2021-04-17 09:25:22,302 [Worker-2: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is out-of-date. Trying to update.

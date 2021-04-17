@@ -25,7 +25,7 @@ public static void main(String[] args) {
 	  	 		" * 2. 제공받은      String clientId 와 clientSecret 값을 넣고 바로 실행한뒤 이 프로젝트를 리프레쉬하면 임의숫자.mp3가 보임\r\n" + 
 	  	 		" * 3. 이 파일을 오디오 플레이어로 실행해 보면 '만나서 반갑습니다'라고 나옴\r\n" + 
 	  	 		" * 4. 더 긴 텍스트를 읽어서 처리하도록 응용하기", "UTF-8");
-	       String text = URLEncoder.encode("만나서 반갑습니다. 최혜린님, 오늘 벚꽃 구경 가시죠.", "UTF-8"); // 13자
+	       String text = URLEncoder.encode("안녕하세요? 저는 AI Platform 기반의 지능형 서비스 개발 프로젝트 A반 박경태입니다. 이것은 과정 실습평가 샘플 음성입니다. 이 음성 인식 결과가 텍스트로 출력될 것입니다", "UTF-8"); // 13자
 	       String apiURL = "https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts";
 	       URL url = new URL(apiURL); //연동하고자 하는 url 넣기
 	       HttpURLConnection con = (HttpURLConnection)url.openConnection(); //연결 객체 생성
@@ -33,7 +33,7 @@ public static void main(String[] args) {
 	       con.setRequestProperty("X-NCP-APIGW-API-KEY-ID", clientId); //request header
 	       con.setRequestProperty("X-NCP-APIGW-API-KEY", clientSecret); //request header
 	       // post request
-	       String postParams = "speaker=nsinu&volume=0&speed=0&pitch=0&format=mp3&text=" + longText; //request message body(여기에 들어가는 것이 parameter)
+	       String postParams = "speaker=nsinu&volume=0&speed=0&pitch=0&format=mp3&text=" + text; //request message body(여기에 들어가는 것이 parameter)
 	       con.setDoOutput(true);
 	       DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 	       wr.writeBytes(postParams);
@@ -46,8 +46,7 @@ public static void main(String[] args) {
 	           int read = 0;
 	           byte[] bytes = new byte[1024];
 	           // 랜덤한 이름으로 mp3 파일 생성
-	           String tempname = Long.valueOf(new Date().getTime()).toString();
-	           File f = new File(tempname + ".mp3");
+	           File f = new File("sample2.mp3");
 	           f.createNewFile();
 	           OutputStream outputStream = new FileOutputStream(f);
 	           while ((read =is.read(bytes)) != -1) {
