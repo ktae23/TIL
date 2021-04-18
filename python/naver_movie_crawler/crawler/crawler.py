@@ -1,5 +1,7 @@
 import re
 import os
+from random import randrange
+
 import requests
 from bs4 import BeautifulSoup as bs
 import openpyxl
@@ -38,14 +40,15 @@ from urllib.request import urlretrieve
 # 특수문자 제거 위한 함수
 def cleanText(readData):
     # 텍스트에 포함되어 있는 특수 문자 제거
-    text = re.sub('[-=+,#/\?:^$.@*\"※~&%ㆍ!』\\‘|\(\)\[\]\<\>`\'…》]', '', readData)
+    text = re.sub('[-=+,#/\?:^$.@*\"※~&%ㆍ!』\\‘|\(\)\[\]\<\>`\'…》 ]', '', readData)
     return text
 
 
 def crawling(start_code, finish_code):
+    global is_ok
     wb = openpyxl.Workbook()
     sheet = wb.active
-    sheet.append(["영화제목", "영화평점", "영화장르", "영화감독", "영화배우", "영화줄거리", "영화코드번호", "영화포스터"])
+    sheet.append(["MOVIE_CODE","MOVIE_TITLE", "MOVIE_RATING", "MOVIE_GENRE", "MOVIE_DIRECTOR", "MOVIE_DIRECTOR", "MOVIE_STORY", "MOVIE_RDATE", "MOVIE_RTIME", "MOVIE_PRICE"])
 
     # (0) HTML 파싱
     # 저장 된 영화와 포스터의 행을 맞추기 위한 정수 j
@@ -87,6 +90,15 @@ def crawling(start_code, finish_code):
             # (3-6) 영화줄거리 수집
             story = m.select("div.story_area p.con_tx")
 
+            # (3-7) 영화 개봉일 수집
+            rdate = m.select("dl.info_spec dd p span:nth-of-type(4):nth-child(n+3):nth-child(-n+4)")
+
+            # (3-8) 영화 상영시간 수집
+            rtime = m.select_one("dl.info_spec dd p span:nth-of-type(3)")
+
+            # (3-9) 영화 가격 임의의 난수 생성
+            price = randrange(6,20) * 1000
+
             '''
                (참고) 고급 검색 활용
                    -> if/else 문을 이용한 여러가지 명제들을 활용하면, 사용자가 임의로 원하는 데이터만 필터링 할 수 있습니다.
@@ -97,11 +109,25 @@ def crawling(start_code, finish_code):
                 is_ok = False
                 continue
 
-            # (5) skip 처리-2 : 주연배우에 "청소년 관람불가"가 포함되어 있으면 넘어간다.
-            invalid = "청소년 관람불가"
-            if invalid in actors[0].text:
+            # (4-1) score에서 점수 부분만 남기고 숫자로 변환한다.
+            score = score.text
+            score = score[6:11]
+
+
+            # (5) skip 처리 : 주연배우에 관람 기준이 적혀있거나 배우가 없을 경우 넘어간다.
+            if "청소년 관람불가" in actors[0].text:
                 is_ok = False
                 continue
+            elif "12세 관람가" in actors[0].text:
+                is_ok = False
+                continue
+            elif "전체 관람가" in actors[0].text:
+                is_ok = False
+                continue
+            elif (actors[0].text == None):
+                is_ok = False
+                continue
+
 
             '''
                (참고) Standard Output(일반 출력)
@@ -113,7 +139,7 @@ def crawling(start_code, finish_code):
 
             print("=" * 50)
             if score != None:
-                print("평점:", score.text)
+                print("평점:", score)
 
             print("=" * 50)
             print("장르:")
@@ -135,7 +161,23 @@ def crawling(start_code, finish_code):
             for s in story:
                 print(s.text)
 
-            print(j)
+            print("=" * 50)
+            print("개봉일:")
+            for rd in rdate:
+                rd = rd.text
+                rd = re.sub('[\s]', '', rd)
+                print(rd)
+
+            print("=" * 50)
+            print("상영시간:")
+            print(rtime.text)
+
+            print("=" * 50)
+            print("가격:")
+            print(price)
+
+            print("=" * 50)
+
 
             # (7) 영화관련정보 엑셀(xlsx) 형식 저장
             # (7-1) 데이터 만들기-1 : HTML로 가져온 영화장르/영화감독/영화배우 정보에서 TEXT정보만 뽑아서 리스트 형태로 만들기
@@ -143,15 +185,23 @@ def crawling(start_code, finish_code):
             directors_list = [d.text for d in directors]
             actors_list = [a.text for a in actors]
             story_list = [s.text for s in story]
+            rdate_list = [r.text for r in rdate]
+
 
             # (7-2) 데이터 만들기-2 : 여러 개로 이루어진 리스트 형태를 하나의 문자열 형태로 만들기
             genre_str = ','.join(genre_list)
             directors_str = ','.join(directors_list)
             actors_str = ','.join(actors_list)
             story_str = ','.join(story_list)
+            rdate_str = ','.join(rdate_list)
+
+            # 개봉일에서 모든 공백 제거
+            rdate_str = re.sub('[\s]', '', rdate_str)
+
+
 
             # (7-3) 영화관련정보 엑셀 행 추가 : line by line 으로 추가하기
-            sheet.append([title.text, score.text, genre_str, directors_str, actors_str, story_str, movie_code])
+            sheet.append([movie_code, title.text, score, genre_str, directors_str, actors_str, story_str, rdate_str, rtime.text, price])
 
             '''
                (참고) 영화 포스터 이미지 저장
@@ -168,20 +218,23 @@ def crawling(start_code, finish_code):
             path = '../crawling/imgs/'
             urlretrieve(img_src.attrs["src"], path + title_rename + ".png")
 
-            # (8-3) 영화포스터 이미지파일을 엑셀로 불러들이기
-
-            img = openpyxl.drawing.image.Image(path + title_rename + ".png")
-            img.width = 80
-            img.height = 80
-
-            # (8-4) 영화포스터 엑셀 행 추가 : 영화관련정보 옆(=G열)에 추가하기
-
-            sheet.add_image(img, 'H' + str(j + 2))
+            # # (8-3) 영화포스터 이미지파일을 엑셀로 불러들이기
+            #
+            # img = openpyxl.drawing.image.Image(path + title_rename + ".png")
+            # img.width = 80
+            # img.height = 80
+            #
+            # # (8-4) 영화포스터 엑셀 행 추가 : 영화관련정보 옆(=G열)에 추가하기
+            #
+            # sheet.add_image(img, 'H' + str(j + 2))
 
             print("=" * 50)
             print(title_rename, "포스터 저장 완료!")
             is_ok = True
         if is_ok == True:
             j = j + 1
+        print(finish_code - start_code, "개중에", finish_code - i, "개 남음")
+        print(i-180000, "번째 영화 체크 중", j+1, "개의 영화 정보저장 완료")
     # (9) 엑셀 저장
+    print("완료")
     wb.save("navermovie.xlsx")
