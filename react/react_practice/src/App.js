@@ -9,7 +9,9 @@ class App extends Component {
   constructor(props){
     super(props);
     this.state={
+      mode:"welcome",
         subject:{title:"WEB",sub:"World Wide Web!"},
+        welcome:{title:'Welcome', desc:'Hello, React!'},
         contents:[
             {id:1, title:"HTML", desc:"HTML is for information."},
             {id:2, title:"CSS", desc:"CSS is for design"},
@@ -18,6 +20,18 @@ class App extends Component {
     }
   }
   render(){
+    var _tilte, _desc = null;
+    if(this.state.mode === 'welcome'){
+      _tilte = this.state.welcome.title;
+      _desc = this.state.welcome.desc;
+    }else if(this.state.mode === 'read'){
+      var i = 0;
+      while(i<contents.length){
+        _tilte = this.state.contents[0].title;
+        _desc = this.state.contents[0].desc;
+          i = i + 1;
+      }
+    }
     return (
       <div className="App">
         Hello, React!!!
@@ -25,7 +39,7 @@ class App extends Component {
             title={this.state.subject.title} 
             sub={this.state.subject.sub}></Subject>
         <TOC data={this.state.contents}></TOC>
-        <Content title="HTML" desc="HTML is HyperText Markup Language."></Content>
+        <Content title={_tilte} desc={_desc}></Content>
       </div>
     );
   }

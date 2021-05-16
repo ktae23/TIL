@@ -6,7 +6,7 @@ class Subject extends Component {
         return(
           // 컴포넌트를 만들 때는 반드시 하나의 최상위 태그만 사용해야만 함
           <header>
-            <h1>{this.props.title}</h1>
+            <h1><a href="/"></a>{this.props.title}</h1>
             {this.props.sub}
           </header>
         );
