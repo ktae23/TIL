@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import './App.css';
 import TOC from './componet/TOC';
 import Subject from './componet/Subject';
-import Content from './componet/Content';
- 
+import ReadContent from './componet/ReadContent';
+import CreateContent from './componet/CreateContent';
+import Control from './componet/Control';
 
 class App extends Component {
   constructor(props){
     super(props);
+    this.max_content_id = 3;
     this.state={
       mode:"read",
       selected_content_id:2,
@@ -21,11 +23,12 @@ class App extends Component {
     }
   }
   render(){
-    var _tilte, _desc = null;
+    var _tilte, _desc, _article = null;
 
     if(this.state.mode === 'welcome'){
       _tilte = this.state.welcome.title;
       _desc = this.state.welcome.desc;
+      _article = <ReadContent title={_tilte} desc={_desc}></ReadContent>
 
     }else if(this.state.mode === 'read'){
       var i = 0;
@@ -40,7 +43,25 @@ class App extends Component {
         }
         i = i + 1;
       }
+      _article = <ReadContent title={_tilte} desc={_desc}></ReadContent>
+
+    } else if(this.state.mode === 'create'){
+      _article = <CreateContent onSubmit={function(_title, _desc){
+          this.max_content_id = this.max_content_id + 1;
+        //   this.state.contents.push(
+        //     {id:this.max_content_id, title:_title, desc:_desc}
+        // );
+      // push는 원본을 수정하여 추가하는 방식
+      var _contents = this.state.contents.concat(
+        {id:this.max_content_id, title:_title, desc:_desc}
+      )
+      // concat은 원본을 수정하지 않고 연결하는 방식
+      this.setState({
+        contents:this.state.contents
+      });
+    }.bind(this)}></CreateContent>
     }
+
     return (
       <div className="App">
         <Subject 
@@ -61,9 +82,15 @@ class App extends Component {
           data={this.state.contents}>
         </TOC>
 
-        <Content 
-          title={_tilte} desc={_desc}>
-        </Content>
+        <Control onChangeMode={function(_mode){
+          this.setState({
+            mode:_mode
+          })
+        }.bind(this)}>
+        </Control>
+
+        {_article}
+
       </div>
     );
   }
