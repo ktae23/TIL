@@ -236,8 +236,6 @@ ___
 
 <br/>
 
--끝-
-
 <br/>
 
 <br/>
@@ -250,9 +248,13 @@ ___
 
 - 수료증
 
+![](https://github.com/ktae23/MM/blob/master/DOCS/%EC%88%98%EB%A3%8C%EC%A6%9D.png?raw=true)
+
 - 모범상
+
+![](https://github.com/ktae23/MM/blob/master/DOCS/%EB%AA%A8%EB%B2%94%EC%83%81.png?raw=true)
 
 - 모범상 시상하여 Razer Viper E-Sports 유선 마우스를 상품으로 받았습니다.
 
-  
+  ![](http://th2.tmon.kr/thumbs/image/ac7/644/86a/27277f93c_700x700_95_FIT.jpg)
 
