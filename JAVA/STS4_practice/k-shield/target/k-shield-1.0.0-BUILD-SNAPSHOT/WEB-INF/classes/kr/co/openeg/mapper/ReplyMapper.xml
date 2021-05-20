@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.openeg.mapper.ReplyMapper">
+
+	<select id="list" resultType="kr.co.openeg.domain.ReplyVO">
+		select *
+		  from tbl_reply
+		 where bno = #{bno}
+		 order by rno desc
+	</select>
+
+	<select id="listPage" resultType="kr.co.openeg.domain.ReplyVO">
+		select *
+		  from tbl_reply
+		 where bno = #{bno}
+		 order by rno desc
+		 limit #{cri.pageStart}, #{cri.perPageNum}
+	</select>
+
+	<select id="count" resultType="int">
+		select count(bno) from tbl_reply
+		where bno =#{bno}
+	</select>
+
+
+	<select id="getBno" resultType="int">
+		select bno from tbl_reply where rno = #{rno}
+	</select>
+
+
+
+
+	<select id="getCountByBno" resultType="int">
+	<![CDATA[
+		select count(rno) 
+		  from tbl_reply 
+		 where bno = #{bno}
+	]]>
+	</select>
+
+	<select id="getListWithPaging" resultType="kr.co.openeg.domain.ReplyVO">
+  	<![CDATA[
+ 		select *
+    	  from tbl_reply
+    	 where bno =  #{bno}
+    	 order by rno desc
+		 limit #{cri.pageStart}, #{cri.perPageNum}
+	]]>
+	</select>
+	
+	<insert id="insert">
+		insert into tbl_reply (
+			bno, reply, replyer
+		) values (
+			#{bno}, #{reply}, #{replyer}
+		)
+	</insert>
+
+	<update id="update">
+		update tbl_reply 
+		   set reply = #{reply}
+		 where rno = #{rno}
+	</update>
+
+	<delete id="delete">
+		delete 
+		  from tbl_reply 
+		 where rno = #{rno}
+	</delete>
+	
+	<delete id="deleteAllByBno">
+		delete
+		  from tbl_reply
+		 where bno = #{bno}
+	</delete>	
+</mapper>

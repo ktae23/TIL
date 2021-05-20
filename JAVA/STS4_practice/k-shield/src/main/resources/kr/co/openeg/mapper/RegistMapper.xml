@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+	<mapper namespace="kr.co.openeg.mapper.RegistMapper">
+
+	<sql id="criteria">
+		<if test="type != null">
+			<if test="type == 'N'.toString()">
+				and name like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="type == 'E'.toString()">
+				and email like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="type == 'P'.toString()">
+				and phone like CONCAT('%', #{keyword}, '%')
+			</if>
+			<if test="type == 'NE'.toString()">
+				and ( name like CONCAT('%', #{keyword}, '%') OR email like CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="type == 'NP'.toString()">
+				and ( name like CONCAT('%', #{keyword}, '%') OR phone like CONCAT('%', #{keyword}, '%'))
+			</if>
+			<if test="type == 'NEP'.toString()">
+				and ( name like CONCAT('%', #{keyword}, '%') OR email like CONCAT('%', #{keyword}, '%') OR phone like CONCAT('%', #{keyword}, '%'))
+			</if>
+		</if>
+	</sql>
+
+	<!--  
+	<insert id="create">
+		insert into tbl_regist ( name, email, phone, password, content )
+		values ( #{name}, #{email}, #{phone}, #{password}, #{content} )
+	</insert>
+	-->
+	
+	<insert id="insertSelectKey">
+		insert into tbl_regist ( 
+			name, email, phone, password, content 
+		) values ( 
+			#{name}, #{email}, #{phone}, #{password}, #{content} 
+		)
+		
+		<selectKey resultType="long" keyProperty="rgno" order="AFTER">
+        SELECT LAST_INSERT_ID()
+    	</selectKey>
+	</insert>
+
+	<select id="read" resultType="kr.co.openeg.domain.RegistVO">
+		select *
+		  from tbl_regist
+		 where rgno = #{rgno}
+	</select>
+
+	<select id="listAll" resultType="kr.co.openeg.domain.RegistVO">
+ 	<![CDATA[
+ 		select *
+ 		  from tbl_regist 
+ 		 where rgno > 0 
+ 		 order by rgno desc, name desc
+	]]>
+	</select>
+
+	<select id="listCriteria" resultType="kr.co.openeg.domain.RegistVO">
+ 	<![CDATA[
+ 		select *
+		  from tbl_regist 
+		 where rgno > 0 
+		 order by rgno desc, name desc
+		 limit #{pageNum}, #{amount}
+ 	]]>
+	</select>
+
+	<update id="update">
+		update tbl_regist 
+		   set email = #{email}, phone = #{phone}, password = #{password}, content = #{content}
+		 where rgno = #{rgno} and password = #{password}
+	</update>
+
+	<delete id="delete">
+		delete 
+		  from tbl_regist 
+		 where rgno = #{rgno}
+		   and password = #{password}
+	</delete>
+
+	<select id="countPaging" resultType="int">
+	<![CDATA[
+		 select count(rgno) 
+	       from tbl_regist 
+	      where rgno > 0 
+	]]>
+	</select>
+
+	<!-- LAB SQL Injection : Insecure Code -->
+	<select id="checkUser" resultType="kr.co.openeg.domain.RegistVO">
+ 	<![CDATA[
+ 		select *
+		  from tbl_regist 
+		 where email = '${email}' and password = '${password}' and userrole = '${userRole}'
+ 	]]>
+	</select>
+	
+	<select id="checkEmail" resultType="kr.co.openeg.domain.RegistVO">
+ 	<![CDATA[
+ 		select *
+		  from tbl_regist 
+		 where email = #{email}
+ 	]]>
+	</select>
+
+	<select id="listSearch" resultType="kr.co.openeg.domain.RegistVO">
+	<![CDATA[  
+  		select * 
+  		  from tbl_regist 
+  		 where rgno > 0 
+	]]>
+		<include refid="criteria"></include>
+  	<![CDATA[    
+  		 order by rgno desc
+  		 limit #{pageStart}, #{perPageNum}
+	]]>
+	</select>
+
+	<select id="listSearchCount" resultType="int">
+	<![CDATA[  
+  		select count(rgno) 
+    	  from tbl_regist 
+  		 where rgno > 0 
+	]]>
+		<include refid="criteria"></include>
+	</select>
+
+
+
+
+
+
+	<insert id="addAttach">
+		insert into tbl_regist_attach (fullname, rgno) values ( #{fullName}, LAST_INSERT_ID() )
+	</insert>
+
+
+	<select id="getAttach" resultType="string">
+		select fullname from tbl_regist_attach where rgno = #{rgno} order by regdate
+	</select>
+
+
+	<delete id="deleteAttach">
+		delete from tbl_regist_attach where rgno = #{rgno}
+	</delete>
+
+	<insert id="replaceAttach">
+		insert into tbl_regist_attach(fullname, rgno) values (#{fullName}, #{rgno})
+	</insert>
+
+
+	<insert id="insertSalt">
+		insert into tbl_salt (
+			email, salt
+		) values (
+			#{email}, #{salt}
+		)
+	</insert>
+
+	<select id="selectSalt" resultType="string">
+		select salt 
+		  from tbl_salt
+		 where email = #{email}
+	</select>
+
+
+
+	<!-- 현재 페이지에 해당하는 목록 조회 -->
+    <select id="getListWithPaging" resultType="kr.co.openeg.domain.RegistVO">
+  	<![CDATA[
+      	select * 
+      	  from tbl_regist
+     	 where rgno > 0  
+  	]]>
+  		<include refid="criteria"></include> 
+    <![CDATA[    
+    	  order by regdate desc
+    	  limit #{pageStart}, #{perPageNum}   
+  	]]>
+  	</select>
+
+	<!-- 전체 게시판 개수 조회 -->
+  	<select id="getTotalCount" resultType="int">
+	<![CDATA[
+      	select count(*) 
+      	  from tbl_regist
+     	 where rgno > 0  
+  	]]>
+  		<include refid="criteria"></include> 
+  	</select>
+	
+</mapper>
