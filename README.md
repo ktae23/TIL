@@ -38,8 +38,6 @@ ___
 🟢 시크릿코드 : SpringBoot/JPA - 컨트롤러 구현 편<br>
 🟢 초격차 : java/spring<br>
 </details>
-
-
 ___
 
 <details>

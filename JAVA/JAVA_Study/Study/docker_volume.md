@@ -76,11 +76,11 @@ c4c300712eb65e5d01d5553b2a596e3a215fc512c547d97846d1ece33a65cd33
 # -d는 뒤에서 실행 시키는 옵션
 ```
 
-![](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.05.17/ubuntu_path.png)
+![](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.05.17/ubuntu_path.png?raw=true)
 
 - 위의 우분투 경로 상의 사진들이 도커 이미지 실행 후 아래의 컨테이너상 경로에도 동일하게 보인다
 
-![](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.05.17/container_path.png)
+![](https://github.com/ktae23/TIL/blob/master/JAVA/JAVA_Study/Study/imgs/2021.05.17/container_path.png?raw=true)
 
 <br/>
 
