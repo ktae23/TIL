@@ -57,7 +57,7 @@ class App extends Component {
       )
       // concat은 원본을 수정하지 않고 연결하는 방식
       this.setState({
-        contents:this.state.contents
+        contents:_contents
       });
     }.bind(this)}></CreateContent>
     }
