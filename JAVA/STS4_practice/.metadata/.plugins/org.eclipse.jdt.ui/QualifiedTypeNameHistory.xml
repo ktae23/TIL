@@ -16,4 +16,13 @@
     <fullyQualifiedTypeName name="java.util.Base64"/>
     <fullyQualifiedTypeName name="stt.SttTest"/>
     <fullyQualifiedTypeName name="java.util.List"/>
+    <fullyQualifiedTypeName name="design.singlton.SocketClient"/>
+    <fullyQualifiedTypeName name="java.lang.Override"/>
+    <fullyQualifiedTypeName name="design.adapter.HairDryer"/>
+    <fullyQualifiedTypeName name="java.lang.Character"/>
+    <fullyQualifiedTypeName name="design.adapter.Cleanner"/>
+    <fullyQualifiedTypeName name="design.adapter.Electronic220V"/>
+    <fullyQualifiedTypeName name="design.adapter.AirConditioner"/>
+    <fullyQualifiedTypeName name="design.adapter.Electronic110V"/>
+    <fullyQualifiedTypeName name="design.adapter.SocketAdapter"/>
 </qualifiedTypeNameHistroy>
