@@ -38,13 +38,16 @@ ___
 🟢 시크릿코드 : SpringBoot/JPA - 컨트롤러 구현 편<br>
 🟢 초격차 : java/spring<br>
 </details>
+
 ___
 
 <details>
     <summary>Front-End</summary>
 🟢 React - 생활코딩<br>
 🟢 React JS Crash Course 2021 - Traversy Media   
+🟢 Angular 7.0 프로그래밍 - 강의 운영 업무 중 수강    
 </details>
+
 
 ___
 
@@ -55,8 +58,6 @@ ___
 🟢 WEB2 - CSS - 생활코딩<br>
 🟢 코딩 신생아 인강 - 패스트캠퍼스 - 고현민 강사<br>
 </details>
-
-
 ___
 
 <details>
@@ -104,9 +105,12 @@ ___
         </summary>
 🟢 Do it! 자바 프로그래밍 입문<br>
 🟢 이것이 자바다<br>
-🟢 자바 웹을 다루는 기술
-🟢 자바 웹 프로그래밍 Next Step
+🟢 자바 웹을 다루는 기술<br>
+🟢 자바 웹 프로그래밍 Next Step<br>
 </details>
+
+___
+
 
 <details>
 <summary>do it 자바프로그래밍 입문 정리 목차</summary>
@@ -190,8 +194,6 @@ ___
     <summary>UI/UX</summary>
 🟢 HTML5 웹 프로그래밍 입문<br>
 </details>
-
-
 ___
 
 <details>
