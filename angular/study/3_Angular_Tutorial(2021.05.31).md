@@ -2,7 +2,7 @@
 
 ### 1. Angular 구조
 
-<img src="C:\Users\user\pkt\TIL\angular\imgs\20210531163109.png" alt="20210531163109"  />
+![](https://github.com/ktae23/TIL/blob/master/angular/imgs/20210531163109.png)
 
 <br/>
 
