@@ -95,46 +95,46 @@
 
 <br/>
 
-- ``` javascript
-  //Angular CLI 설치
-  npm install -g @angular/cli
-  
-  //프로젝트 생성 (ng new)
-  ng new [프로젝트명]
-  //기본 구조 , 컴포넌트 생성 , 빌드 , 유닛 테스트 , 개발서버 , 배포에 관련된 모든 의존성 라이브러리를 설치합니다
-  //router 사용 여부, CSS 종류 여부 선택 가능
-  
-      ============================================    
-  //개발서버 실행 (ng serve)
-  // 개발모드(dev mode)로 컴파일, 번들링, 개발서버 시작을 해주는 명령어
-  
-  cd [프로젝트명]
-  ng serve
-  
-  
-  //Webpack 빌드과정이 끝나면 http://localhost:4200 접속하면 개발서버를 확인할 수 있습니다
-  //vendor.js -> 번들링 된 파일
-  //main.js -> 개발자가 코딩한 코드 번들링 된 파일
-  //polyfills -> 브라우저 호환성을 위한 파일
-  //serve 명령어 완료 시
-  ============================================================
-  Initial Chunk Files   | Names         |      Size
-  vendor.js             | vendor        |   2.08 MB
-  polyfills.js          | polyfills     | 508.84 kB
-  styles.css, styles.js | styles        | 381.02 kB
-  main.js               | main          |  52.71 kB
-  runtime.js            | runtime       |   6.60 kB
-  
-                        | Initial Total |   3.01 MB
-  
-  Build at: 2021-05-31T02:54:27.156Z - Hash: ddbdfb7c2b956867a7ae - Time: 20973ms
-  
-  ** Angular Live Development Server is listening on localhost:4200, open your browser on http://localhost:4200/ **
-  
-  
-  √ Compiled successfully.
-  ============================================================
-  ```
+``` javascript
+//Angular CLI 설치
+npm install -g @angular/cli
+
+//프로젝트 생성 (ng new)
+ng new [프로젝트명]
+//기본 구조 , 컴포넌트 생성 , 빌드 , 유닛 테스트 , 개발서버 , 배포에 관련된 모든 의존성 라이브러리를 설치합니다
+//router 사용 여부, CSS 종류 여부 선택 가능
+
+    ============================================    
+//개발서버 실행 (ng serve)
+// 개발모드(dev mode)로 컴파일, 번들링, 개발서버 시작을 해주는 명령어
+
+cd [프로젝트명]
+ng serve
+
+
+//Webpack 빌드과정이 끝나면 http://localhost:4200 접속하면 개발서버를 확인할 수 있습니다
+//vendor.js -> 번들링 된 파일
+//main.js -> 개발자가 코딩한 코드 번들링 된 파일
+//polyfills -> 브라우저 호환성을 위한 파일
+//serve 명령어 완료 시
+============================================================
+Initial Chunk Files   | Names         |      Size
+vendor.js             | vendor        |   2.08 MB
+polyfills.js          | polyfills     | 508.84 kB
+styles.css, styles.js | styles        | 381.02 kB
+main.js               | main          |  52.71 kB
+runtime.js            | runtime       |   6.60 kB
+
+                      | Initial Total |   3.01 MB
+
+Build at: 2021-05-31T02:54:27.156Z - Hash: ddbdfb7c2b956867a7ae - Time: 20973ms
+
+** Angular Live Development Server is listening on localhost:4200, open your browser on http://localhost:4200/ **
+
+
+√ Compiled successfully.
+============================================================
+```
 
 <br/>
 

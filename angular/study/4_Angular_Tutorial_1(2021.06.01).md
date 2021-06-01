@@ -8,9 +8,9 @@
 
 ### 1. Angular Data Binding
 
-<img src="C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210601094123961.png" alt="image-20210601094123961" style="zoom:50%;" />
+![overview](https://angular.io/generated/images/guide/architecture/overview2.png)
 
-![image-20210601094313616](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210601094313616.png)
+![Data Binding](https://angular.io/generated/images/guide/architecture/databinding.png)
 
 ___
 
