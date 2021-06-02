@@ -25,4 +25,15 @@
     <fullyQualifiedTypeName name="design.adapter.AirConditioner"/>
     <fullyQualifiedTypeName name="design.adapter.Electronic110V"/>
     <fullyQualifiedTypeName name="design.adapter.SocketAdapter"/>
+    <fullyQualifiedTypeName name="com.sun.jdi.connect.IllegalConnectorArgumentsException"/>
+    <fullyQualifiedTypeName name="design.decorator.AudiDecorator"/>
+    <fullyQualifiedTypeName name="design.decorator.ICar"/>
+    <fullyQualifiedTypeName name="design.observer.Button"/>
+    <fullyQualifiedTypeName name="design.observer.IButtonListener"/>
+    <fullyQualifiedTypeName name="design.facade.FTP"/>
+    <fullyQualifiedTypeName name="javax.swing.text.WrappedPlainView"/>
+    <fullyQualifiedTypeName name="design.facade.Writer"/>
+    <fullyQualifiedTypeName name="design.facade.Reader"/>
+    <fullyQualifiedTypeName name="sun.jvm.hotspot.runtime.win32_amd64.Win32AMD64JavaThreadPDAccess"/>
+    <fullyQualifiedTypeName name="design.facade.SFtpClient"/>
 </qualifiedTypeNameHistroy>
