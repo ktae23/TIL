@@ -13,7 +13,6 @@
     <fullyQualifiedTypeName name="org.springframework.beans.factory.annotation.Autowired"/>
     <fullyQualifiedTypeName name="org.json.simple.parser.JSONParser"/>
     <fullyQualifiedTypeName name="java.net.Socket"/>
-    <fullyQualifiedTypeName name="java.util.Base64"/>
     <fullyQualifiedTypeName name="stt.SttTest"/>
     <fullyQualifiedTypeName name="java.util.List"/>
     <fullyQualifiedTypeName name="design.singlton.SocketClient"/>
@@ -36,4 +35,10 @@
     <fullyQualifiedTypeName name="design.facade.Reader"/>
     <fullyQualifiedTypeName name="sun.jvm.hotspot.runtime.win32_amd64.Win32AMD64JavaThreadPDAccess"/>
     <fullyQualifiedTypeName name="design.facade.SFtpClient"/>
+    <fullyQualifiedTypeName name="java.util.Base64"/>
+    <fullyQualifiedTypeName name="design.strategy.Encoder"/>
+    <fullyQualifiedTypeName name="design.strategy.Base64Strategy"/>
+    <fullyQualifiedTypeName name="design.strategy.NormalStrategy"/>
+    <fullyQualifiedTypeName name="jdk.javadoc.internal.doclets.toolkit.EnumConstantWriter"/>
+    <fullyQualifiedTypeName name="design.strategy.EncodingStrategy"/>
 </qualifiedTypeNameHistroy>

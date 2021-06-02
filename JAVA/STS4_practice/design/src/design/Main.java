@@ -1,37 +1,36 @@
 package design;
 
-import design.facade.FTP;
-import design.facade.Reader;
-import design.facade.SFtpClient;
-import design.facade.Writer;
+import design.strategy.AppendStrategy;
+import design.strategy.Base64Strategy;
+import design.strategy.Encoder;
+import design.strategy.EncodingStrategy;
+import design.strategy.NormalStrategy;
 
 public class Main {
 
 	public static void main(String[] args) {
 		
-		FTP ftpClient = new FTP("www.foo.co.kr", 22, "/home/etc");
-		ftpClient.connect();
-		ftpClient.movevDirectory();
-
-		Reader reader = new Reader("text.temp");
-		reader.fileConnect();
-		reader.fileRead();
-
+		Encoder encoder = new Encoder();
 		
-		Writer writer = new Writer("text.tmp");
-		writer.fileConnect();
-		writer.fileWrite();
+		// base64
+		EncodingStrategy base64 = new Base64Strategy();
 		
-		writer.fileDisconnect();		
-		reader.fileDisconnect();
-		ftpClient.disConnect();
-	
+		// noramal
+		EncodingStrategy normal = new NormalStrategy();
 		
-		SFtpClient sftpCiClient = new SFtpClient("www.foo.co.kr", 22, "/home/etc/", "text.tmp");
-		sftpCiClient.connect();
-		sftpCiClient.read();
-		sftpCiClient.write();
-		sftpCiClient.disConnect();
+		String message = "hello java";
+		
+		encoder.setEncodingStrategy(base64);
+		String base64Result = encoder.getMessage(message);
+		System.out.println(base64Result);
+		
+		encoder.setEncodingStrategy(normal);
+		String normalResult = encoder.getMessage(message);
+		System.out.println(normalResult);
+		
+		encoder.setEncodingStrategy(new AppendStrategy());
+		String appendResult = encoder.getMessage(message);
+		System.out.println(appendResult);	
 		
 	}
 }
