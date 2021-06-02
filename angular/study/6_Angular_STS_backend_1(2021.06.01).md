@@ -136,7 +136,7 @@ public interface HeroRepository extends JpaRepository<Hero, Long>{
 
 ##### HeroRestController class (Controller)
 
-```jav
+```java
 package com.angular.serverSide.controller;
 
 import org.springframework.web.bind.annotation.RestController;
