@@ -181,7 +181,7 @@ BASE64(HS256암호화(lowSig))
 
 <br/>
 
-##### applicatioin.yml
+##### application.yml
 
 ```yaml
 server:
@@ -207,5 +207,239 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
     database: mysql
+```
+
+<br/>
+
+##### User.java
+
+```java
+package com.pkt.jwt.user;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+import lombok.Data;
+
+@Entity
+@Data
+public class User {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private long id;
+	private String userName;
+	private String passWord;
+	private String roles; //USER, ADMIN
+	
+	public List<String> getRoleList(){
+		if(this.roles.length() > 0) {
+			return Arrays.asList(this.roles.split(","));
+		}
+		return new ArrayList<>();
+	}
+}
+
+```
+
+
+
+<br/>
+
+##### config/SecurityConfig.java
+
+```java
+package com.pkt.jwt.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import com.pkt.jwt.filter.MyFilter3;
+
+import lombok.RequiredArgsConstructor;
+
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	@Autowired
+	private CorsConfig corsConfig;
+
+	
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http
+		/* BasicAuthenticationFilter 실행되기 전에 필터가 작동되도록
+		 Config로 따로 관리 가능, 하지만 시큐리티 필터가 먼저 작동
+		 시큐리티보다 먼저 작동하길 원하면 필터 비포에 SecurityContextpersistenceFilter.class를 걸어준다*/
+		.addFilterBefore(new MyFilter3(), BasicAuthenticationFilter.class )
+		// 서버로 들어오는 모든 요청은 corsFilter를 거치게 된다
+		//@Crossorigin(인증X), 시큐리티 필터에 등록 인증(O)
+		.addFilter(corsConfig.corsFilter())	
+		// CSRF (Cross-site request forgery) 사이트 간 요청 위조
+		.csrf().disable();
+		// 세션을 사용하지 않겠다.
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+		.and()
+	// 폼을 이용한 로그인 하지 않겠다.
+		.formLogin().disable()
+		// 기본적인 hhtp 방식 사용하지 않겠다.
+		.httpBasic().disable()
+		.authorizeRequests()
+		// 이런 주소로 매핑이 되면
+		.antMatchers("/api/v1/user/**")
+		// 이런 권한을 가진 애들만 통과 가능하고
+			.access("hasRole('ROLE_USER') or hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+		.antMatchers("/api/v1/manager/**")
+			.access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
+		.antMatchers("/api/v1/admin/**")
+			.access("hasRole('ROLE_ADMIN')")
+		// 이 외 모든 요청은 모두 접근 가능
+		.anyRequest().permitAll();
+		
+		
+	}
+	
+}
+
+```
+
+<Br/>
+
+##### config/CorsConfig.java
+
+```java
+package com.pkt.jwt.config;
+
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+@Configuration
+public class CorsConfig {
+
+	@Bean
+	public CorsFilter  corsFilter() {
+		CorsConfiguration config = new CorsConfiguration();
+		// 내 서버가 응답을 할 때 json을 자바스크립트에서 처리 할 수 있게 할지 설정하는 것
+		config.setAllowCredentials(true);
+		// 모든 ip에 응답 허용
+		config.addAllowedOrigin("*");
+		// 모든 header에 응답 허용
+		config.addAllowedHeader("*");
+		// 모든 메서드(get, post 등)에 응답 허용
+		config.addAllowedMethod("*");
+		// /api/로 들어오는 모든 요청은 이 설정을 따라라
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/api/**", config);
+		return new CorsFilter(source);
+	}
+	
+
+}
+```
+
+<br/>
+
+### JWT Bearer 인증 방식
+
+##### Http Basic 방식
+
+- Header에 Authorization에 Id, Pw를 넣어서 보내는 방식
+  - Http Basic 방식
+  - 쿠키 사용하지 않고 확장성 좋음
+  - 하지만 보안에 취약
+    - 이를 보완하기 위해 https 를 사용
+
+<br/>
+
+##### Bearer 방식
+
+- Authorization에 토큰(JWT)을 담아서 보냄
+  - Id, Pw를 기반으로 암호화하고 만료 시간 이후 재 발급하기 때문에 노출이 돼도 다른 방식에 비해 위험이 적음
+- 이 방법을 쓰겠다는 선언부
+
+```java
+		// 세션을 사용하지 않겠다.
+		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+		.and()
+	// 폼을 이용한 로그인 하지 않겠다.
+		.formLogin().disable()
+		// 기본적인 http 방식 사용하지 않겠다.
+		.httpBasic().disable()
+		.authorizeRequests()
+```
+
+<br/>
+
+##### filter/Myfilter.java
+
+```java
+package com.pkt.jwt.filter;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class MyFilter3 implements Filter{
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+
+		HttpServletRequest req = (HttpServletRequest) request;
+		HttpServletResponse res = (HttpServletResponse) response;
+		
+		
+		// 토믄 : 코스(임시)
+		// 시큐리티보다 먼저 실행되어야 함
+		// ID, PW 정상적으로 들어와서 로그인이 완료 되면 토큰을 생성하고 응답을 해줌
+		// 요청을 할때마다 header에 Authorization에 value로 토큰을 담음
+		// 그때 넘어오는 토큰이 내가 만든 토큰이 맞는지 검증만 하면 됨 (RSA or HS256)
+		if(req.getMethod().equals("POST")) {
+			System.out.println("포스트 요청 됨");
+			String headerAuth = req.getHeader("Authorization");
+			System.out.println(headerAuth);
+			System.out.println("필터1");
+			if(headerAuth.equals("cos")) {
+				// 필터를 체인 걸어야 1회성이 아님
+				chain.doFilter(req, res);
+			}else {
+				
+				PrintWriter out = res.getWriter();
+				out.println("인증 안됨");
+			}
+		}
+		
+
+
+	}
+
+}
+
 ```
 
