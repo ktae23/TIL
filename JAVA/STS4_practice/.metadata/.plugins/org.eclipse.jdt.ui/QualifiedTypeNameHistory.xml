@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-    <fullyQualifiedTypeName name="kotlin.jvm.PurelyImplements"/>
     <fullyQualifiedTypeName name="javax.servlet.Filter"/>
     <fullyQualifiedTypeName name="org.springframework.beans.factory.annotation.Configurable"/>
     <fullyQualifiedTypeName name="java.io.FilterReader"/>
@@ -60,4 +59,5 @@
     <fullyQualifiedTypeName name="org.springframework.security.core.userdetails.User"/>
     <fullyQualifiedTypeName name="org.springframework.web.util.pattern.PathPattern.PathRemainingMatchInfo"/>
     <fullyQualifiedTypeName name="org.springframework.boot.autoconfigure.security.reactive.PathRequest"/>
+    <fullyQualifiedTypeName name="jdk.internal.jimage.ImageReader.Node"/>
 </qualifiedTypeNameHistroy>
