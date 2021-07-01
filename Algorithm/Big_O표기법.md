@@ -96,6 +96,18 @@ F(n,r){
 
 ### O(m^n)
 
+- M개씩 n번 반복 되는 경우
+
+```c
+F(int [] n, int [] m) {
+    for i = 0 to n.length
+        for j = 0 to m.length
+                print i + j;
+}
+```
+
+
+
 <br/>
 
 ### O(log n)

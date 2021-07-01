@@ -12668,6 +12668,7 @@ org.eclipse.core.runtime.CoreException: Variable references non-existent resourc
 2021-06-19 18:12:23,273 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
 2021-06-19 18:12:23,273 [Worker-63: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\zz238\TIL\JAVA\STS4_practice\security1\src\test\resources
 2021-06-19 20:16:34,474 [Worker-0: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+<<<<<<< HEAD
 2021-06-24 11:00:52,983 [Worker-3: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
 2021-06-24 11:01:00,599 [Worker-8: Building] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.mulcam:jwt:0.0.1-SNAPSHOT @ C:\Users\user\pkt\til\java\STS4_practice\jwt\pom.xml.
 2021-06-24 11:01:03,323 [Worker-8: Building] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: com.mulcam:security1:0.0.1-SNAPSHOT @ C:\Users\user\pkt\til\java\STS4_practice\security1\pom.xml.
@@ -12935,3 +12936,7 @@ org.eclipse.core.runtime.CoreException: Variable references non-existent resourc
 2021-06-24 11:02:46,162 [Worker-10: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
 2021-06-24 11:02:46,162 [Worker-10: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered properties files.
 2021-06-24 11:02:46,162 [Worker-10: Building] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory C:\Users\user\pkt\til\java\STS4_practice\security1\src\test\resources
+=======
+2021-06-22 21:37:46,891 [Worker-0: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is out-of-date. Trying to update.
+2021-06-28 21:36:48,100 [Worker-0: Loading available Gradle versions] INFO  o.e.b.c.i.u.g.PublishedGradleVersions - Gradle version information cache is up-to-date. Trying to read.
+>>>>>>> 89978e5e5e286f7ba8abb4837d8dbd8fe4708b5b

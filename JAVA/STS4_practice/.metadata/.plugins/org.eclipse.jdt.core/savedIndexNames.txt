@@ -60,4 +60,46 @@ INDEX VERSION 1.131+C:\Users\user\pkt\til\java\STS4_practice\.metadata\.plugins\
 3849979881.index
 2559302847.index
 1454657436.index
+<<<<<<< HEAD
 3385957466.index
+=======
+3612025112.index
+1154832965.index
+1124651080.index
+=======
+INDEX VERSION 1.131+C:\Users\zz238\TIL\JAVA\STS4_practice\.metadata\.plugins\org.eclipse.jdt.core
+1072689144.index
+1160467626.index
+<<<<<<< HEAD
+=======
+1218904726.index
+3302180148.index
+3396651613.index
+435006285.index
+491932831.index
+143951363.index
+812484135.index
+3901151650.index
+3343162619.index
+670647548.index
+76127545.index
+3530022918.index
+3991513403.index
+3209618420.index
+1305106489.index
+623903414.index
+335399443.index
+2996893834.index
+2746428872.index
+4225996110.index
+3631234836.index
+450455005.index
+2793595464.index
+2841552869.index
+3394425640.index
+2291346555.index
+1862292754.index
+2801762978.index
+>>>>>>> 64d2485160ce2f01f06a79cc67be0c96748e99e8
+>>>>>>> 6084ca94ab4a7a848f76d9d029adb46e0c1f7d9e
+>>>>>>> 89978e5e5e286f7ba8abb4837d8dbd8fe4708b5b
