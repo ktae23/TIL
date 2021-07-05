@@ -1,4 +1,6 @@
-## Linked List - 엔지니어대한민국 강의 정리
+## Linked List 
+
+### [출처 : 엔지니어대한민국 유튜브 채널](https://www.youtube.com/watch?v=6Iq5iMCVsXA)
 
 - 길이가 정해져 있는 Array와 달리 뒤의 노드의 주소를 갖는 특성 상 자료의 길이를 바꾸거나 삽입, 삭제가 가능
 

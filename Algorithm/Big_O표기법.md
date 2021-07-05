@@ -133,7 +133,9 @@ F(k, arr, s, e) {
 - O(squre root(n))
 - 사각형의 맨 위 네개(제곱근)를 구하는 알고리즘
 
-![image-20210607224059814](C:\Users\zz238\TIL\Algorithm\img\sqrt)
+![image-20210607224059814](https://github.com/ktae23/TIL/blob/master/Algorithm/img/sqrt.png)
+
+
 
 <br/>
 
