@@ -16,11 +16,11 @@ public class TodoResponse {
     private String url;
 
 
-    public TodoResponse(TodoEntity todoEntity){
-        this.id = todoEntity.getId();
-        this.order= todoEntity.getOrder();
-        this.title= todoEntity.getTitle();
-        this.compoleted = todoEntity.getCompleted();
+    public TodoResponse(TodoModel todoModel){
+        this.id = todoModel.getId();
+        this.order= todoModel.getOrder();
+        this.title= todoModel.getTitle();
+        this.compoleted = todoModel.getCompleted();
         
         this.url= "http://localhost:8080/" + this.id;
     }
