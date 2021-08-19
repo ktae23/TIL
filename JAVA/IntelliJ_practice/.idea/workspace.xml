@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ee144ba6-4d7a-428f-87db-c94a10d2604b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/todo-server/src/main/java/org/example/model/TodoModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/todo-server/src/main/java/org/example/model/TodoModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo-server/src/main/java/org/example/model/TodoResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/todo-server/src/main/java/org/example/model/TodoResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo-server/src/main/java/org/example/repository/TodoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/todo-server/src/main/java/org/example/repository/TodoRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo-server/src/main/java/org/example/service/TodoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/todo-server/src/main/java/org/example/service/TodoService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo-server/src/main/java/org/example/web/TodoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/todo-server/src/main/java/org/example/web/TodoController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo-server/src/test/java/org/example/web/TodoControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/todo-server/src/test/java/org/example/web/TodoControllerTest.java" afterDir="false" />
-    </list>
+    <list default="true" id="ee144ba6-4d7a-428f-87db-c94a10d2604b" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,17 +27,6 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/monaco-editor" />
   </component>
   <component name="RunManager">
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
-      <option name="arquillianRunConfiguration">
-        <value>
-          <option name="containerStateName" value="" />
-        </value>
-      </option>
-      <option name="TEST_OBJECT" value="class" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="MonacoEditorApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="monaco-editor" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.monacoeditor.MonacoEditorApplication" />
@@ -62,6 +44,7 @@
       <option name="presentableId" value="Default" />
       <updated>1627821860359</updated>
       <workItem from="1627821861852" duration="121000" />
+      <workItem from="1628507569221" duration="21000" />
     </task>
     <servers />
   </component>

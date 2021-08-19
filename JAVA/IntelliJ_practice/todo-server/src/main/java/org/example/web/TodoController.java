@@ -66,7 +66,9 @@ public class TodoController {
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteOne(@PathVariable Long id) {
         log.info("DELETE");
-        this.service.deleteById(id);
+        if(id.equals("userId")){
+            this.service.deleteById(id);
+        }
         return ResponseEntity.ok().build();
     }
 
