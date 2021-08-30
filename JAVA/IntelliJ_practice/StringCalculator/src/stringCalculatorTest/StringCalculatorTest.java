@@ -1,22 +1,22 @@
-package stringCalculator;
-
 import org.junit.Before;
 import org.junit.Test;
+import stringCalculator.StringCalculator;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-class StringCalculatorTest {
+public class StringCalculatorTest {
 
-    private StringCalculator stringCalculator;
+    StringCalculator stringCalculator;
 
     @Before
-    public void setup(){
+    public void setUp() throws Exception {
         stringCalculator = new StringCalculator();
         System.out.println("before");
+
     }
 
     @Test
-    public void StringAdd(){
+    public void calculator() {
         assertEquals(6, stringCalculator.calculator("1,2,3"));
         assertEquals(10, stringCalculator.calculator("//-\n1-2-3-4"));
         assertEquals(15, stringCalculator.calculator("1;2;3;4;5"));
@@ -24,7 +24,6 @@ class StringCalculatorTest {
         assertEquals(15, stringCalculator.calculator(""));
         assertEquals(15, stringCalculator.calculator(null));
     }
-
 
 
 }

@@ -2,17 +2,6 @@ package stringCalculator;
 
 public class StringCalculator {
 
-    public static void main(String[] args) {
-        StringCalculator calculator = new StringCalculator();
-        calculator.calculator("1,2,3");
-        calculator.calculator("//-\n1-2-3-4");
-        calculator.calculator("1;2;3;4;5");
-        calculator.calculator(";;;");
-        calculator.calculator("");
-        calculator.calculator(null);
-
-    }
-
     public int calculator(String input){
         int output = 0;
         String[] tmp;
