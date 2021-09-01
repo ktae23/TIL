@@ -3,55 +3,52 @@ package stringCalculator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class StringCalculator2 {
+public class StringCalculator3 {
 
     public static void main(String[] args) {
-        StringCalculator2 stringCalculator = new StringCalculator2();
+        StringCalculator3 stringCalculator = new StringCalculator3();
 
-        stringCalculator.calculator("1,2,3");
+        stringCalculator.calculator("1,   2,3");
         stringCalculator.calculator("//-\n1-2-3-4");
-        stringCalculator.calculator("//;\n1;2;3;4");
-        stringCalculator.calculator("1:2:3:4:5");
-        stringCalculator.calculator("1:2,3:  4,5  ");
-        stringCalculator.calculator(":::");
+        stringCalculator.calculator("//;\n1;2 ;3; 4");
+        stringCalculator.calculator("1:2:3:4:5:6:7");
+        stringCalculator.calculator("1:2,3:  4,5  :8");
+        stringCalculator.calculator(":,:,:");
         stringCalculator.calculator("  ");
         stringCalculator.calculator(null);
         stringCalculator.calculator("2:-1:3");
     }
 
     public int calculator(String input) {
-        int output = 0;
-        String[] tmp = null;
 
-        if (input == null || "".equals(input) || input.length() < 1 || input.isEmpty()) {
+
+        
+
+        if(input != null && !input.isEmpty()){
+            input = input.replaceAll(" ", "");
+        }
+
+        if (input == null || "".equals(input)) {
+            System.out.println("결과 : 입력 없음");
             return 0;
         }
-        input = input.replaceAll(" ", "");
+        return defaultCalculator(input);
+    }
+
+    private int defaultCalculator(String input) {
 
         if (input.length() == 1) {
             return isPositive(input);
         }
-
-        output = defaultCalculator(input);
-
-        if(output == 0){
-            output = customCalculator(input);
-        }
-
-        System.out.println("결과 : " + output);
-        return output;
-    }
-
-    private int defaultCalculator(String input) {
-        int output = 0;
         if(input.contains(":") || input.contains(",")) {
             System.out.println("구분자 : , or :");
-            output = sum(input.split(":|,"));
+            return sum(input.split(":|,"));
         }
-        return output;
+        return customCalculator(input);
     }
 
     private int customCalculator (String input) {
+
         int output = 0;
         Matcher match = Pattern.compile("//(.)\n(.*)").matcher(input);
         if (match.find()) {
@@ -64,10 +61,12 @@ public class StringCalculator2 {
     }
 
     private int sum(String[] tmp){
+
         int output = 0;
         for (int i = 0; i < tmp.length; i++) {
             output += isPositive(tmp[i]);
         }
+        System.out.println("결과 : " + output);
         return output;
     }
 
