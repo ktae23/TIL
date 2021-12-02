@@ -224,15 +224,12 @@ ___
     <summary>Cloud</summary>
 🟢 당신이 지금 알아야할 AWS<br>
     </details>
-
-<hr /
+<hr />
 
 <details>
     <summary>Git & Git_Hub</summary>
 🟢 박미정의 깃&깃허브 입문<br>
     </details>
-
-
 ___
 
 <details>
