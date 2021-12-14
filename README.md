@@ -33,11 +33,16 @@ ___
         </summary>
 🟢 자바 프로그래밍 입문 -박은종 <br>
 🟢 스프링 입문 - 코드로 배우는 스프링 부트, 웹 MVC, DB 접근 기술 -김영한<br>
+🟢 스프링 핵심 원리 - 기본편 -김영한<br>
+🟢 스프링 MVC 1편 - 백엔드 웹 개발 핵심 기술 -김영한<br>
+🟢 스프링 MVC 2편 - 백엔드 웹 개발 활용 기술 -김영한<br>
+🟢 스프링 핵심 원리 - 고급편 -김영한<br>
 🟢 이것이 자바다 - 신용권<br>
 🟢 K-Digital Training - 멀티캠퍼스 온·오프 연계 AI활용 지능형 서비스 개발- 전은수<br>
 🟢 시크릿코드 : SpringBoot/JPA - 컨트롤러 구현 편<br>
 🟢 초격차 : java/spring<br>
 </details>
+
 
 ___
 
@@ -62,8 +67,14 @@ ___
     <summary>DataBase</summary>
 🟢 DataBase 1 & 2 - MySQL - 생활코딩<br>
     </details>
+<hr />
 
-___
+<details>
+    <summary>Cloud</summary>
+🟢 퍼블릭 클라우드 개발을 위한 AWS 과정 - 이한기<br>
+    </details>
+
+<hr />
 
 <details>
     <summary>Git & Git_Hub</summary>
@@ -77,8 +88,12 @@ ___
 🟢 컴퓨터, 웹, 코딩, 프로그래밍의 시작 - Web1 - 생활코딩<br>
 🟢 Kevin의 알기 쉬운 Java 개발자 로드맵 이야기 - Kevin<br>
 🟢 헬로 데이터 사이언스 - 부스트코스<br>
-🟢 비전공자를 위한 개발자 취업 올인원 가이드 [통합편]<br>
+🟢 비전공자를 위한 개발자 취업 올인원 가이드 [통합편] - 한정수<br>
+🟢 모든 개발자를 위한 HTTP 웹 기본 지식 -김영한<br>
+
+
 </details>
+
 
 ---
 
@@ -108,7 +123,9 @@ ___
 🟢 자료구조와 함께 배우는 알고리즘 입문 - JAVA 편<br>
 🟢 초보 웹 개발자를 위한 스프링5 프로그래밍 입문<br>
 🟢 스프링5 레시피 : 스프링 애플리케이션 개발에 유용한 161가지 문제 해결 기법<br>
+🟢 스프링 부트와 AWS로 혼자 구현하는 웹 서비스 <br>
 </details>
+
 
 ___
 
@@ -201,7 +218,18 @@ ___
     <summary>DataBase</summary>
 🟢 이것이 오라클이다<br>
 </details>
+<hr />
 
+<details>
+    <summary>Cloud</summary>
+🟢 당신이 지금 알아야할 AWS<br>
+    </details>
+<hr />
+
+<details>
+    <summary>Git & Git_Hub</summary>
+🟢 박미정의 깃&깃허브 입문<br>
+    </details>
 ___
 
 <details>
