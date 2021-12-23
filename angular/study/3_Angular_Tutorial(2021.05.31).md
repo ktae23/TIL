@@ -2,7 +2,7 @@
 
 ### 1. Angular 구조
 
-![](https://github.com/ktae23/TIL/blob/master/angular/imgs/20210531163109.png)
+![](../imgs/20210531163109.png)
 
 <br/>
 

@@ -22,7 +22,7 @@
 
 #### 2. 개발을 위한 TOOL
 
-![image-20210531104354985](https://github.com/ktae23/TIL/blob/master/angular/imgs/image-20210531104354985.png)
+![](../imgs/image-20210531104354985.png)
 
 ##### VSCode plug in 설치
 
@@ -182,7 +182,7 @@ ng -g component [컴포넌트명]
 
 - ​	디렉티브 , 서비스 , 파이프 , 클래스 등 같은 형태로 쉽게 폴더 구조 및 파일을 생성할 수 있습니다
 
-![image-20210531104006401](https://github.com/ktae23/TIL/blob/master/angular/imgs/image-20210531104006401.png)
+![image-20210531104006401](../imgs/image-20210531104006401.png)
 
 - ```javascript
   //빌드 (ng build)
