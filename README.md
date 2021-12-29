@@ -41,16 +41,21 @@ ___
 🟢 K-Digital Training - 멀티캠퍼스 온·오프 연계 AI활용 지능형 서비스 개발- 전은수<br>
 🟢 시크릿코드 : SpringBoot/JPA - 컨트롤러 구현 편<br>
 🟢 초격차 : java/spring<br>
+🟢 객체 지향 프로그래밍 입문 - 최범균<br>
+🟢 자바 ORM 표준 JPA 프로그래밍 - 기본편<br>
+🟢 실전! 스프링 데이터 JPA<br>
+🟢 실전! 스프링 부트와 JPA 활용 1 - 웹 애플리케이션 개발<br>
+🟢 실전! 스프링 부트와 JPA 활용 2 - API 개발과 성능 최적화<br>
+🟢 실전! Querydsl<br>
 </details>
-
 
 ___
 
 <details>
     <summary>Front-End</summary>
 🟢 React - 생활코딩<br>
-🟢 React JS Crash Course 2021 - Traversy Media   
-🟢 Angular 7.0 프로그래밍 - 강의 운영 업무 중 수강    
+🟢 React JS Crash Course 2021 - Traversy Media  <br>
+🟢 Angular 7.0 프로그래밍 - 강의 운영 업무 중 수강   <br> 
 </details>
 ___
 
@@ -70,9 +75,11 @@ ___
 <hr />
 
 <details>
-    <summary>Cloud</summary>
+    <summary>Cloud / Docker</summary>
 🟢 퍼블릭 클라우드 개발을 위한 AWS 과정 - 이한기<br>
+🟢 Kubernetes와 Docker로 한 번에 끝내는 컨테이너 기반 MSA <br>
     </details>
+
 
 <hr />
 
@@ -90,16 +97,11 @@ ___
 🟢 헬로 데이터 사이언스 - 부스트코스<br>
 🟢 비전공자를 위한 개발자 취업 올인원 가이드 [통합편] - 한정수<br>
 🟢 모든 개발자를 위한 HTTP 웹 기본 지식 -김영한<br>
-
-
 </details>
-
 
 ---
 
 <br/>
-
-
 
 # 💥 책 기록
 
@@ -125,8 +127,6 @@ ___
 🟢 스프링5 레시피 : 스프링 애플리케이션 개발에 유용한 161가지 문제 해결 기법<br>
 🟢 스프링 부트와 AWS로 혼자 구현하는 웹 서비스 <br>
 </details>
-
-
 ___
 
 
@@ -240,7 +240,11 @@ ___
 🟢 리얼월드 HTTP : 역사와 코드로 배우는 인터넷과 웹 기술<br>
 🟢 모두의 네트워크<br>
 🟢 클린코드<br>
+🟢 객체지향 사실과 오해<br>
+🟢 자바와 JUnit을 활용한 실용주의 단위 테스트<br>
+🟢 자료구조와 함께 배우는 알고리즘 입문(자바)<br>
 </details>
+
 
 ___
 
