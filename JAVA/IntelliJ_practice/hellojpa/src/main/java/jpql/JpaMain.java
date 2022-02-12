@@ -4,6 +4,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 public class JpaMain {
@@ -34,19 +35,18 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query = "select m.username, 'HELLO', true from Member m" +
-                    " where m.type = :userType";
-           List<Object[]> resultList =  em.createQuery(query)
-                   .setParameter("userType", MemberType.ADMIN)
+            String query = "select " +
+                    "case when m.age <= 10 then '학생요금' " +
+                    "   when m.age >= 60 then '경로요금' " +
+                    "   else '일반요금' " +
+                    "end " +
+                    "from Member m";
+            List<String> result = em.createQuery(query, String.class)
                     .getResultList();
 
-            for (Object[] result : resultList) {
-                System.out.println("result[0] = " + result[0]);
-                System.out.println("result[1] = " + result[1]);
-                System.out.println("result[2] = " + result[2]);
-
+            for (String s : result) {
+                System.out.println("s = " + s);
             }
-
 
             tx.commit();
         } catch (Exception e) {
