@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
-  </component>
   <component name="ChangeListManager">
-    <list default="true" id="ee144ba6-4d7a-428f-87db-c94a10d2604b" name="Default Changelist" comment="" />
+    <list default="true" id="b45fea9c-414f-4381-956a-809d7eb008fd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/jpashop/src/main/java/jpabook/jpashop/Member.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/jpashop/src/main/java/jpabook/jpashop/MemberRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/jpashop/src/test/java/jpabook/jpashop/MemberRepositoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,23 +17,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
-  <component name="ProjectId" id="1w7uHLyLz10wloVxM6slMYkmU6r" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="false" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/monaco-editor" />
-  </component>
   <component name="RunManager">
-    <configuration name="MonacoEditorApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-      <module name="monaco-editor" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.monacoeditor.MonacoEditorApplication" />
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="IntelliJ_practice" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="IntelliJ_practice" />
+      <option name="filePath" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -38,13 +41,12 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="ee144ba6-4d7a-428f-87db-c94a10d2604b" name="Default Changelist" comment="" />
-      <created>1627821860359</created>
+      <changelist id="b45fea9c-414f-4381-956a-809d7eb008fd" name="Changes" comment="" />
+      <created>1644503016458</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1627821860359</updated>
-      <workItem from="1627821861852" duration="121000" />
-      <workItem from="1628507569221" duration="21000" />
+      <updated>1644503016458</updated>
+      <workItem from="1644503017951" duration="33000" />
     </task>
     <servers />
   </component>
