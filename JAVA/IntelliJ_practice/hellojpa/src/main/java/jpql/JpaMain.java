@@ -25,7 +25,7 @@ public class JpaMain {
             em.persist(team);
 
             Member member = new Member();
-//            member.setUsername("TeamA");
+            member.setUsername("TeamA");
             member.setAge(10);
             member.setType(MemberType.ADMIN);
             member.setTeam(team);
@@ -35,8 +35,8 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // 단일 값 연관 경로 / 내부 탐색 가능 ( 묵시적 이너 조인 )
-            String query = "select m.team.name from Member m";
+            // 컬렉션 값 연관 경로 ( 내부적 조인 발생, 탐색 불가 ->  명시적 조인을 통해 별칭을 얻으면 탐색 가능)
+            String query = "select m.username from Team t join t.members m";
             List<String> result = em.createQuery(query, String.class)
                     .getResultList();
 
