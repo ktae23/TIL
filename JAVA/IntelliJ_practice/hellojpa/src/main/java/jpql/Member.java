@@ -1,11 +1,10 @@
 package jpql;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import net.bytebuddy.dynamic.TypeResolutionStrategy;
+
+import javax.persistence.*;
+
+import static javax.persistence.FetchType.*;
 
 @Entity
 public class Member {
@@ -15,9 +14,14 @@ public class Member {
     private String username;
     private int age;
 
-    @ManyToOne
+    @ManyToOne(fetch= LAZY)
     @JoinColumn(name = "TEAM_ID")
     private Team team;
+
+    public void changeTeam(Team team) {
+        this.team = team;
+        team.getMembers().add(this);
+    }
 
 
     public Long getId() {
@@ -42,6 +46,14 @@ public class Member {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
     }
 
     @Override
