@@ -35,8 +35,8 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // 두 값이 같으면 null 아니면 첫번째 값 반환
-            String query = "select nullif(m.username, '관리자') from Member m";
+            // 단일 값 연관 경로 / 내부 탐색 가능 ( 묵시적 이너 조인 )
+            String query = "select m.team.name from Member m";
             List<String> result = em.createQuery(query, String.class)
                     .getResultList();
 
