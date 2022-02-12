@@ -24,24 +24,36 @@ public class JpaMain {
             team.setName("TeamA");
             em.persist(team);
 
+            Team team2 = new Team();
+            team2.setName("TeamB");
+            em.persist(team2);
+
             Member member = new Member();
-            member.setUsername("TeamA");
-            member.setAge(10);
-            member.setType(MemberType.ADMIN);
+            member.setUsername("회원1");
             member.setTeam(team);
 
+            Member member2 = new Member();
+            member2.setUsername("회원2");
+            member2.setTeam(team);
+
+            Member member3 = new Member();
+            member3.setUsername("회원3");
+            member3.setTeam(team2);
+
             em.persist(member);
+            em.persist(member2);
+            em.persist(member3);
 
             em.flush();
             em.clear();
 
-            // 컬렉션 값 연관 경로 ( 내부적 조인 발생, 탐색 불가 ->  명시적 조인을 통해 별칭을 얻으면 탐색 가능)
-            String query = "select m.username from Team t join t.members m";
-            List<String> result = em.createQuery(query, String.class)
+            // 즉시로딩이든 지연 로딩이든 1 + N 문제가 발생하기 때문에 페치 조인으로 풀어야 함
+            String query = "select m from Member m join fetch m.team";
+            List<Member> result = em.createQuery(query, Member.class)
                     .getResultList();
 
-            for (String s : result) {
-                System.out.println("s = " + s);
+            for (Member m : result) {
+                System.out.println("m  = " + m.getUsername() + " m.team = " + m.getTeam().getName()) ;
             }
 
             tx.commit();
