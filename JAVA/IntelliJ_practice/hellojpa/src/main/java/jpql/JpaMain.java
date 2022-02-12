@@ -26,6 +26,7 @@ public class JpaMain {
             Member member = new Member();
             member.setUsername("TeamA");
             member.setAge(10);
+            member.setType(MemberType.ADMIN);
             member.setTeam(team);
 
             em.persist(member);
@@ -33,17 +34,18 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-//              세타 조인 ( cross join)
-//            String query = "select m from Member m, Team t where m.username = t.name";
-
-//            연관관계 없는 엔티티 조인
-//            String query = "select m from Member m left join Team t on t.name = m.username";
-
-            String query = "select m from Member m left join m.team t on t.name = 'TeamA'";
-            List<Member> resultList = em.createQuery(query, Member.class)
+            String query = "select m.username, 'HELLO', true from Member m" +
+                    " where m.type = :userType";
+           List<Object[]> resultList =  em.createQuery(query)
+                   .setParameter("userType", MemberType.ADMIN)
                     .getResultList();
 
-            System.out.println("resultList = " + resultList.size());
+            for (Object[] result : resultList) {
+                System.out.println("result[0] = " + result[0]);
+                System.out.println("result[1] = " + result[1]);
+                System.out.println("result[2] = " + result[2]);
+
+            }
 
 
             tx.commit();
