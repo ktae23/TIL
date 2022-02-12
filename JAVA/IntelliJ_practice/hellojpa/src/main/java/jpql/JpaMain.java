@@ -47,13 +47,18 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // 즉시로딩이든 지연 로딩이든 1 + N 문제가 발생하기 때문에 페치 조인으로 풀어야 함
-            String query = "select m from Member m join fetch m.team";
-            List<Member> result = em.createQuery(query, Member.class)
+            // 중복 값으로 인한 조회값 추가 조회 문제
+            // SQL distinct는 모든 값이 같아야 되기 때문에 애플리케이션 수준에서 같은 엔티티일 경우 중복 제거를 해줘야 한다.
+            // JPQL의 distinct는 이 기능을 제공
+            String query = "select distinct t from Team t join fetch t.members";
+            List<Team> result = em.createQuery(query, Team.class)
                     .getResultList();
 
-            for (Member m : result) {
-                System.out.println("m  = " + m.getUsername() + " m.team = " + m.getTeam().getName()) ;
+            for (Team teams : result) {
+                System.out.println("teams  = " + teams.getName() + " | members.size() = " + teams.getMembers().size()) ;
+                for (Member members : teams.getMembers()) {
+                    System.out.println("member = " + members);
+                }
             }
 
             tx.commit();
