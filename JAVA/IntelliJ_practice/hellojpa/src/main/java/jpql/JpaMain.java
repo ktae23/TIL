@@ -44,17 +44,17 @@ public class JpaMain {
             em.persist(member2);
             em.persist(member3);
 
-            em.flush();
+            // flush 자동 호출
+            // 영속성 컨텐스트 반영하기 전에 벌크 연산을 먼저 실행
+            // 또는 벌크 연산 이후 영속성 컨텍스트 초기화
+            // DB에 반영했는데 영속성 컨텍스트에는 이전 값이 남아 있기 때문
+            int resultCount = em.createQuery("update Member m set m.age = 20")
+                    .executeUpdate();
+            System.out.println("resultCount = " + resultCount);
             em.clear();
 
-            List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
-                    .setParameter("username", "회원1")
-                    .getResultList();
-
-            for (Member member1 : resultList) {
-                System.out.println("member1 = " + member1)  ;
-            }
-
+            Member findMember = em.find(Member.class, member.getId());
+            System.out.println("findMember.getAge() = " + findMember.getAge());
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
