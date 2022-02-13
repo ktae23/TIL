@@ -11,8 +11,7 @@ import java.util.List;
 import static javax.persistence.FetchType.LAZY;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 public class Category {
 
     @Id
