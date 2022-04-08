@@ -68,7 +68,7 @@ class ItemRepositoryTest {
 
     @Test
     @DisplayName("상품명, 상품상세설명 or 테스트")
-    void findByItemNameOrItemDetailTest(){
+    void findByItemNameOrItemDetailTest() {
         List<Item> itemList = itemRepository.findByItemNameOrItemDetail("테스트 상품0", "테스트 상품 상세 설명5");
         Optional<Item> fistItem = itemRepository.findById(1L);
         Optional<Item> sixthItem = itemRepository.findById(6L);
@@ -78,5 +78,26 @@ class ItemRepositoryTest {
         }
         fail("조회 대상이 없습니다.");
 
+    }
+
+    @Test
+    @DisplayName("가격 LessThan 테스트")
+    void findByPriceLessThanTest(){
+        List<Item> itemList = itemRepository.findByPriceLessThan(10005);
+        Optional<Item> fistItem = itemRepository.findById(1L);
+        Optional<Item> secondItem = itemRepository.findById(2L);
+        Optional<Item> thirdItem = itemRepository.findById(3L);
+        Optional<Item> fourthItem = itemRepository.findById(4L);
+        Optional<Item> fifthItem = itemRepository.findById(5L);
+
+        if (fistItem.isPresent()
+                && secondItem.isPresent()
+                && thirdItem.isPresent()
+                && fourthItem.isPresent()
+                && fifthItem.isPresent()) {
+            assertThat(itemList).containsExactly(fistItem.get(), secondItem.get(), thirdItem.get(), fourthItem.get(), fifthItem.get());
+            return;
+        }
+        fail("조회 대상이 없습니다.");
     }
 }
