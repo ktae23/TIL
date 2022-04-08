@@ -82,7 +82,7 @@ class ItemRepositoryTest {
 
     @Test
     @DisplayName("가격 LessThan 테스트")
-    void findByPriceLessThanTest(){
+    void findByPriceLessThanTest() {
         List<Item> itemList = itemRepository.findByPriceLessThan(10005);
         Optional<Item> fistItem = itemRepository.findById(1L);
         Optional<Item> secondItem = itemRepository.findById(2L);
@@ -100,4 +100,30 @@ class ItemRepositoryTest {
         }
         fail("조회 대상이 없습니다.");
     }
+
+    @Test
+    @DisplayName("가격 내림차순 조회 테스트")
+    void findByPriceLessThanOrderByPriceDescTest(){
+        List<Item> itemList = itemRepository.findByPriceLessThanOrderByPriceDesc(10005);
+        Optional<Item> fistItem = itemRepository.findById(1L);
+        Optional<Item> secondItem = itemRepository.findById(2L);
+        Optional<Item> thirdItem = itemRepository.findById(3L);
+        Optional<Item> fourthItem = itemRepository.findById(4L);
+        Optional<Item> fifthItem = itemRepository.findById(5L);
+
+        if (fistItem.isPresent()
+                && secondItem.isPresent()
+                && thirdItem.isPresent()
+                && fourthItem.isPresent()
+                && fifthItem.isPresent()) {
+            assertThat(itemList.get(0)).isEqualTo(fifthItem.get());
+            assertThat(itemList.get(1)).isEqualTo(fourthItem.get());
+            assertThat(itemList.get(2)).isEqualTo(thirdItem.get());
+            assertThat(itemList.get(3)).isEqualTo(secondItem.get());
+            assertThat(itemList.get(4)).isEqualTo(fistItem.get());
+            return;
+        }
+        fail("조회 대상이 없습니다.");
+    }
+
 }
