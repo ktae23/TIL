@@ -65,4 +65,18 @@ class ItemRepositoryTest {
         }
         fail("조회 대상이 없습니다.");
     }
+
+    @Test
+    @DisplayName("상품명, 상품상세설명 or 테스트")
+    void findByItemNameOrItemDetailTest(){
+        List<Item> itemList = itemRepository.findByItemNameOrItemDetail("테스트 상품0", "테스트 상품 상세 설명5");
+        Optional<Item> fistItem = itemRepository.findById(1L);
+        Optional<Item> sixthItem = itemRepository.findById(6L);
+        if (fistItem.isPresent() && sixthItem.isPresent()) {
+            assertThat(itemList).containsExactly(fistItem.get(), sixthItem.get());
+            return;
+        }
+        fail("조회 대상이 없습니다.");
+
+    }
 }
