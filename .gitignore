@@ -353,7 +353,7 @@ out/
 !src/**/build/
 
 # Ignore Gradle GUI config
-*/gradle-app.setting
+**/gradle-app.setting
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
@@ -362,7 +362,7 @@ out/
 !gradle-wrapper.properties
 
 # Cache of project
-*/.gradletasknamecache
+**/.gradletasknamecache
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core
@@ -374,16 +374,16 @@ out/
 
 ### Maven ###
 target/
-*/pom.xml.tag
-*/pom.xml.releaseBackup
-*/pom.xml.versionsBackup
-*/pom.xml.next
-*/release.properties
-*/dependency-reduced-pom.xml
-*/buildNumber.properties
-*/.mvn/timing.properties
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
-*/.mvn/wrapper/maven-wrapper.jar
+**/.mvn/wrapper/maven-wrapper.jar
 
 # Eclipse m2e generated files
 # Eclipse Core
@@ -395,7 +395,7 @@ target/
 
 
 # mpeltonen/sbt-idea plugin
-*/.idea_modules/
+**/.idea_modules/
 
 # JIRA plugin
 atlassian-ide-plugin.xml
