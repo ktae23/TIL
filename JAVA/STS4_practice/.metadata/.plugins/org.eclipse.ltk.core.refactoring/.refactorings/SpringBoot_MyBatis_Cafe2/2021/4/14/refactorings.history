@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring accessors="true" comment="Delete 3 elements from project &apos;SpringBoot_MyBatis_Cafe2&apos;&#x0D;&#x0A;- Original project: &apos;SpringBoot_MyBatis_Cafe2&apos;&#x0D;&#x0A;- Original elements:&#x0D;&#x0A;     newfildd.cld&#x0D;&#x0A;     newfile.cld&#x0D;&#x0A;     newfile.ucd" description="Delete elements" element1="newfile.cld" element2="newfile.ucd" element3="newfildd.cld" elements="0" flags="589830" id="org.eclipse.jdt.ui.delete" resources="3" stamp="1617344051471" subPackages="false" version="1.0"/>
-</session>
