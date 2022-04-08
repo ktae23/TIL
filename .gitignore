@@ -348,7 +348,7 @@ out/
 
 
 ### Gradle ###
-*/.gradle
+**/.gradle/
 **/build/
 !src/**/build/
 
@@ -375,6 +375,7 @@ out/
 ### Maven ###
 target/
 **/.mvn/
+**/.mvnw/
 **/pom.xml.tag
 **/pom.xml.releaseBackup
 **/pom.xml.versionsBackup
