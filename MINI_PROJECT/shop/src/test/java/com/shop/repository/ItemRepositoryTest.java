@@ -1,13 +1,17 @@
 package com.shop.repository;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shop.constant.ItemSellStatus;
 import com.shop.entity.Item;
+import com.shop.entity.QItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +24,9 @@ class ItemRepositoryTest {
 
     @Autowired
     ItemRepository itemRepository;
+
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     @DisplayName("상품 저장 테스트")
@@ -148,8 +155,37 @@ class ItemRepositoryTest {
 
     @Test
     @DisplayName("nativeQuery 속성을 이용한 상품 조회 테스트")
-    void finByItemDetailByNative(){
+    void finByItemDetailByNative() {
         List<Item> itemList = itemRepository.findByItemDetailByNative("테스트 상품 상세 설명");
+        Optional<Item> fistItem = itemRepository.findById(1L);
+        Optional<Item> fifthItem = itemRepository.findById(5L);
+        Optional<Item> tenthItem = itemRepository.findById(10L);
+        if (fistItem.isPresent()
+                && fifthItem.isPresent()
+                && tenthItem.isPresent()
+        ) {
+            assertThat(itemList.get(0)).isEqualTo(tenthItem.get());
+            assertThat(itemList.get(5)).isEqualTo(fifthItem.get());
+            assertThat(itemList.get(9)).isEqualTo(fistItem.get());
+            assertThat(itemList.size()).isEqualTo(10);
+            return;
+        }
+        fail("조회 대상이 없습니다.");
+    }
+
+    @Test
+    @DisplayName("QueryDSL 조회 테스트 1")
+    void queryDslTest() {
+        // given
+        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        QItem qItem = QItem.item;
+        // when
+        List<Item> itemList = queryFactory.selectFrom(qItem)
+                .where(qItem.itemSellStatus.eq(ItemSellStatus.SELL))
+                .where(qItem.itemDetail.like("%" + "테스트 상품 상세 설명" + "%"))
+                .orderBy(qItem.price.desc())
+                .fetch();
+        // then
         Optional<Item> fistItem = itemRepository.findById(1L);
         Optional<Item> fifthItem = itemRepository.findById(5L);
         Optional<Item> tenthItem = itemRepository.findById(10L);
