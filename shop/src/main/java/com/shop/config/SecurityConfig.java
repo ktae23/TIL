@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,25 +27,39 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final MemberService memberService;
 
     @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/css/**", "/js/**", "/img/**");
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .formLogin()
+        http.formLogin()
                 .loginPage("/members/login")
                 .defaultSuccessUrl("/")
                 .usernameParameter("email")
                 .failureUrl("/members/login/error")
                 .and()
                 .logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher(("/members/logout")))
+                .logoutRequestMatcher(
+                        new AntPathRequestMatcher(("/members/logout")))
                 .logoutSuccessUrl("/")
                 .and()
                 .csrf()
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                 .cors().configurationSource(corsConfigurationSource())
-                .and()
-                .authorizeRequests()
-                .anyRequest().permitAll();
+        ;
+
+        http.authorizeRequests()
+                .mvcMatchers("/", "/members/**", "/item/**", "/images/**").permitAll()
+                .mvcMatchers("/admin/**").hasAuthority("ADMIN")
+                .anyRequest().permitAll()
+        ;
+
+        http.exceptionHandling()
+                .authenticationEntryPoint(
+                        new CustomAuthenticationEntryPoint())
+        ;
     }
 
     @Override
