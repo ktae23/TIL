@@ -1,5 +1,6 @@
 package com.shop.controller;
 
+import com.shop.constant.Role;
 import com.shop.dto.MemberFormDto;
 import com.shop.entity.Member;
 import com.shop.service.MemberService;
@@ -39,7 +40,7 @@ public class MemberController {
         }
 
         try {
-            Member member = Member.from(memberFormDto, passwordEncoder);
+            Member member = Member.from(memberFormDto,  Role.USER, passwordEncoder);
             memberService.saveMember(member);
         } catch (IllegalStateException e) {
             model.addAttribute("errorMessage", e.getMessage());
