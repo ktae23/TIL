@@ -12,6 +12,10 @@ spring:
       on-profile: "common"
   application:
     name: shop
+  devtools:
+    restart:
+      enabled: true
+
 sever:
   port: 80
 
