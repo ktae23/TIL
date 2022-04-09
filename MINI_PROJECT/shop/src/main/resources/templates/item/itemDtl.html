@@ -144,7 +144,7 @@
 
     <div class="d-flex">
         <div class="repImgDiv">
-            <img th:src="${item.itemImgDtoList[0].imgUrl}" class = "rounded repImg" th:alt="${item.itemNm}">
+            <img th:src="${item.itemImgDtoList[0].imgUrl}" class = "rounded repImg" th:alt="${item.itemName}">
         </div>
         <div class="wd50">
             <span th:if="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="badge badge-primary mgb-15">
@@ -153,7 +153,7 @@
             <span th:unless="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="badge btn-danger mgb-15" >
                 품절
             </span>
-            <div class="h4" th:text="${item.itemNm}"></div>
+            <div class="h4" th:text="${item.itemName}"></div>
             <hr class="my-4">
 
             <div class="text-right">

@@ -55,7 +55,7 @@
             <tr th:each="item, status: ${items.getContent()}">
                 <td th:text="${item.id}"></td>
                 <td>
-                    <a th:href="'/admin/item/'+${item.id}" th:text="${item.itemNm}"></a>
+                    <a th:href="'/admin/item/'+${item.id}" th:text="${item.itemName}"></a>
                 </td>
                 <td th:text="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL} ? '판매중' : '품절'"></td>
                 <td th:text="${item.createdBy}"></td>
@@ -100,7 +100,7 @@
                 <option value="SOLD_OUT">품절</option>
             </select>
             <select th:field="*{searchBy}" class="form-control" style="width:auto;">
-                <option value="itemNm">상품명</option>
+                <option value="itemName">상품명</option>
                 <option value="createdBy">등록자</option>
             </select>
             <input th:field="*{searchQuery}" type="text" class="form-control" placeholder="검색어를 입력해주세요">

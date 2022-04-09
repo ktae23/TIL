@@ -72,9 +72,9 @@
             <div class="input-group-prepend">
                 <span class="input-group-text">상품명</span>
             </div>
-            <input type="text" th:field="*{itemNm}" class="form-control" placeholder="상품명을 입력해주세요">
+            <input type="text" th:field="*{itemName}" class="form-control" placeholder="상품명을 입력해주세요">
         </div>
-        <p th:if="${#fields.hasErrors('itemNm')}" th:errors="*{itemNm}" class="fieldError">Incorrect data</p>
+        <p th:if="${#fields.hasErrors('itemName')}" th:errors="*{itemName}" class="fieldError">Incorrect data</p>
 
         <div class="input-group">
             <div class="input-group-prepend">

@@ -21,7 +21,7 @@
     <tbody>
     <tr th:each="itemDto, status: ${itemDtoList}">
         <td th:text="${status.index}"></td>
-        <td th:text="${itemDto.itemNm}"></td>
+        <td th:text="${itemDto.itemName}"></td>
         <td th:text="${itemDto.itemDetail}"></td>
         <td th:text="${itemDto.price}"></td>
         <td th:text="${itemDto.regTime}"></td>
