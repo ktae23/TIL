@@ -103,7 +103,7 @@ class ItemRepositoryTest {
 
     @Test
     @DisplayName("가격 내림차순 조회 테스트")
-    void findByPriceLessThanOrderByPriceDescTest(){
+    void findByPriceLessThanOrderByPriceDescTest() {
         List<Item> itemList = itemRepository.findByPriceLessThanOrderByPriceDesc(10005);
         Optional<Item> fistItem = itemRepository.findById(1L);
         Optional<Item> secondItem = itemRepository.findById(2L);
@@ -126,4 +126,24 @@ class ItemRepositoryTest {
         fail("조회 대상이 없습니다.");
     }
 
+    @Test
+    @DisplayName("@Query를 이용한 상품 조회 테스트")
+    void findByItemDetailTest() {
+        List<Item> itemList = itemRepository.findByItemDetail("테스트 상품 상세 설명");
+        Optional<Item> fistItem = itemRepository.findById(1L);
+        Optional<Item> fifthItem = itemRepository.findById(5L);
+        Optional<Item> tenthItem = itemRepository.findById(10L);
+        if (fistItem.isPresent()
+                && fifthItem.isPresent()
+                && tenthItem.isPresent()
+        ) {
+            assertThat(itemList.get(0)).isEqualTo(tenthItem.get());
+            assertThat(itemList.get(5)).isEqualTo(fifthItem.get());
+            assertThat(itemList.get(9)).isEqualTo(fistItem.get());
+            assertThat(itemList.size()).isEqualTo(10);
+            return;
+        }
+        fail("조회 대상이 없습니다.");
+
+    }
 }
