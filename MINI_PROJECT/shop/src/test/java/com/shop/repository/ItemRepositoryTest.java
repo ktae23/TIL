@@ -144,6 +144,25 @@ class ItemRepositoryTest {
             return;
         }
         fail("조회 대상이 없습니다.");
+    }
 
+    @Test
+    @DisplayName("nativeQuery 속성을 이용한 상품 조회 테스트")
+    void finByItemDetailByNative(){
+        List<Item> itemList = itemRepository.findByItemDetailByNative("테스트 상품 상세 설명");
+        Optional<Item> fistItem = itemRepository.findById(1L);
+        Optional<Item> fifthItem = itemRepository.findById(5L);
+        Optional<Item> tenthItem = itemRepository.findById(10L);
+        if (fistItem.isPresent()
+                && fifthItem.isPresent()
+                && tenthItem.isPresent()
+        ) {
+            assertThat(itemList.get(0)).isEqualTo(tenthItem.get());
+            assertThat(itemList.get(5)).isEqualTo(fifthItem.get());
+            assertThat(itemList.get(9)).isEqualTo(fistItem.get());
+            assertThat(itemList.size()).isEqualTo(10);
+            return;
+        }
+        fail("조회 대상이 없습니다.");
     }
 }
