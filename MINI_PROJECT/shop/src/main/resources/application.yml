@@ -1,0 +1,66 @@
+spring:
+  profiles:
+    group:
+      "local": "local,common"
+      "test":  "test,common"
+    active: local
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "common"
+  application:
+    name: shop
+  devtools:
+    restart:
+      enabled: true
+
+sever:
+  port: 80
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "local"
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/shop?serverTimezone=UTC
+    username: study
+    password: 1234
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        type:
+          descriptor:
+            sql: trace
+        ddl_auto: create
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "test"
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:test
+    username: na
+    password:
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        type:
+          descriptor:
+            sql: trace
+        ddl_auto: create
+    database-platform: org.hibernate.dialect.H2Dialect
