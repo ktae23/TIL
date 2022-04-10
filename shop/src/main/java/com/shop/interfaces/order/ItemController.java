@@ -69,4 +69,32 @@ public class ItemController {
         }
         return "item/itemForm";
     }
+
+    @PostMapping("/items/{itemId}")
+    public String itemUpdate(@Valid ItemFormDto itemFormDto, BindingResult bindingResult, Model model,
+                             @PathVariable Long itemId,
+                             @RequestPart("itemImgFile") List<MultipartFile> itemImgFileList) {
+        if (bindingResult.hasErrors()) {
+            return "item/itemForm";
+        }
+
+        if (!itemId.equals(itemFormDto.getId())) {
+            model.addAttribute("errorMessage", "아이디 값이 일치하지 않습니다.");
+            return "item/itemForm";
+        }
+
+        if (isNullOrEmptyList(itemImgFileList)) {
+            model.addAttribute("errorMessage", "첫 번째 상품 이미지는 필수 입력 값입니다.");
+            return "item/itemForm";
+        }
+
+        try {
+            itemService.updateItem(itemFormDto, itemImgFileList);
+        } catch (IOException e) {
+            model.addAttribute("errorMessage", "상품 수정 중 에러가 발생했습니다.");
+            return "item/itemForm";
+        }
+
+        return "redirect:/";
+    }
 }

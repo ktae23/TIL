@@ -29,7 +29,7 @@ class ItemControllerTest {
         // given
 
         // when
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/admin/item/new"))
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/admin/items/new"))
                 .andDo(print());
         // then
         resultActions.andExpect(status().isOk());
@@ -42,7 +42,7 @@ class ItemControllerTest {
         // given
 
         // when
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/admin/item/new"))
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/admins/item/new"))
                 .andDo(print());
         // then
         resultActions.andExpect(status().isForbidden());
