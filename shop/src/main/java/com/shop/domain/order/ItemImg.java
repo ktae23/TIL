@@ -39,4 +39,8 @@ public class ItemImg extends BaseEntity {
         this.imgName = imgName;
         this.imgUrl = imgUrl;
     }
+
+    public void changeRepresentImgStatus(Boolean representImgYn) {
+        this.representImgYn = representImgYn;
+    }
 }
