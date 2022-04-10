@@ -1,5 +1,6 @@
 package com.shop.domain.order.model;
 
+import com.shop.application.order.dto.ItemFormDto;
 import com.shop.domain.BaseEntity;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
 import lombok.AccessLevel;
@@ -44,5 +45,17 @@ public class Item extends BaseEntity {
     private String itemDetail;
     @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus;
+
+    public static Item from(ItemFormDto itemFormDto) {
+        return Item.builder()
+                .id(itemFormDto.getId())
+                .itemName(itemFormDto.getItemName())
+                .price(itemFormDto.getPrice())
+                .itemDetail(itemFormDto.getItemDetail())
+                .stockNumber(itemFormDto.getStockNumber())
+                .itemSellStatus(itemFormDto.getItemSellStatus())
+                .build();
+
+    }
 
 }
