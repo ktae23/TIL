@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
@@ -18,11 +19,14 @@ import java.time.LocalDateTime;
 public class FileService {
 
     public String uploadFile(String uploadPath, String originalFileName, MultipartFile file) throws IOException {
-        LocalDateTime now = LocalDateTime.now();
-        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        String savedFileName = now + originalFileName + extension;
+        String formatDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String savedFileName = formatDate + "_" + originalFileName;
         String fileUploadFullUrl = uploadPath + File.separator + savedFileName;
+        final File uploadFilePath = new File(uploadPath);
 
+        if (!uploadFilePath.exists()) {
+            uploadFilePath.mkdirs();
+        }
         file.transferTo(new File(fileUploadFullUrl));
 
         return savedFileName;
