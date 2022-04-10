@@ -1,6 +1,6 @@
 package com.shop.domain.order.model;
 
-import com.shop.domain.BaseTimeEntity;
+import com.shop.domain.BaseEntity;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ import javax.persistence.Lob;
 @SuperBuilder
 @ToString
 @EqualsAndHashCode
-public class Item extends BaseTimeEntity {
+public class Item extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

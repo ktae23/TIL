@@ -1,6 +1,6 @@
 package com.shop.domain.order.model;
 
-import com.shop.domain.BaseTimeEntity;
+import com.shop.domain.BaseEntity;
 import com.shop.domain.member.model.Member;
 import com.shop.infrastructure.constant.order.OrderStatus;
 import lombok.AccessLevel;
@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SuperBuilder
 @ToString
-public class Order extends BaseTimeEntity {
+public class Order extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -37,7 +37,7 @@ public class Order extends BaseTimeEntity {
     private OrderStatus orderStatus;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL,
-    orphanRemoval = true, fetch = FetchType.LAZY)
+            orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     public void changeMember(Member member) {
