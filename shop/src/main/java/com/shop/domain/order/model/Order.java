@@ -1,47 +1,43 @@
 package com.shop.domain.order.model;
 
 import com.shop.domain.BaseTimeEntity;
-import com.shop.infrastructure.constant.order.ItemSellStatus;
+import com.shop.domain.member.model.Member;
+import com.shop.infrastructure.constant.order.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "orders")
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
-@EqualsAndHashCode
-public class Item extends BaseTimeEntity {
+public class Order extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(nullable = false, length = 50)
-    private String itemName;
+    @ManyToOne
+    private Member member;
 
-    @Column(nullable = false)
-    private int price;
-    @Column(nullable = false)
-    private int stockNumber;
-    @Lob
-    @Column(nullable = false)
-    private String itemDetail;
+    private LocalDateTime orderDate;
+
     @Enumerated(EnumType.STRING)
-    private ItemSellStatus itemSellStatus;
+    private OrderStatus orderStatus;
 
 }
