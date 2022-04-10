@@ -2,12 +2,13 @@ package com.shop.domain.order.model;
 
 import com.shop.domain.BaseTimeEntity;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,8 +22,8 @@ import javax.persistence.Lob;
 @Entity
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SuperBuilder
 @ToString
 @EqualsAndHashCode
 public class Item extends BaseTimeEntity {

@@ -2,6 +2,7 @@ package com.shop.domain.member.model;
 
 import com.shop.application.member.dto.MemberFormDto;
 import com.shop.infrastructure.constant.member.Role;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +21,7 @@ import javax.persistence.Id;
 @Entity
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @ToString
 public class Member {

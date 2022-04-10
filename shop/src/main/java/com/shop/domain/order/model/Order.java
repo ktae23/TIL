@@ -3,11 +3,12 @@ package com.shop.domain.order.model;
 import com.shop.domain.BaseTimeEntity;
 import com.shop.domain.member.model.Member;
 import com.shop.infrastructure.constant.order.OrderStatus;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -23,8 +24,8 @@ import java.time.LocalDateTime;
 @Table(name = "orders")
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SuperBuilder
 @ToString
 public class Order extends BaseTimeEntity {
 
