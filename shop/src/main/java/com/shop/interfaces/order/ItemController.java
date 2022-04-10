@@ -8,11 +8,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
@@ -27,13 +29,13 @@ public class ItemController {
 
     private final ItemService itemService;
 
-    @GetMapping("/item/new")
+    @GetMapping("/items/new")
     public String itemForm(Model model) {
         model.addAttribute("itemFormDto", new ItemFormDto());
         return "item/itemForm";
     }
 
-    @PostMapping("/item/new")
+    @PostMapping("/items/new")
     public String itemNew(@Valid ItemFormDto itemFormDto, BindingResult bindingResult, Model model,
                           @RequestPart("itemImgFile") List<MultipartFile> itemImgFileList) {
         if (bindingResult.hasErrors()) {
@@ -55,4 +57,16 @@ public class ItemController {
         return "redirect:/";
     }
 
+    @GetMapping("/items/{itemId}")
+    public String getItemDto(@PathVariable Long itemId, Model model) {
+        try {
+            final ItemFormDto itemFormDto = itemService.getItemDto(itemId);
+            model.addAttribute("itemFormDto", itemFormDto);
+        } catch (EntityNotFoundException e) {
+            model.addAttribute("errorMessage", "존재하지 않는 상품 입니다.");
+            model.addAttribute("itemFormDto", new ItemFormDto());
+            return "item/itemForm";
+        }
+        return "item/itemForm";
+    }
 }
