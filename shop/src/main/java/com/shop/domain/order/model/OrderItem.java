@@ -34,4 +34,13 @@ public class OrderItem extends BaseTimeEntity {
 
     private int orderPrice;
     private int count;
+
+    public void addOrder(Order order) {
+        if (order != null) {
+            this.order.getOrderItems().remove(order);
+        }
+        this.order = order;
+        order.getOrderItems().add(this);
+    }
+
 }
