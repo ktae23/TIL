@@ -1,0 +1,68 @@
+{
+  "_from": "prosemirror-transform@^1.0.0",
+  "_id": "prosemirror-transform@1.4.0",
+  "_inBundle": false,
+  "_integrity": "sha512-P+bv4JiLHcRy4krHByUglXR1yAMCuzHRAaSKInsoW7Rjy3aomPXM/MwRs+b7TGtC1e6ZM31KbapbvE4wV1X9RA==",
+  "_location": "/prosemirror-transform",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "prosemirror-transform@^1.0.0",
+    "name": "prosemirror-transform",
+    "escapedName": "prosemirror-transform",
+    "rawSpec": "^1.0.0",
+    "saveSpec": null,
+    "fetchSpec": "^1.0.0"
+  },
+  "_requiredBy": [
+    "/prosemirror-commands",
+    "/prosemirror-history",
+    "/prosemirror-inputrules",
+    "/prosemirror-state",
+    "/prosemirror-view"
+  ],
+  "_resolved": "https://registry.npmjs.org/prosemirror-transform/-/prosemirror-transform-1.4.0.tgz",
+  "_shasum": "057344b7ef38d1a4ba370390eba8c35f9afe6b36",
+  "_spec": "prosemirror-transform@^1.0.0",
+  "_where": "C:\\Users\\zz238\\TIL\\JAVA\\IntelliJ_practice\\mvc2\\form\\src\\main\\resources\\npm\\node_modules\\prosemirror-commands",
+  "bugs": {
+    "url": "https://github.com/prosemirror/prosemirror-transform/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "prosemirror-model": "^1.0.0"
+  },
+  "deprecated": false,
+  "description": "ProseMirror document transformations",
+  "devDependencies": {
+    "@rollup/plugin-buble": "^0.21.3",
+    "ist": "^1.0.0",
+    "mocha": "^9.1.2",
+    "prosemirror-test-builder": "^1.0.0",
+    "rollup": "^2.26.3"
+  },
+  "homepage": "https://github.com/prosemirror/prosemirror-transform#readme",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "maintainers": [
+    {
+      "name": "Marijn Haverbeke",
+      "email": "marijnh@gmail.com",
+      "url": "http://marijnhaverbeke.nl"
+    }
+  ],
+  "module": "dist/index.es.js",
+  "name": "prosemirror-transform",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/prosemirror/prosemirror-transform.git"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "prepare": "npm run build",
+    "test": "mocha test/test-*.js",
+    "watch": "rollup -c -w"
+  },
+  "version": "1.4.0"
+}
