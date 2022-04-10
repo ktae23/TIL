@@ -3,6 +3,7 @@ package com.shop.domain.order.model;
 import com.shop.domain.member.model.Member;
 import com.shop.domain.member.repository.MemberRepository;
 import com.shop.domain.order.repository.ItemRepository;
+import com.shop.domain.order.repository.OrderItemRepository;
 import com.shop.domain.order.repository.OrderRepository;
 import com.shop.infrastructure.constant.member.Role;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
@@ -31,6 +32,9 @@ class OrderTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    OrderItemRepository orderItemRepository;
 
     @PersistenceContext
     EntityManager em;
@@ -106,7 +110,42 @@ class OrderTest {
         em.flush();
         // then
         assertThat(order.getOrderItems().size()).isEqualTo(2);
+    }
 
+    @Test
+    @DisplayName("지연 로딩 테스트")
+    void lazyLoadingTest () throws Exception {
+        // given
+        Order order = createOrder();
+        Long orderItemId = order.getOrderItems().get(0).getId();
+        em.flush();
+        em.clear();
+        // when
+        OrderItem orderItem = orderItemRepository.findById(orderItemId)
+                .orElseThrow(EntityNotFoundException::new);
+        // then
+        assertThat(orderItem.getClass()).isEqualTo(OrderItem.class);
+    }
+
+    @Test
+    @DisplayName("지연 로딩 테스트2")
+    void lazyLoadingTest2 () throws Exception {
+        // given
+        Order order = createOrder();
+        Long orderItemId = order.getOrderItems().get(0).getId();
+        em.flush();
+        em.clear();
+        // when
+        OrderItem orderItem = orderItemRepository.findById(orderItemId)
+                .orElseThrow(EntityNotFoundException::new);
+        // then
+        assertThat(orderItem.getOrder().getClass()).isNotSameAs(Order.class);
+
+        // when
+        orderItem.getOrder().getOrderDate();
+
+        // then
+        assertThat(orderItem.getOrder().getClass()).isInstanceOf(java.lang.Class.class);
     }
 
 }
