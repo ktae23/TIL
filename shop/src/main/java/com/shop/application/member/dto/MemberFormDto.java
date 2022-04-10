@@ -1,11 +1,18 @@
 package com.shop.application.member.dto;
 
-import lombok.*;
+import com.shop.infrastructure.constant.member.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Setter
 @Getter
@@ -27,4 +34,8 @@ public class MemberFormDto {
 
     @NotEmpty(message = "주소는 필수 입력값입니다.")
     private String address;
+
+    @NotNull(message = "권한 설정은 필수입니다.")
+    private Role role;
+
 }

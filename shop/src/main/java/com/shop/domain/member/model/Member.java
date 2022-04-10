@@ -40,13 +40,13 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public static Member from(MemberFormDto memberFormDto, Role role, PasswordEncoder passwordEncoder) {
+    public static Member from(MemberFormDto memberFormDto, PasswordEncoder passwordEncoder) {
         return Member.builder()
                 .name(memberFormDto.getName())
                 .email(memberFormDto.getEmail())
                 .password(passwordEncoder.encode(memberFormDto.getPassword()))
                 .address(memberFormDto.getAddress())
-                .role(role)
+                .role(memberFormDto.getRole())
                 .build();
     }
 

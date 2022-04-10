@@ -49,6 +49,14 @@
             <input type="text" th:field="*{address}" class="form-control" placeholder="주소를 입력해주세요">
             <p th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="fieldError">Incorrect data</p>
         </div>
+        <div class="form-group">
+            <label th:for="role">권한</label>
+            <select th:field="*{role}" class="custom-select">
+                <option value="USER">일반 사용자</option>
+                <option value="ADMIN">관리자</option>
+            </select>
+            <p th:if="${#fields.hasErrors('role')}" th:errors="*{address}" class="fieldError">Incorrect data</p>
+        </div>
         <div style="text-align: center">
             <button type="submit" class="btn btn-primary" style="">Submit</button>
         </div>

@@ -37,8 +37,9 @@ class MemberControllerTest {
                 .password(password)
                 .name("홍길동")
                 .address("서울시 마포구 합정동")
+                .role(Role.USER)
                 .build();
-        Member member = Member.from(memberFormDto,  Role.USER, passwordEncoder);
+        Member member = Member.from(memberFormDto, passwordEncoder);
         return memberService.saveMember(member);
     }
 

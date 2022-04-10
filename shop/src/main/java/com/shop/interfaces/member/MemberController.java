@@ -3,7 +3,6 @@ package com.shop.interfaces.member;
 import com.shop.application.member.MemberService;
 import com.shop.application.member.dto.MemberFormDto;
 import com.shop.domain.member.model.Member;
-import com.shop.infrastructure.constant.member.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +39,7 @@ public class MemberController {
         }
 
         try {
-            Member member = Member.from(memberFormDto,  Role.USER, passwordEncoder);
+            Member member = Member.from(memberFormDto, passwordEncoder);
             memberService.saveMember(member);
         } catch (IllegalStateException e) {
             model.addAttribute("errorMessage", e.getMessage());

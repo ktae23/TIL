@@ -1,8 +1,8 @@
 package com.shop.application.member;
 
 import com.shop.application.member.dto.MemberFormDto;
-import com.shop.infrastructure.constant.member.Role;
 import com.shop.domain.member.model.Member;
+import com.shop.infrastructure.constant.member.Role;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +30,9 @@ class MemberServiceTest {
                 .name("홍길동")
                 .address("서울시 마포구 합정동")
                 .password("1234")
+                .role(Role.USER)
                 .build();
-        return Member.from(memberFormDto, Role.USER, passwordEncoder);
+        return Member.from(memberFormDto, passwordEncoder);
     }
 
     @Test
