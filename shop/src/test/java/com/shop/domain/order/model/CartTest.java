@@ -42,8 +42,9 @@ class CartTest {
                 .password("12341234")
                 .name("홍길동")
                 .address("서울시 마포구 합정동")
+                .role(Role.USER)
                 .build();
-        return Member.from(memberFormDto,  Role.USER, passwordEncoder);
+        return Member.from(memberFormDto, passwordEncoder);
     }
 
     @Test
