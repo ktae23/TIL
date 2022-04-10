@@ -2,7 +2,7 @@ spring:
   profiles:
     group:
       "local": "local,common"
-      "test":  "test,common"
+      "test": "test,common"
     active: local
 
 ---
@@ -32,14 +32,16 @@ spring:
     password: 1234
 
   jpa:
+    generate-ddl: true
+    hibernate:
+      ddl_auto: create
     properties:
       hibernate:
-        format_sql: true
         show_sql: true
         type:
           descriptor:
             sql: trace
-        ddl_auto: create
+
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
 ---
@@ -55,6 +57,9 @@ spring:
     password:
 
   jpa:
+    generate-ddl: true
+    hibernate:
+      ddl_auto: create
     properties:
       hibernate:
         format_sql: true
@@ -62,5 +67,4 @@ spring:
         type:
           descriptor:
             sql: trace
-        ddl_auto: create
     database-platform: org.hibernate.dialect.H2Dialect
