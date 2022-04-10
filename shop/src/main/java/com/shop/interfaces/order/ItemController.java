@@ -1,8 +1,10 @@
 package com.shop.interfaces.order;
 
+import com.shop.application.order.dto.ItemFormDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -13,7 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class ItemController {
 
     @GetMapping("/item/new")
-    public String itemForm(){
+    public String itemForm(Model model) {
+        model.addAttribute("itemFormDto", new ItemFormDto());
         return "item/itemForm";
     }
 }
