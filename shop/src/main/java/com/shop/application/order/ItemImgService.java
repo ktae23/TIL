@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 
 @Slf4j
@@ -35,5 +36,22 @@ public class ItemImgService {
 
         itemImg.updateItemImg(originImgName, imgName, imgUrl);
         itemImgRepository.save(itemImg);
+    }
+
+
+    public void updateItemImg(Long itemImgId, MultipartFile itemImgFile) throws IOException {
+        if (!itemImgFile.isEmpty()) {
+            final ItemImg savedItemImg = itemImgRepository.findById(itemImgId)
+                    .orElseThrow(EntityNotFoundException::new);
+            if (StringUtils.hasText(savedItemImg.getImgName())
+            && !savedItemImg.getOriginImgName().equals(itemImgFile.getName())) {
+                fileService.deleteFiles(itemImgLocation + "/" + savedItemImg.getImgName() );
+            }
+
+            String originImgName = itemImgFile.getOriginalFilename();
+            String imgName = fileService.uploadFile(itemImgLocation, originImgName, itemImgFile);
+            String imgUrl = "/image/item/" + imgName;
+            savedItemImg.updateItemImg(originImgName, imgName, imgUrl);
+        }
     }
 }

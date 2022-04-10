@@ -58,4 +58,17 @@ public class ItemService {
         return itemFormDto;
     }
 
+
+    public Long updateItem(ItemFormDto itemFormDto, List<MultipartFile> itemImgFileList) throws IOException {
+        final Item item = itemRepository.findById(itemFormDto.getId())
+                .orElseThrow(EntityNotFoundException::new);
+        item.updateItem(itemFormDto);
+
+        final List<Long> itemImgIds = itemFormDto.getItemImgIds();
+        for (int i = 0; i < itemImgFileList.size(); i++) {
+            itemImgService.updateItemImg(itemImgIds.get(i), itemImgFileList.get(i));
+        }
+        return item.getId();
+    }
+
 }

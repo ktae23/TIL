@@ -37,6 +37,7 @@ public class FileService {
         if (result) {
             String fileName = filePath.substring(filePath.lastIndexOf("/"));
             log.info("{} 파일이 정상적으로 삭제 되었습니다.", fileName);
+            return;
         }
         throw new FileNotFoundException("파일을 찾지 못했습니다.");
 
