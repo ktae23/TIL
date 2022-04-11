@@ -6,8 +6,6 @@ import com.shop.application.order.dto.ItemSearch;
 import com.shop.domain.order.model.Item;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 
@@ -23,20 +21,13 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable) {
-        List<Item> content = queryFactory
+    public List<Item> getAdminItemWithSearchCondition(ItemSearch itemSearch, Pageable pageable) {
+        return queryFactory
                 .selectFrom(item)
                 .where(regDtsAfter(itemSearch.getSearchDateType()),
                         searchSellStatusEq(itemSearch.getSearchSellStatus()),
                         searchByLike(itemSearch.getSearchBy(), itemSearch.getSearchQuery()))
-                .orderBy(item.id.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
-
-        long total = content.size();
-
-        return new PageImpl<>(content, pageable, total);
     }
 
     private BooleanExpression searchSellStatusEq(ItemSellStatus searchSellStatus) {
@@ -69,6 +60,9 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     }
 
     private BooleanExpression searchByLike(String searchBy, String searchQuery) {
+        if (!StringUtils.hasText(searchBy)) {
+            return null;
+        }
         switch (searchBy) {
             case "itemNm":
                 return item.itemName.like("%" + searchQuery + "%");

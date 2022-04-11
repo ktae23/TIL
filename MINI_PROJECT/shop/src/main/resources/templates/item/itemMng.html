@@ -19,11 +19,18 @@
             var searchSellStatus = $("#searchSellStatus").val();
             var searchBy = $("#searchBy").val();
             var searchQuery = $("#searchQuery").val();
-
-            location.href="/admin/items/" + page + "?searchDateType=" + searchDateType
-            + "&searchSellStatus=" + searchSellStatus
-            + "&searchBy=" + searchBy
-            + "&searchQuery=" + searchQuery;
+            location.href=
+                page != 0
+            ?
+                "/admin/items?page=" + page + "&searchDateType=" + searchDateType
+                + "&searchSellStatus=" + searchSellStatus
+                + "&searchBy=" + searchBy
+                + "&searchQuery=" + searchQuery
+            :
+                "/admin/items" + "?searchDateType=" + searchDateType
+                + "&searchSellStatus=" + searchSellStatus
+                + "&searchBy=" + searchBy
+                + "&searchQuery=" + searchQuery;
         }
 
     </script>
@@ -53,11 +60,11 @@
             </thead>
             <tbody>
             <tr th:each="item, status: ${items.getContent()}">
-                <td th:text="${item.id}"></td th:text="${item.id}">
+                <td th:text="${item.id}"></td>
                 <td>
                     <a th:href="'/admin/items/'+${item.id}" th:text="${item.itemName}"></a>
                 </td>
-                <td th:text="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL} ? '판매중' : '품절'"></td>
+                <td th:text="${item.itemSellStatus == T(com.shop.infrastructure.constant.order.ItemSellStatus).SELL} ? '판매중' : '품절'"></td>
                 <td th:text="${item.createdBy}"></td>
                 <td th:text="${item.regTime}"></td>
             </tr>
@@ -86,7 +93,7 @@
             </ul>
         </div>
 
-        <div class="form-inline justify-content-center" th:object="${itemSeach}">
+        <div class="form-inline justify-content-center" th:object="${itemSearch}">
             <select th:field="*{searchDateType}" class="form-control" style="width:auto;">
                 <option value="all">전체기간</option>
                 <option value="1d">1일</option>

@@ -10,6 +10,7 @@ import com.shop.domain.order.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static com.shop.infrastructure.utils.Utils.isNotNullOrEmpty;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
@@ -76,6 +80,53 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable) {
-        return itemRepository.getAdminItemPage(itemSearch, pageable);
+        final List<Item> itemList = itemRepository.getAdminItemWithSearchCondition(itemSearch, pageable);
+        return orderAndPaging(itemList, pageable);
+
+    }
+
+    public static Page<Item> orderAndPaging(List<Item> itemList, Pageable pageable) {
+        List<Item> content = new ArrayList<>();
+        long total = itemList.size();
+
+        // 빈 객체가 아닐 경우
+        if (isNotNullOrEmpty(itemList)) {
+            int pageSize = pageable.getPageSize();
+            int pageNumber = pageable.getPageNumber() + 1;
+            int offset = 0;
+            int limit = itemList.size();
+
+            // 아이디 기준 역순 정렬
+            final List<Item> sortedDesc = itemList.stream()
+                    .sorted((i1, i2) -> (int) (i2.getId() - i1.getId()))
+                    .collect(Collectors.toList());
+
+            // 요청한 페이지가 첫 페이지가 아닐 경우 시작 인덱스
+            if (pageNumber > 1) {
+                offset = (pageSize * pageNumber) - pageSize;
+            }
+
+            // 페이지가 2 이상 존재하면서
+            if (itemList.size() > pageSize) {
+                // 첫 페이지일 경우 종료 인덱스
+                if (offset == 0) {
+                    limit = pageSize;
+
+                }  // 마지막 페이지인 경우 종료 인덱스
+                else if (itemList.size() > offset && limit > itemList.size()) {
+                    limit = itemList.size();
+
+                }  // 첫 페이지가 아닌 경우 종료 인덱스
+                else {
+                    limit = pageSize * pageNumber;
+                }
+            }
+
+            content =
+                    IntStream.range(offset, limit)
+                            .mapToObj(sortedDesc::get)
+                            .collect(Collectors.toList());
+        }
+        return new PageImpl<>(content, pageable, total);
     }
 }
