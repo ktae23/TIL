@@ -2,8 +2,12 @@ package com.shop.interfaces.order;
 
 import com.shop.application.order.ItemService;
 import com.shop.application.order.dto.ItemFormDto;
+import com.shop.application.order.dto.ItemSearch;
+import com.shop.domain.order.model.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,6 +22,7 @@ import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static com.shop.infrastructure.utils.Utils.isNullOrEmptyList;
 
@@ -28,6 +33,16 @@ import static com.shop.infrastructure.utils.Utils.isNullOrEmptyList;
 public class ItemController {
 
     private final ItemService itemService;
+
+    @GetMapping(value = {"/items", "/items/{page}"})
+    public String itemManage(ItemSearch itemSearch, @PathVariable Optional<Integer> page, Model model) {
+        final PageRequest pageRequest = PageRequest.of(page.orElse(0), 3);
+        final Page<Item> items = itemService.getAdminItemPage(itemSearch, pageRequest);
+        model.addAttribute("items", items);
+        model.addAttribute("itemSearch", itemSearch);
+        model.addAttribute("maxPage", 5);
+        return "item/itemMng";
+    }
 
     @GetMapping("/items/new")
     public String itemForm(Model model) {

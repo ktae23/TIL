@@ -2,12 +2,15 @@ package com.shop.application.order;
 
 import com.shop.application.order.dto.ItemFormDto;
 import com.shop.application.order.dto.ItemImgDto;
+import com.shop.application.order.dto.ItemSearch;
 import com.shop.domain.order.ItemImg;
 import com.shop.domain.order.model.Item;
 import com.shop.domain.order.repository.ItemImgRepository;
 import com.shop.domain.order.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,5 +74,8 @@ public class ItemService {
         return item.getId();
     }
 
-
+    @Transactional(readOnly = true)
+    public Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable) {
+        return itemRepository.getAdminItemPage(itemSearch, pageable);
+    }
 }

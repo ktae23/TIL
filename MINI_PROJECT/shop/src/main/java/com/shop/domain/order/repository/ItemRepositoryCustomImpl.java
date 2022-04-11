@@ -26,24 +26,18 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Item> getAdminItemPage(ItemSearch itemSearchDto, Pageable pageable) {
+    public Page<Item> getAdminItemPage(ItemSearch itemSeach, Pageable pageable) {
         List<Item> content = queryFactory
                 .selectFrom(item)
-                .where(regDtsAfter(itemSearchDto.getSearchDateType()),
-                        searchSellStatusEq(itemSearchDto.getSearchSellStatus()),
-                        searchByLike(itemSearchDto.getSearchBy(), itemSearchDto.getSearchQuery()))
+                .where(regDtsAfter(itemSeach.getSearchDateType()),
+                        searchSellStatusEq(itemSeach.getSearchSellStatus()),
+                        searchByLike(itemSeach.getSearchBy(), itemSeach.getSearchQuery()))
                 .orderBy(item.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = queryFactory
-                .select(item.countDistinct())
-                .from(item)
-                .where(regDtsAfter(itemSearchDto.getSearchDateType()),
-                        searchSellStatusEq(itemSearchDto.getSearchSellStatus()),
-                        searchByLike(itemSearchDto.getSearchBy(), itemSearchDto.getSearchQuery()))
-                .fetchOne();
+        long total = content.size();
 
         return new PageImpl<>(content, pageable, total);
     }
@@ -82,7 +76,7 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
             case "itemNm":
                 return item.itemName.like("%" + searchQuery + "%");
             case "createdBy":
-//                return item.createdBy.like("%" + searchQuery + "%");
+                return item.createdBy.like("%" + searchQuery + "%");
             default:
                 return null;
         }
