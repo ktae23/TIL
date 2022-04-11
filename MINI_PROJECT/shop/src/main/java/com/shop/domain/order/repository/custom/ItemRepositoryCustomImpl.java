@@ -1,16 +1,14 @@
-package com.shop.domain.order.repository;
+package com.shop.domain.order.repository.custom;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shop.application.order.dto.ItemSearch;
 import com.shop.domain.order.model.Item;
-import com.shop.domain.order.repository.custom.ItemRepositoryCustom;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -19,19 +17,18 @@ import java.util.List;
 import static com.shop.domain.order.model.QItem.item;
 
 
-@Component
 @RequiredArgsConstructor
 public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<Item> getAdminItemPage(ItemSearch itemSeach, Pageable pageable) {
+    public Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable) {
         List<Item> content = queryFactory
                 .selectFrom(item)
-                .where(regDtsAfter(itemSeach.getSearchDateType()),
-                        searchSellStatusEq(itemSeach.getSearchSellStatus()),
-                        searchByLike(itemSeach.getSearchBy(), itemSeach.getSearchQuery()))
+                .where(regDtsAfter(itemSearch.getSearchDateType()),
+                        searchSellStatusEq(itemSearch.getSearchSellStatus()),
+                        searchByLike(itemSearch.getSearchBy(), itemSearch.getSearchQuery()))
                 .orderBy(item.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())

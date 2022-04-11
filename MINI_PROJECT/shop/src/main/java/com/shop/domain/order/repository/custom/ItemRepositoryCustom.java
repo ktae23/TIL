@@ -8,5 +8,5 @@ import org.springframework.data.domain.Pageable;
 
 public interface ItemRepositoryCustom {
 
-    Page<Item> getAdminItemPage(ItemSearch itemSeach, Pageable pageable);
+    Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable);
 }
