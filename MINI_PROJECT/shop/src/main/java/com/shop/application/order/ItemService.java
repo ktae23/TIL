@@ -10,6 +10,7 @@ import com.shop.domain.order.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +18,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.shop.infrastructure.utils.Utils.isNotNullOrEmpty;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
@@ -76,6 +79,29 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable) {
-        return itemRepository.getAdminItemPage(itemSearch, pageable);
+        final List<Item> itemList = itemRepository.getAdminItemWithSearchCondition(itemSearch, pageable);
+        return pagination(itemList, pageable);
+    }
+
+    public static <T> Page<T> pagination(List<T> entityList, Pageable pageable) {
+        List<T> content = new ArrayList<>();
+        long total = entityList.size();
+
+        // 빈 객체가 아닐 경우
+        if (isNotNullOrEmpty(entityList)) {
+            int pageSize = pageable.getPageSize();
+            int pageNumber = pageable.getPageNumber() + 1;
+
+            int offset = (pageSize * pageNumber) - pageSize;
+            int limit = pageSize * pageNumber;
+
+
+            // 마지막 페이지인 경우 종료 인덱스
+            if (limit >= entityList.size()) {
+                limit = entityList.size();
+            }
+            content = entityList.subList(offset, limit);
+        }
+        return new PageImpl<>(content, pageable, total);
     }
 }

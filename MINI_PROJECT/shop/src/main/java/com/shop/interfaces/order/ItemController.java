@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,7 +25,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static com.shop.infrastructure.utils.Utils.isNullOrEmptyList;
+import static com.shop.infrastructure.utils.Utils.isNullOrEmpty;
+
 
 @Slf4j
 @RequestMapping("/admin")
@@ -34,9 +36,9 @@ public class ItemController {
 
     private final ItemService itemService;
 
-    @GetMapping(value = {"/items", "/items/{page}"})
-    public String itemManage(ItemSearch itemSearch, @PathVariable Optional<Integer> page, Model model) {
-        final PageRequest pageRequest = PageRequest.of(page.orElse(0), 3);
+    @GetMapping(value = {"/items"})
+    public String itemManage(ItemSearch itemSearch, @RequestParam(required = false) Integer page, Model model) {
+        final PageRequest pageRequest = PageRequest.of(Optional.ofNullable(page).orElse(0), 6);
         final Page<Item> items = itemService.getAdminItemPage(itemSearch, pageRequest);
         model.addAttribute("items", items);
         model.addAttribute("itemSearch", itemSearch);
@@ -57,7 +59,7 @@ public class ItemController {
             return "item/itemForm";
         }
 
-        if (isNullOrEmptyList(itemImgFileList)) {
+        if (isNullOrEmpty(itemImgFileList)) {
             model.addAttribute("errorMessage", "첫 번째 상품 이미지는 필수 입력 값입니다.");
             return "item/itemForm";
         }
@@ -98,7 +100,7 @@ public class ItemController {
             return "item/itemForm";
         }
 
-        if (isNullOrEmptyList(itemImgFileList)) {
+        if (isNullOrEmpty(itemImgFileList)) {
             model.addAttribute("errorMessage", "첫 번째 상품 이미지는 필수 입력 값입니다.");
             return "item/itemForm";
         }
