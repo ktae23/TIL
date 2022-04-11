@@ -2,7 +2,7 @@ package com.shop.domain.order.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.shop.domain.order.model.Item;
-import com.shop.entity.QItem;
+import com.shop.domain.order.model.QItem;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
