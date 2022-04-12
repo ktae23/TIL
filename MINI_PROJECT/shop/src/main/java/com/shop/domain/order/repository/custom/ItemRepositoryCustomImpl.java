@@ -3,15 +3,17 @@ package com.shop.domain.order.repository.custom;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shop.application.order.dto.ItemSearch;
+import com.shop.application.order.dto.MainItemDto;
+import com.shop.application.order.dto.QMainItemDto;
 import com.shop.domain.order.model.Item;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.shop.domain.order.QItemImg.itemImg;
 import static com.shop.domain.order.model.QItem.item;
 
 
@@ -21,7 +23,7 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<Item> getAdminItemWithSearchCondition(ItemSearch itemSearch, Pageable pageable) {
+    public List<Item> getAdminItemWithSearchCondition(ItemSearch itemSearch) {
         return queryFactory
                 .selectFrom(item)
                 .where(regDtsAfter(itemSearch.getSearchDateType()),
@@ -29,6 +31,29 @@ public class ItemRepositoryCustomImpl implements ItemRepositoryCustom {
                         searchByLike(itemSearch.getSearchBy(), itemSearch.getSearchQuery()))
                 .orderBy(item.id.desc())
                 .fetch();
+    }
+
+    @Override
+    public List<MainItemDto> getMainItemPage(ItemSearch itemSearch) {
+        return queryFactory
+                .select(new QMainItemDto(
+                        item.id,
+                        item.itemName,
+                        item.itemDetail,
+                        itemImg.imgUrl,
+                        item.price
+                ))
+                .from(itemImg)
+                .join(itemImg.item, item)
+                .where(itemImg.representImgYn.eq(true))
+                .where(itemNameLike(itemSearch.getSearchQuery()))
+                .orderBy(item.id.desc())
+                .fetch();
+
+    }
+
+    private BooleanExpression itemNameLike(String searchQuery){
+        return StringUtils.hasText(searchQuery) ? item.itemName.eq("%" + searchQuery + "%") : null;
     }
 
     private BooleanExpression searchSellStatusEq(ItemSellStatus searchSellStatus) {

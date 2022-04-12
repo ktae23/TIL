@@ -3,6 +3,7 @@ package com.shop.application.order;
 import com.shop.application.order.dto.ItemFormDto;
 import com.shop.application.order.dto.ItemImgDto;
 import com.shop.application.order.dto.ItemSearch;
+import com.shop.application.order.dto.MainItemDto;
 import com.shop.domain.order.ItemImg;
 import com.shop.domain.order.model.Item;
 import com.shop.domain.order.repository.ItemImgRepository;
@@ -77,12 +78,19 @@ public class ItemService {
         return item.getId();
     }
 
+
+
     @Transactional(readOnly = true)
     public Page<Item> getAdminItemPage(ItemSearch itemSearch, Pageable pageable) {
-        final List<Item> itemList = itemRepository.getAdminItemWithSearchCondition(itemSearch, pageable);
+        final List<Item> itemList = itemRepository.getAdminItemWithSearchCondition(itemSearch);
         return pagination(itemList, pageable);
     }
 
+    @Transactional(readOnly = true)
+    public Page<MainItemDto> getMainItemPage(ItemSearch itemSearch, Pageable pageable) {
+        final List<MainItemDto> mainItemDtoList = itemRepository.getMainItemPage(itemSearch);
+        return pagination(mainItemDtoList, pageable);
+    }
     public static <T> Page<T> pagination(List<T> entityList, Pageable pageable) {
         List<T> content = new ArrayList<>();
         long total = entityList.size();
