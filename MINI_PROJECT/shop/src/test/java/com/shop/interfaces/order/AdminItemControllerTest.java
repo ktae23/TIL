@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(args = "--spring.profiles.active=test")
 @AutoConfigureMockMvc
 @Transactional
-class ItemControllerTest {
+class AdminItemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
