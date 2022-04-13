@@ -36,22 +36,26 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL,
             orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     public void addOrderItem(OrderItem orderItem) {
         orderItems.add(orderItem);
-        orderItem.addOrder(this);
+        orderItem.setOrder(this);
     }
 
     public static Order createOrder(Member member, List<OrderItem> orderItemList) {
         Order order = Order.builder()
                 .member(member)
                 .orderStatus(OrderStatus.ORDER)
+                .orderItems(new ArrayList<>())
                 .orderDate(LocalDateTime.now())
                 .build();
-        orderItemList.forEach(order::addOrderItem);
+        for (OrderItem orderItem : orderItemList) {
+            order.addOrderItem(orderItem);
+        }
         return order;
     }
 

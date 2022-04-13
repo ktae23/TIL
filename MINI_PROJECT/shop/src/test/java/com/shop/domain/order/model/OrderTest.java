@@ -62,7 +62,6 @@ class OrderTest {
                     .orderPrice(1000)
                     .order(order)
                     .build();
-            orderItem.addOrder(order);
         }
 
         Member member = new Member(null, "홍길동", "test@email.com", "12341234", "서울시 마포구 합정동", Role.USER);
@@ -88,7 +87,6 @@ class OrderTest {
                     .orderPrice(1000)
                     .order(order)
                     .build();
-            orderItem.addOrder(order);
         }
 
         // when
