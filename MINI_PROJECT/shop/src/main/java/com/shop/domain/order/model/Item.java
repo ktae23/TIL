@@ -3,9 +3,9 @@ package com.shop.domain.order.model;
 import com.shop.application.order.dto.ItemFormDto;
 import com.shop.domain.BaseEntity;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
+import com.shop.infrastructure.exception.OutOfStockException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -26,7 +26,6 @@ import javax.persistence.Lob;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SuperBuilder
 @ToString
-@EqualsAndHashCode
 public class Item extends BaseEntity {
 
     @Id
@@ -45,6 +44,14 @@ public class Item extends BaseEntity {
     private String itemDetail;
     @Enumerated(EnumType.STRING)
     private ItemSellStatus itemSellStatus;
+
+    public void removeStock(int stockNumber) {
+        int reStock = this.stockNumber - stockNumber;
+        if (reStock < 0) {
+            throw new OutOfStockException("상품의 재고가 부족합니다.");
+        }
+        this.stockNumber = reStock;
+    }
 
     public static Item from(ItemFormDto itemFormDto) {
         return Item.builder()

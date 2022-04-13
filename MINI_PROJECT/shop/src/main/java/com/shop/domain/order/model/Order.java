@@ -40,6 +40,25 @@ public class Order extends BaseEntity {
             orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    public void addOrderItem(OrderItem orderItem) {
+        orderItems.add(orderItem);
+        orderItem.addOrder(this);
+    }
+
+    public static Order createOrder(Member member, List<OrderItem> orderItemList) {
+        Order order = Order.builder()
+                .member(member)
+                .orderStatus(OrderStatus.ORDER)
+                .orderDate(LocalDateTime.now())
+                .build();
+        orderItemList.forEach(order::addOrderItem);
+        return order;
+    }
+
+    public int getTotalPrice() {
+        return orderItems.stream().map(OrderItem::getTotalPrice).mapToInt(i-> i).sum();
+    }
+
     public void changeMember(Member member) {
         if (member != null) {
             this.member = member;
