@@ -19,8 +19,14 @@ spring:
     multipart:
       max-file-size: 20MB
       max-request-size: 100MB
-itemImgLocation: C:\Users\zz238\TIL\shop\item
-uploadPath: file:///C:\Users\zz238\TIL\shop
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 1000
+
+
+itemImgLocation: C:/Users/zz238/TIL/shop
+uploadPath: file:///C:/Users/zz238/TIL/shop
 
 sever:
   port: 80
