@@ -2,19 +2,26 @@ package com.shop.interfaces.order;
 
 import com.shop.application.order.OrderService;
 import com.shop.application.order.dto.OrderDto;
+import com.shop.application.order.dto.OrderHistoryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -43,5 +50,16 @@ public class OrderController {
         }
 
         return ResponseEntity.ok(orderId);
+    }
+
+    @GetMapping("orders")
+    public String orderHistory(@RequestParam(required = false, name = "page") Integer page, Principal principal, Model model) {
+        final PageRequest pageRequest = PageRequest.of(Optional.ofNullable(page).orElse(0), 4);
+        final Page<OrderHistoryDto> orderHistoryDtoList = orderService.getOrderList(principal.getName(), pageRequest);
+
+        model.addAttribute("orders", orderHistoryDtoList);
+        model.addAttribute("page", pageRequest.getPageNumber());
+        model.addAttribute("maxPage", 5);
+        return "order/orderHist";
     }
 }
