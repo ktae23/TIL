@@ -9,6 +9,7 @@ import com.shop.domain.order.model.OrderItem;
 import com.shop.domain.order.repository.ItemRepository;
 import com.shop.domain.order.repository.OrderRepository;
 import com.shop.infrastructure.constant.order.ItemSellStatus;
+import com.shop.infrastructure.constant.order.OrderStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,22 @@ class OrderServiceTest {
 
         // then
         assertThat(totalPrice).isEqualTo(order.getTotalPrice());
+    }
+
+    @Test
+    @DisplayName("주문 취소 테스트")
+    void cancelOrder () throws Exception {
+        // given
+        final Item item = saveItem();
+        final Member member = saveMember();
+        final OrderDto orderDto = OrderDto.builder().id(item.getId()).count(10).build();
+        // when
+        final Long orderId = orderService.order(orderDto, member.getEmail());
+        final Order order = orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);
+        orderService.cancelOrder(orderId);
+        // then
+        assertThat(OrderStatus.CANCEL).isEqualTo(order.getOrderStatus());
+        assertThat(100).isEqualTo(item.getStockNumber());
     }
 
 }

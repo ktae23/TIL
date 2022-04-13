@@ -69,4 +69,9 @@ public class Order extends BaseEntity {
         }
     }
 
+    public void cancelOrder() {
+        this.orderStatus = OrderStatus.CANCEL;
+        orderItems.forEach(OrderItem::cancel);
+    }
+
 }

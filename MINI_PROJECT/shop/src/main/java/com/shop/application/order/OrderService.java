@@ -80,4 +80,18 @@ public class OrderService {
 
         return new PageImpl<>(orderHistoryDtoList, pageable, totalCount);
     }
+
+    @Transactional(readOnly = true)
+    public boolean validateOrder(Long orderId, String email) {
+        final Member currentMember = memberRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        final Order order = orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);
+        final Member orderMember = order.getMember();
+
+        return orderMember.getEmail().equals(currentMember.getEmail());
+    }
+
+    public void cancelOrder(Long orderId) {
+        final Order order = orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);
+        order.cancelOrder();
+    }
 }
