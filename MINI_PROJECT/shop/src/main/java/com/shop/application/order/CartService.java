@@ -56,4 +56,20 @@ public class CartService {
         }
         return cartItemRepository.findCartDetailDtoList(cart.get().getId());
     }
+
+    @Transactional(readOnly = true)
+    public boolean validateCartItem(Long cartItemId, String email) {
+        final Member currentMember = memberRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        final CartItem cartItem = cartItemRepository.findById(cartItemId).orElseThrow(EntityNotFoundException::new);
+        final Member savedMember = cartItem.getCart().getMember();
+
+        return currentMember.getEmail().equals(savedMember.getEmail());
+    }
+
+    public void updateCartItemCount(Long cartItemId, int count) {
+        final CartItem cartItem = cartItemRepository.findById(cartItemId)
+                .orElseThrow(EntityNotFoundException::new);
+        cartItem.updateCount(count);
+    }
+
 }
