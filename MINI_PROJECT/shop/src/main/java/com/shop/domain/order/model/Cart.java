@@ -31,4 +31,8 @@ public class Cart extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private Member member;
 
+    public static Cart createCart(Member member) {
+        return new Cart(null , member);
+    }
+
 }
