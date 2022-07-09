@@ -94,4 +94,17 @@ public class OrderService {
         final Order order = orderRepository.findById(orderId).orElseThrow(EntityNotFoundException::new);
         order.cancelOrder();
     }
+
+    public Long orders(List<OrderDto> orderDtoList, String email) {
+        final Member member = memberRepository.findByEmail(email).orElseThrow(EntityNotFoundException::new);
+        List<OrderItem> orderItemList = orderDtoList.stream()
+                .map(order -> {
+                    final Item item = itemRepository.findById(order.getId()).orElseThrow(EntityNotFoundException::new);
+                    return OrderItem.createOrderItem(item, order.getCount());
+                })
+                .collect(Collectors.toList());
+        final Order order = Order.createOrder(member, orderItemList);
+        orderRepository.save(order);
+        return order.getId();
+    }
 }
