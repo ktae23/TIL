@@ -1,5 +1,6 @@
 package com.inflean.api.service;
 
+import com.inflean.api.repository.CouponCountRepository;
 import com.inflean.api.repository.CouponRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ class ApplyServiceTest {
 
     @Autowired
     private CouponRepository couponRepository;
+
 
     @Test
     void 한번만_응모() {
