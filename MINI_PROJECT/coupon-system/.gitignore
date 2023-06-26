@@ -218,3 +218,13 @@ gradle-app.setting
 *.hprof
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,macos,java,gradle,maven
+/api/api.iml
+/.idea/modules/api.main.iml
+/.idea/modules/api.test.iml
+/.idea/modules/coupon-system.iml
+/.idea/modules/coupon-system.main.iml
+/.idea/modules/coupon-system.test.iml
+/.idea/git_toolbox_prj.xml
+/api/HELP.md
+/.idea/modules.xml
+/.idea/vcs.xml
