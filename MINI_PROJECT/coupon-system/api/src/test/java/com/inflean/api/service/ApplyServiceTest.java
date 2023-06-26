@@ -1,5 +1,6 @@
 package com.inflean.api.service;
 
+import com.inflean.api.producer.CouponCreateProducer;
 import com.inflean.api.repository.CouponCountRepository;
 import com.inflean.api.repository.CouponRepository;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,12 @@ class ApplyServiceTest {
 
     @Autowired
     private CouponRepository couponRepository;
+
+    @Autowired
+    private CouponCreateProducer couponCreateProducer;
+
+    @Autowired
+    private CouponCountRepository couponCountRepository;
 
 
     @Test
