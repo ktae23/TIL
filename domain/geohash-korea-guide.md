@@ -222,6 +222,87 @@ implementation 'ch.hsr:geohash:1.4.0'
 | `BoundingBox` | Geohash 셀의 경계 박스 |
 | `GeoHashCircleQuery` | 원형 범위 검색 |
 
+### GeoHashCircleQuery 상세
+
+`GeoHashCircleQuery`는 **특정 중심점에서 원형 반경 내의 모든 GeoHash를 검색**할 때 사용합니다.
+
+#### 동작 원리
+
+```
+        ┌─────────────────────┐
+        │    ┌───┬───┬───┐    │
+        │    │   │   │   │    │
+        │    ├───┼───┼───┤    │
+        │    │   │ ● │   │ ←── 반경 내 포함되는 모든 GeoHash 셀 반환
+        │    ├───┼───┼───┤    │
+        │    │   │   │   │    │
+        │    └───┴───┴───┘    │
+        └─────────────────────┘
+              원형 반경 쿼리
+```
+
+#### 사용법
+
+```java
+import ch.hsr.geohash.GeoHash;
+import ch.hsr.geohash.WGS84Point;
+import ch.hsr.geohash.queries.GeoHashCircleQuery;
+
+// 강남역 좌표에서 반경 1km 내 모든 GeoHash 검색
+WGS84Point center = new WGS84Point(37.4980, 127.0276);
+double radiusMeters = 1000.0;  // 1km
+
+GeoHashCircleQuery query = new GeoHashCircleQuery(center, radiusMeters);
+
+// 검색된 모든 GeoHash 순회
+for (GeoHash hash : query.getSearchHashes()) {
+    System.out.println(hash.toBase32());
+}
+```
+
+#### 주요 메서드
+
+| 메서드 | 설명 |
+|--------|------|
+| `getSearchHashes()` | 반경 내 포함/겹치는 모든 GeoHash 반환 |
+| `contains(GeoHash)` | 특정 GeoHash가 원 안에 포함되는지 확인 |
+
+#### 실전 활용 예제
+
+```java
+@Service
+public class NearbySearchService {
+
+    public List<Store> findStoresWithinRadius(double lat, double lon, double radiusKm) {
+        WGS84Point center = new WGS84Point(lat, lon);
+        GeoHashCircleQuery query = new GeoHashCircleQuery(center, radiusKm * 1000);
+
+        // 원형 범위 내 모든 geohash prefix 수집
+        Set<String> prefixes = new HashSet<>();
+        for (GeoHash hash : query.getSearchHashes()) {
+            prefixes.add(hash.toBase32());
+        }
+
+        // DB에서 해당 prefix로 검색
+        List<Store> candidates = storeRepository.findByGeohashIn(prefixes);
+
+        // 실제 거리 계산으로 정확한 필터링
+        return candidates.stream()
+            .filter(s -> calculateDistance(lat, lon, s.getLat(), s.getLon()) <= radiusKm)
+            .toList();
+    }
+}
+```
+
+#### getAdjacent()와의 비교
+
+| 방식 | 용도 | 반환 |
+|------|------|------|
+| `getAdjacent()` | 인접 8개 셀 조회 | 항상 8개 |
+| `GeoHashCircleQuery` | 반경 기반 검색 | 반경에 따라 유동적 |
+
+`GeoHashCircleQuery`는 반경이 클수록 더 많은 셀을, 작을수록 적은 셀을 반환하여 **동적 범위 검색**에 적합합니다.
+
 #### 기본 사용법
 
 ```java
