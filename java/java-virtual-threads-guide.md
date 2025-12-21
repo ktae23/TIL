@@ -1,7 +1,5 @@
 # Java Virtual Threads 완벽 가이드
 
-> Java 5년차 개발자를 위한 가상 스레드 학습 자료
-
 ---
 
 ## 목차
