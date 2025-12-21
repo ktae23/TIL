@@ -12,8 +12,6 @@
 - [베스트 프랙티스](#베스트-프랙티스)
 - [참고 자료](#참고-자료)
 
----
-
 ## 아키텍처 비교
 
 | 특성 | 모놀리스 | 모듈러 모놀리스 | 마이크로서비스 |
@@ -36,8 +34,6 @@
 - 팀 규모가 작거나 중간 규모일 때
 - 도메인 경계가 아직 명확하지 않을 때
 - 향후 마이크로서비스 전환 가능성을 열어두고 싶을 때
-
----
 
 ## 모듈러 모놀리스란?
 
@@ -65,8 +61,6 @@
 │                    Event Bus                             │
 └─────────────────────────────────────────────────────────┘
 ```
-
----
 
 ## Spring Modulith 소개
 
@@ -113,8 +107,6 @@ testImplementation 'org.springframework.modulith:spring-modulith-starter-test:1.
 | **이벤트 기반 통신** | ApplicationEvent를 활용한 비동기 통신 |
 | **이벤트 발행 보장** | 트랜잭션 아웃박스 패턴 지원 |
 | **통합 테스트 지원** | 모듈 단위 슬라이스 테스트 |
-
----
 
 ## 핵심 원리
 
@@ -204,8 +196,6 @@ package com.example.shop.inventory.api;
 
 import org.springframework.modulith.NamedInterface;
 ```
-
----
 
 ## 실전 예제
 
@@ -385,8 +375,6 @@ class OrderScenarioTest {
 }
 ```
 
----
-
 ## 베스트 프랙티스
 
 ### 1. 모듈 경계 설계
@@ -526,15 +514,11 @@ ApplicationModuleInitializer moduleHealthIndicator(ApplicationModules modules) {
 }
 ```
 
----
-
 ## 참고 자료
 
 - [Spring Modulith 공식 문서](https://docs.spring.io/spring-modulith/reference/)
 - [Spring Modulith GitHub](https://github.com/spring-projects/spring-modulith)
 - [Modular Monolith with DDD - Kamil Grzybek](https://github.com/kgrzybek/modular-monolith-with-ddd)
 - [Spring I/O 2023 - Spring Modulith](https://www.youtube.com/watch?v=VGhg6Tfxb60)
-
----
 
 *마지막 업데이트: 2025년 12월*
