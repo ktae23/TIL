@@ -10,7 +10,7 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
 ## TIL 저장소 정보
 
-- 저장소 경로: /Users/buzz/til
+- 저장소 경로: $TIL_ROOT
 - 카테고리별 폴더 구조: java/, domain/, spring/, docker/, database/ 등
 
 ## 실행 단계
