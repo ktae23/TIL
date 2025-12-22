@@ -713,6 +713,7 @@ public Step restartableStep(JobRepository jobRepository,
 
 - [Spring Batch 기초](./spring-batch-basics.md) - Job, Step, 실행 흐름
 - [Spring Batch Chunk 처리](./spring-batch-chunk.md) - ItemReader, ItemProcessor, ItemWriter
+- [Spring Batch ExecutionContext 가이드](./spring-batch-execution-context.md) - 상태 저장과 재시작
 - [Spring Batch 실무 베스트 프랙티스](./spring-batch-best-practices.md) - 정기 결제, 정산 사례
 
 *마지막 업데이트: 2024년 12월*

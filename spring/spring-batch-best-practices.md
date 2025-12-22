@@ -1213,6 +1213,7 @@ public Step settlementStep(JobRepository jobRepository,
 
 - [Spring Batch 기초](./spring-batch-basics.md) - Job, Step, 실행 흐름
 - [Spring Batch Chunk 처리](./spring-batch-chunk.md) - ItemReader, ItemProcessor, ItemWriter
+- [Spring Batch ExecutionContext 가이드](./spring-batch-execution-context.md) - 상태 저장과 재시작
 - [Spring Batch 고급 활용](./spring-batch-advanced.md) - 비동기, 파티셔닝, 원격 실행
 
 *마지막 업데이트: 2024년 12월*
