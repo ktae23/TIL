@@ -10,6 +10,7 @@
 - [SpEL을 통한 Late Binding](#spel을-통한-late-binding)
 - [ItemStream 인터페이스](#itemstream-인터페이스)
 - [재시작 시나리오](#재시작-시나리오)
+- [lastProcessedId 심화](#lastprocessedid-심화)
 - [실무 활용 패턴](#실무-활용-패턴)
 - [주의사항](#주의사항)
 
@@ -592,6 +593,235 @@ public class MultiStepJobConfig {
                 .build();
     }
 }
+```
+
+---
+
+## lastProcessedId 심화
+
+재시작 가능한 배치에서 가장 중요한 **lastProcessedId**의 선택 기준과 저장 시점을 상세히 알아본다.
+
+### 어떤 값을 기준으로 선택하나?
+
+**개발자가 직접 정의**하는 값이다. 일반적으로 다음 기준을 사용한다:
+
+| 기준 | 적합한 상황 | 예시 |
+|------|------------|------|
+| **PK (Auto Increment)** | 단일 테이블, 순차 처리 | `id` |
+| **생성일시** | 시간 기반 처리 | `created_at` |
+| **복합 키** | 여러 조건 조합 | `date + sequence` |
+| **오프셋** | 페이징, API 호출 | `offset`, `page` |
+
+```java
+// 가장 일반적인 패턴: PK 기준
+@Bean
+@StepScope
+public JdbcPagingItemReader<Order> reader(
+        @Value("#{stepExecutionContext['lastProcessedId']}") Long lastId) {
+
+    return new JdbcPagingItemReaderBuilder<Order>()
+            .whereClause("WHERE id > :lastId")  // PK 기준
+            .parameterValues(Map.of("lastId", lastId != null ? lastId : 0L))
+            .sortKeys(Map.of("id", Order.ASCENDING))  // 정렬 필수!
+            .build();
+}
+```
+
+**선택 기준 핵심 3가지:**
+- **유일성**: 중복 없이 식별 가능
+- **순서 보장**: 정렬했을 때 일관된 순서
+- **불변성**: 처리 중 값이 변하지 않음
+
+### 저장되는 시점
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Chunk 처리 + 저장 시점                            │
+│                                                                      │
+│  ┌─────────── 트랜잭션 시작 ───────────┐                            │
+│  │                                      │                            │
+│  │  [Read 100건]                        │                            │
+│  │       ↓                              │                            │
+│  │  [Process 100건]                     │                            │
+│  │       ↓                              │                            │
+│  │  [Write 100건]                       │  ← 비즈니스 데이터 저장     │
+│  │       ↓                              │                            │
+│  │  [ItemStream.update() 호출]          │  ← ExecutionContext 업데이트│
+│  │       ↓                              │                            │
+│  └─────────── 트랜잭션 커밋 ───────────┘  ← 메타데이터 테이블 저장   │
+│                                                                      │
+│  ✅ 커밋 성공 → lastProcessedId = 100 저장됨                         │
+│  ❌ 커밋 실패 → 전체 롤백 (lastProcessedId도 롤백)                   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**핵심 포인트:**
+- `update()` 호출 ≠ DB 저장
+- **트랜잭션 커밋 시점**에 `BATCH_STEP_EXECUTION_CONTEXT` 테이블에 저장
+- 비즈니스 데이터와 메타데이터가 **같은 트랜잭션**으로 묶임
+
+### 저장 시점 상세
+
+| 시점 | 이벤트 | ExecutionContext 상태 |
+|------|--------|----------------------|
+| Step 시작 | `open()` | DB에서 이전 값 로드 |
+| Read | 아이템 읽기 | 메모리에만 존재 |
+| Process | 아이템 처리 | 메모리에만 존재 |
+| Write | 아이템 저장 | 메모리에만 존재 |
+| Chunk 완료 | `update()` | 메모리 업데이트 |
+| **트랜잭션 커밋** | - | **DB에 저장** ⭐ |
+| Step 종료 | `close()` | - |
+
+**따라서:**
+- Chunk 100건 처리 중 50건째에서 실패 → lastProcessedId는 이전 Chunk의 마지막 값 유지
+- 재시작 시 해당 Chunk 처음부터 다시 처리
+
+### 구현 방법 A: ItemStream 직접 구현 (권장)
+
+```java
+@Component
+public class OrderReader implements ItemStreamReader<Order> {
+
+    private static final String LAST_ID_KEY = "lastProcessedId";
+
+    private Long lastProcessedId = 0L;
+    private Iterator<Order> iterator;
+
+    @Override
+    public void open(ExecutionContext context) {
+        // 재시작 시 이전 값 복구
+        if (context.containsKey(LAST_ID_KEY)) {
+            lastProcessedId = context.getLong(LAST_ID_KEY);
+        }
+        // lastProcessedId 이후 데이터 조회
+        iterator = orderRepository.findByIdGreaterThan(lastProcessedId).iterator();
+    }
+
+    @Override
+    public Order read() {
+        if (iterator.hasNext()) {
+            Order order = iterator.next();
+            lastProcessedId = order.getId();  // 읽을 때마다 갱신
+            return order;
+        }
+        return null;
+    }
+
+    @Override
+    public void update(ExecutionContext context) {
+        // ⭐ Chunk 완료 후 호출됨 → 트랜잭션 커밋 시 DB 저장
+        context.putLong(LAST_ID_KEY, lastProcessedId);
+    }
+
+    @Override
+    public void close() {}
+}
+```
+
+### 구현 방법 B: ChunkListener 사용
+
+```java
+@Bean
+public Step orderStep(JobRepository jobRepository,
+                      PlatformTransactionManager transactionManager) {
+    return new StepBuilder("orderStep", jobRepository)
+            .<Order, Order>chunk(100, transactionManager)
+            .reader(reader(null))
+            .writer(writer())
+            .listener(new ChunkListener() {
+                @Override
+                public void afterChunk(ChunkContext context) {
+                    // Chunk의 마지막 아이템 ID 저장
+                    StepExecution stepExecution = context.getStepContext()
+                            .getStepExecution();
+
+                    // Writer에서 저장한 마지막 ID 가져오기
+                    Long lastId = (Long) context.getAttribute("lastWrittenId");
+                    if (lastId != null) {
+                        stepExecution.getExecutionContext()
+                                .putLong("lastProcessedId", lastId);
+                    }
+                }
+            })
+            .build();
+}
+
+@Bean
+public ItemWriter<Order> writer() {
+    return chunk -> {
+        // 저장 로직
+        orderRepository.saveAll(chunk.getItems());
+
+        // 마지막 ID를 ChunkContext에 전달
+        Order lastOrder = chunk.getItems().get(chunk.size() - 1);
+        StepSynchronizationManager.getContext()
+                .setAttribute("lastWrittenId", lastOrder.getId());
+    };
+}
+```
+
+### 구현 방법 C: 내장 Reader 자동 저장
+
+Spring Batch의 **내장 Reader들은 자동으로 상태를 저장**한다:
+
+```java
+@Bean
+public JdbcPagingItemReader<Order> reader() {
+    return new JdbcPagingItemReaderBuilder<Order>()
+            .name("orderReader")  // ⭐ name 필수! (저장 키로 사용)
+            .dataSource(dataSource)
+            .selectClause("SELECT *")
+            .fromClause("FROM orders")
+            .sortKeys(Map.of("id", Order.ASCENDING))
+            .pageSize(100)
+            // saveState(true)가 기본값 → 자동으로 현재 페이지 저장
+            .build();
+}
+```
+
+내장 Reader가 자동 저장하는 값:
+```json
+// BATCH_STEP_EXECUTION_CONTEXT에 저장되는 내용
+{
+  "orderReader.read.count": 500,
+  "orderReader.current.item.count": 500
+}
+```
+
+### 실제 DB 저장 확인
+
+```sql
+-- BATCH_STEP_EXECUTION_CONTEXT 테이블
+SELECT STEP_EXECUTION_ID, SHORT_CONTEXT
+FROM BATCH_STEP_EXECUTION_CONTEXT
+WHERE STEP_EXECUTION_ID = 123;
+```
+
+| STEP_EXECUTION_ID | SHORT_CONTEXT |
+|-------------------|---------------|
+| 123 | `{"lastProcessedId":5000,"totalRead":5000}` |
+
+### 실패 시 동작 예시
+
+```
+[시나리오: Chunk 3 처리 중 50건째에서 실패]
+
+Chunk 1: ID 1-100 처리 완료
+  → update() 호출: lastProcessedId = 100
+  → 트랜잭션 커밋 → DB 저장 ✅
+
+Chunk 2: ID 101-200 처리 완료
+  → update() 호출: lastProcessedId = 200
+  → 트랜잭션 커밋 → DB 저장 ✅
+
+Chunk 3: ID 201-300 처리 중...
+  → ID 250에서 예외 발생 ❌
+  → update() 호출 안 됨
+  → 트랜잭션 롤백 → lastProcessedId = 200 유지
+
+[재시작 시]
+open() 호출 → DB에서 lastProcessedId = 200 복구
+→ ID 201부터 다시 처리 시작
 ```
 
 ---
