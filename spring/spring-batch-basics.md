@@ -444,5 +444,6 @@ public class BatchScheduler {
 
 - [Spring Batch Chunk 처리](./spring-batch-chunk.md) - ItemReader, ItemProcessor, ItemWriter 상세
 - [Spring Batch 고급 활용](./spring-batch-advanced.md) - 비동기, 파티셔닝, 원격 실행
+- [Spring Batch 실무 베스트 프랙티스](./spring-batch-best-practices.md) - 정기 결제, 정산 사례
 
 *마지막 업데이트: 2024년 12월*
