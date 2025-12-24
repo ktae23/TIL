@@ -9,6 +9,7 @@ Redis(Remote Dictionary Server)는 인메모리 데이터 구조 저장소로, �
 - [데이터 타입](#데이터-타입)
 - [TTL (Time To Live)](#ttl-time-to-live)
 - [Spring Boot 연동](#spring-boot-연동)
+- [클라우드 Redis 서비스](#클라우드-redis-서비스)
 
 ---
 
@@ -61,6 +62,12 @@ GET user:1:name
 # 값 삭제
 DEL user:1:name
 # 결과: (integer) 1
+
+# 비동기 삭제 (권장)
+UNLINK user:1:name
+# 결과: (integer) 1
+# DEL은 동기 삭제(블로킹), UNLINK는 비동기 삭제(논블로킹)
+# 큰 데이터 삭제 시 UNLINK 사용 권장
 
 # 키 존재 확인
 EXISTS user:1:name
@@ -364,6 +371,137 @@ public class ProductService {
     }
 }
 ```
+
+---
+
+## 클라우드 Redis 서비스
+
+프로덕션 환경에서는 관리형 Redis 서비스를 사용하는 것이 권장됩니다.
+
+### AWS ElastiCache for Redis
+
+AWS에서 제공하는 관리형 Redis 서비스로 자동 백업, 장애 조치, 모니터링을 지원합니다.
+
+#### 주요 특징
+
+- **자동 장애 조치**: Multi-AZ 구성으로 고가용성 보장
+- **자동 백업**: 일일 스냅샷 및 특정 시점 복구 지원
+- **확장성**: 읽기 복제본을 통한 수평 확장 가능
+- **보안**: VPC 내부 배치, 암호화 지원 (전송 중/저장 시)
+- **모니터링**: CloudWatch를 통한 실시간 메트릭 제공
+
+#### 클러스터 모드
+
+```
+# 클러스터 모드 비활성화 (Cluster Mode Disabled)
+- 단일 샤드, 최대 5개 읽기 복제본
+- 간단한 구성, 수직 확장 중심
+- 최대 250GB 메모리
+
+# 클러스터 모드 활성화 (Cluster Mode Enabled)
+- 여러 샤드로 데이터 분산 (최대 500개 노드)
+- 수평 확장 가능, 대용량 데이터 처리
+- 자동 샤딩으로 성능 향상
+```
+
+#### Spring Boot 연동 예시
+
+```yaml
+# application.yml
+spring:
+  redis:
+    cluster:
+      nodes:
+        - my-cluster.abc123.clustercfg.apn2.cache.amazonaws.com:6379
+    ssl: true
+    timeout: 2000ms
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10분
+```
+
+```java
+@Configuration
+public class RedisConfig {
+
+    @Value("${spring.redis.cluster.nodes}")
+    private List<String> clusterNodes;
+
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        RedisClusterConfiguration clusterConfig =
+            new RedisClusterConfiguration(clusterNodes);
+
+        LettuceClientConfiguration clientConfig =
+            LettuceClientConfiguration.builder()
+                .useSsl()
+                .commandTimeout(Duration.ofSeconds(2))
+                .build();
+
+        return new LettuceConnectionFactory(clusterConfig, clientConfig);
+    }
+}
+```
+
+### Azure Cache for Redis
+
+Microsoft Azure의 관리형 Redis 서비스입니다.
+
+#### 주요 특징
+
+- **엔터프라이즈급**: Redis Enterprise 버전 지원
+- **지리적 복제**: 여러 지역 간 데이터 동기화
+- **Redis Modules**: RedisJSON, RediSearch, RedisBloom 등 지원
+- **Zone redundancy**: 가용성 영역 간 복제
+
+#### 티어 비교
+
+| 티어 | 용도 | 특징 |
+|------|------|------|
+| **Basic** | 개발/테스트 | SLA 없음, 복제 없음 |
+| **Standard** | 프로덕션 | 복제본 지원, 99.9% SLA |
+| **Premium** | 엔터프라이즈 | 클러스터링, 영속성, VNet 지원 |
+| **Enterprise** | 대규모 | Redis Enterprise, Active-Active 복제 |
+
+### Google Cloud Memorystore
+
+Google Cloud의 관리형 Redis 서비스입니다.
+
+#### 주요 특징
+
+- **완전 관리형**: 자동 패치 및 업데이트
+- **고성능**: 최대 300GB 메모리, 12Gbps 처리량
+- **VPC 피어링**: 안전한 네트워크 연결
+- **Import/Export**: RDB 파일을 통한 데이터 마이그레이션
+
+```yaml
+# Spring Boot 설정 예시
+spring:
+  redis:
+    host: 10.0.0.3  # Memorystore private IP
+    port: 6379
+    password: ${REDIS_PASSWORD}
+```
+
+### 클라우드 서비스 선택 가이드
+
+| 고려사항 | AWS ElastiCache | Azure Cache | GCP Memorystore |
+|---------|-----------------|-------------|-----------------|
+| **클러스터링** | ✅ 우수 | ✅ 우수 | ⚠️ 제한적 |
+| **Redis 모듈** | ❌ 미지원 | ✅ Enterprise 지원 | ❌ 미지원 |
+| **지리적 복제** | ⚠️ Global Datastore | ✅ Active-Active | ❌ 미지원 |
+| **가격** | 중간 | 다양한 옵션 | 저렴 |
+| **최대 메모리** | 6.1TB | 13TB | 300GB |
+
+### 비용 최적화 팁
+
+1. **Reserved Instances**: AWS/Azure에서 예약 인스턴스로 최대 50% 절감
+2. **적절한 티어 선택**: 개발 환경은 Basic/Standard, 운영 환경만 Premium 사용
+3. **TTL 활용**: 불필요한 데이터 자동 삭제로 메모리 효율화
+4. **모니터링**: 메모리 사용률 80% 이하 유지, 필요 시 스케일 다운
+5. **읽기 복제본**: 읽기 트래픽 분산으로 상위 티어 대신 복제본 활용
 
 ---
 
