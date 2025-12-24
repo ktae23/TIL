@@ -2,7 +2,7 @@
 
 Java Virtual Machine(JVM)의 메모리 구조, 실행 흐름, 클래스 로딩 메커니즘, 그리고 어노테이션 프로세싱에 대한 핵심 개념을 정리합니다.
 
-**기준 버전**: Java 8 (Java 9+ 변경사항 별도 표기)
+**기준 버전**: Java 8 (Java 9 이후 변경사항 별도 표기)
 
 ## 목차
 
@@ -78,7 +78,7 @@ Java 7 이전              Java 8 이후
 - **Young Generation**: 새로 생성된 객체 저장 (Minor GC 대상)
 - **Old Generation**: 오래 살아남은 객체 저장 (Major GC 대상)
 
-> **Java 9+ 변경사항**: G1 GC가 기본 GC로 변경
+> **Java 9 변경사항**: G1 GC가 기본 GC로 변경
 > - Region 기반 메모리 관리
 > - Young/Old 구분이 논리적으로만 존재
 > - 예측 가능한 중지 시간
@@ -263,7 +263,7 @@ public class Example {
 | **JIT 컴파일러 (C1)** | Hot Spot 코드를 네이티브 코드로 컴파일 | 빠른 실행 속도 (인터프리터 대비) | 컴파일 오버헤드 | 반복 실행되는 코드 (임계값 도달) |
 | **JIT 컴파일러 (C2)** | 고도로 최적화된 네이티브 코드 생성 | 매우 빠른 실행 속도 | 긴 컴파일 시간 | 매우 자주 실행되는 코드 (서버 애플리케이션) |
 
-> **Java 9+ 변경사항**: AOT (Ahead-of-Time) 컴파일러 추가
+> **Java 9 변경사항**: AOT (Ahead-of-Time) 컴파일러 추가
 > - 실행 전에 네이티브 코드로 미리 컴파일
 > - 시작 시간 단축 (JIT 워밍업 불필요)
 
@@ -300,7 +300,7 @@ public class Example {
 └─────────────────────────────────────┘
 ```
 
-> **Java 9+ 변경사항**: 모듈 시스템 도입으로 클래스 로더 구조 변경
+> **Java 9 변경사항**: 모듈 시스템 도입으로 클래스 로더 구조 변경
 > - Extension ClassLoader → **Platform ClassLoader**
 > - rt.jar 제거, 모듈로 재구성 (java.base 등)
 > - 각 모듈이 자체 ClassLoader 보유
@@ -639,10 +639,10 @@ if (User.class.isAnnotationPresent(Entity.class)) {
 
 ## Java 버전별 주요 변경사항 요약
 
-### Java 8 → Java 9+
+### Java 8 → Java 9
 
-| 영역 | Java 8 | Java 9+ | 변경 이유 |
-|------|--------|---------|----------|
+| 영역 | Java 8 | Java 9 | 변경 이유 |
+|------|--------|--------|----------|
 | **모듈 시스템** | 없음 (monolithic JDK) | JPMS (Java Platform Module System) | 캡슐화 강화, 경량화 |
 | **Class Loader** | Bootstrap / Extension / Application | Bootstrap / Platform / Application | 모듈 시스템 지원 |
 | **rt.jar** | 단일 거대 jar | 모듈로 분리 (java.base 등) | 필요한 모듈만 로드 |
@@ -650,7 +650,7 @@ if (User.class.isAnnotationPresent(Entity.class)) {
 | **컴파일러** | JIT (C1, C2) | JIT + AOT | 시작 시간 단축 |
 | **메모리** | Metaspace | Metaspace (동일) | - |
 
-### Java 11+ 추가 변경사항
+### Java 11 추가 변경사항
 
 - **Epsilon GC**: No-Op GC (메모리 할당만, 회수 없음)
 - **ZGC**: 초저지연 GC (10ms 이하 중지 시간)
