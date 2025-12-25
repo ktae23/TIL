@@ -1,7 +1,7 @@
 ---
 name: til
 description: TIL(Today I Learned) 학습 기록을 관리합니다. 새 학습 내용 작성, 카테고리 관리, push까지 한 번에 처리합니다.
-allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion
+allowed-tools: Bash, Read, Write, Glob, Grep, AskUserQuestion, Skill
 ---
 
 # til
@@ -98,9 +98,14 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
 3. 마크다운 미리보기:
 
-   마크다운 파일 작성 완료 후 브라우저에서 미리보기를 엽니다:
-   ```bash
-   open "{생성된_파일_경로}"
+   마크다운 파일 작성 완료 후 `/md-preview` skill을 사용하여 HTML 미리보기를 엽니다:
+   ```
+   /md-preview 스킬 실행 (생성된 마크다운 파일 선택)
+   ```
+
+   또는 Skill 도구를 사용하여 직접 호출:
+   ```
+   Skill tool을 사용하여 md-preview 스킬 실행
    ```
 
 4. 미리보기 확인 및 Git 진행:
@@ -115,7 +120,7 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
    사용자가 "수정 필요"를 선택하면:
    - 수정할 내용을 입력받아 파일 수정
-   - 다시 미리보기 열기
+   - 다시 `/md-preview` skill을 실행하여 미리보기 열기
    - 이 단계 반복
 
    사용자가 "Push 진행"을 선택하면:
@@ -143,7 +148,7 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 → Step 3: [내용 입력] → "Other" 선택 후 학습 내용 입력
 → Step 4: [스타일 선택] 코드 예제 많이 / 간결하게 / 상세하게 / 비교 표 포함  → "코드 예제 많이" 선택
 → Step 5: [최종 확인] 시작 / 취소  → "시작" 선택
-→ 마크다운 파일 생성 → 미리보기 자동 열림
+→ 마크다운 파일 생성 → /md-preview 스킬로 HTML 미리보기 열림
 → [미리보기 확인] Push 진행 / 수정 필요 / 취소  → "Push 진행" 선택
 → git commit → git push
 ```
