@@ -208,7 +208,8 @@ ESCAPED=$(python3 -c "import json, sys; print(json.dumps(sys.stdin.read())[1:-1]
 
 ```
 /md-preview
-→ Step 1: [파일 선택] README.md / example.md / notes.md → "README.md" 선택
+→ Step 1: [디렉터리 선택] ./cache / ./python / ./java / ./auth → "./python" 선택
+→ Step 2: [파일 선택] django-프레임워크-사용법.md / fastapi-프레임워크-사용법.md → "django-프레임워크-사용법.md" 선택
 → HTML 변환 중...
 → 브라우저 미리보기 열림
 → 완료!
