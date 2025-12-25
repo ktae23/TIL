@@ -12,20 +12,34 @@ allowed-tools: Bash, Read, Write, Glob, AskUserQuestion
 
 /md-preview 실행 시 다음 단계를 순차적으로 진행합니다.
 
-### Step 1. 마크다운 파일 선택
+### Step 1. 디렉터리 선택
 
-1. 현재 디렉토리에서 .md 파일을 검색합니다:
+1. 현재 작업 디렉터리를 기준으로 마크다운 파일이 있는 하위 디렉터리를 검색합니다:
    ```bash
-   ls -t *.md 2>/dev/null | head -4
+   find . -name "*.md" -type f | sed 's|/[^/]*$||' | sort -u | head -4
+   ```
+
+2. **AskUserQuestion 도구**를 사용하여 디렉터리 선택지를 제공합니다:
+   - header: "디렉터리"
+   - question: "마크다운 파일이 있는 디렉터리를 선택해주세요."
+   - options: 검색된 디렉터리들 (최대 4개)
+   - 현재 디렉터리(.)도 옵션에 포함
+   - 사용자가 "Other"를 선택하면 디렉터리 경로를 직접 입력
+
+### Step 2. 마크다운 파일 선택
+
+1. 선택된 디렉터리에서 모든 .md 파일을 검색합니다 (하위 디렉터리 포함):
+   ```bash
+   find {선택된_디렉터리} -name "*.md" -type f | sort
    ```
 
 2. **AskUserQuestion 도구**를 사용하여 파일 선택지를 제공합니다:
    - header: "파일"
    - question: "미리보기할 마크다운 파일을 선택해주세요."
-   - options: 검색된 .md 파일들 (최대 4개, 최근 수정순)
+   - options: 검색된 모든 .md 파일들 (최대 4개, 파일명만 표시)
    - 사용자가 "Other"를 선택하면 파일 경로를 직접 입력
 
-### Step 2. HTML 변환 및 미리보기
+### Step 3. HTML 변환 및 미리보기
 
 1. 선택된 마크다운 파일을 읽습니다.
 
@@ -154,7 +168,7 @@ allowed-tools: Bash, Read, Write, Glob, AskUserQuestion
    open /tmp/{파일명}-preview.html
    ```
 
-### Step 3. 완료 메시지
+### Step 4. 완료 메시지
 
 사용자에게 미리보기가 열렸음을 알립니다:
 ```
