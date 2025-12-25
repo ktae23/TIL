@@ -12,6 +12,40 @@ allowed-tools: Bash, Read, Write, Glob, AskUserQuestion
 
 /md-preview 실행 시 다음 단계를 순차적으로 진행합니다.
 
+### Step 0. 작업 선택
+
+**AskUserQuestion 도구**를 사용하여 수행할 작업을 선택받습니다:
+- header: "작업"
+- question: "수행할 작업을 선택해주세요."
+- options:
+  - "마크다운 미리보기": 마크다운 파일을 HTML로 변환하여 브라우저에서 열기
+  - "임시 파일 정리 (tmp-clear)": /tmp 디렉터리의 모든 *-preview.html 파일 삭제
+
+사용자가 "임시 파일 정리"를 선택하면:
+1. `/tmp` 디렉터리에서 `*-preview.html` 패턴의 파일을 검색:
+   ```bash
+   ls /tmp/*-preview.html 2>/dev/null
+   ```
+
+2. 찾은 파일 목록을 사용자에게 보여주고 삭제 확인:
+   ```
+   다음 파일들을 삭제하시겠습니까?
+   - /tmp/file1-preview.html
+   - /tmp/file2-preview.html
+   ```
+
+3. 확인 후 파일 삭제:
+   ```bash
+   rm -f /tmp/*-preview.html
+   ```
+
+4. 완료 메시지 출력:
+   ```
+   ✓ {개수}개의 임시 HTML 파일을 삭제했습니다.
+   ```
+
+사용자가 "마크다운 미리보기"를 선택하면 Step 1로 진행합니다.
+
 ### Step 1. 디렉터리 선택
 
 1. 현재 작업 디렉터리를 기준으로 마크다운 파일이 있는 하위 디렉터리를 검색합니다:
@@ -206,13 +240,29 @@ ESCAPED=$(python3 -c "import json, sys; print(json.dumps(sys.stdin.read())[1:-1]
 
 ## 사용 예시
 
+### 마크다운 미리보기
+
 ```
 /md-preview
+→ Step 0: [작업 선택] 마크다운 미리보기 / 임시 파일 정리 → "마크다운 미리보기" 선택
 → Step 1: [디렉터리 선택] ./cache / ./python / ./java / ./auth → "./python" 선택
 → Step 2: [파일 선택] django-프레임워크-사용법.md / fastapi-프레임워크-사용법.md → "django-프레임워크-사용법.md" 선택
 → HTML 변환 중...
 → 브라우저 미리보기 열림
 → 완료!
+```
+
+### 임시 파일 정리
+
+```
+/md-preview
+→ Step 0: [작업 선택] 마크다운 미리보기 / 임시 파일 정리 → "임시 파일 정리" 선택
+→ 다음 3개의 파일을 찾았습니다:
+  - /tmp/cache-strategies-preview.html
+  - /tmp/rag-패턴-preview.html
+  - /tmp/django-프레임워크-사용법-preview.html
+→ [확인] 삭제하시겠습니까? → "예" 선택
+→ ✓ 3개의 임시 HTML 파일을 삭제했습니다.
 ```
 
 ## 주의사항
@@ -222,3 +272,4 @@ ESCAPED=$(python3 -c "import json, sys; print(json.dumps(sys.stdin.read())[1:-1]
 - 임시 HTML 파일은 `/tmp` 디렉토리에 생성됩니다
 - 매번 새로 실행 시 이전 HTML 파일을 덮어씁니다
 - GitHub Flavored Markdown (GFM)을 지원합니다 (테이블, 체크박스 등)
+- **임시 파일 정리**: `/tmp/*-preview.html` 패턴의 모든 파일을 삭제하므로 주의 필요
