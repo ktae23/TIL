@@ -10,17 +10,29 @@ TIL 저장소의 모든 마크다운 파일을 하나의 인터랙티브 웹 페
 
 ## 경로 설정
 
-- assets 경로: /Users/buzz/.claude/skills/til-viewer/assets
-- til skill 경로: /Users/buzz/.claude/skills/til/skill.md
+경로는 이 skill.md 파일 위치를 기준으로 결정됩니다.
+
+- **SKILL_DIR**: 이 skill.md 파일이 위치한 디렉토리 (Bash로 `dirname` 확인)
+- **assets 경로**: `{SKILL_DIR}/assets`
+- **til 스킬 경로**: `{SKILL_DIR}/../til/skill.md`
+
+### 경로 확인 방법
+
+실행 시작 시 다음 명령으로 SKILL_DIR을 확인합니다:
+```bash
+# 이 스킬의 디렉토리 확인
+SKILL_DIR=$(dirname "$(find ~/.claude/skills -name 'skill.md' -path '*/til-viewer/*' 2>/dev/null)")
+echo "SKILL_DIR: $SKILL_DIR"
+```
 
 ## 실행 단계
 
 ### Step 1. TIL 디렉토리 확인
 
 1. til skill에서 TIL 저장소 경로 읽기:
-   - Read 도구로 `/Users/buzz/.claude/skills/til/skill.md` 파일을 읽습니다.
+   - Read 도구로 `{SKILL_DIR}/../til/skill.md` 파일을 읽습니다.
    - "저장소 경로:" 라인에서 경로를 추출합니다.
-   - 예: `- 저장소 경로: /Users/buzz/til` → TIL 경로: `/Users/buzz/til`
+   - 예: `- 저장소 경로: /path/to/til` → TIL 경로 추출
 
 2. 경로 파싱:
    ```
@@ -109,7 +121,8 @@ Write 도구를 사용하여 `/tmp/til-viewer.html` 파일 생성:
 
 **assets 경로 설정**:
 ```python
-assets_path = "/Users/buzz/.claude/skills/til-viewer/assets"
+# SKILL_DIR은 Step 1에서 확인한 경로
+assets_path = f"{SKILL_DIR}/assets"
 ```
 
 **HTML 템플릿 구조**:
@@ -177,7 +190,7 @@ assets_path = "/Users/buzz/.claude/skills/til-viewer/assets"
 ```
 
 **플레이스홀더 교체**:
-- `{ASSETS_PATH}` → `/Users/buzz/.claude/skills/til-viewer/assets`
+- `{ASSETS_PATH}` → `{SKILL_DIR}/assets` (Step 1에서 확인한 경로)
 - `{TIL_JSON_DATA}` → Step 4에서 생성한 JSON
 
 ### Step 6. 브라우저 열기
@@ -277,7 +290,8 @@ til_data = {
 json_str = json.dumps(til_data, ensure_ascii=False, indent=2)
 
 # Step 5: HTML 생성
-assets_path = "/Users/buzz/.claude/skills/til-viewer/assets"
+# SKILL_DIR은 실행 시 확인한 경로
+assets_path = f"{SKILL_DIR}/assets"
 html_template = """..."""  # 위의 HTML 템플릿
 html_content = html_template.replace('{ASSETS_PATH}', assets_path)
 html_content = html_content.replace('{TIL_JSON_DATA}', json_str)
