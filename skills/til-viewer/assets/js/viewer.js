@@ -28,17 +28,10 @@ function init() {
     initSearch();
     initKeyboardShortcuts();
 
-    // Load last viewed file if exists, otherwise load default (home/README.md)
+    // Load last viewed file if exists
     const lastFile = localStorage.getItem('til-last-file');
-    if (lastFile && findFileByPath(lastFile)) {
+    if (lastFile) {
         loadFile(lastFile);
-    } else {
-        // 기본값: home/README.md
-        const defaultPath = 'home/README.md';
-        if (findFileByPath(defaultPath)) {
-            state.collapsedCategories.delete('home');
-            loadFile(defaultPath);
-        }
     }
 }
 
