@@ -18,6 +18,12 @@ const state = {
 // ========================================
 function init() {
     applyTheme(state.currentTheme);
+
+    // 기본적으로 모든 카테고리를 닫힌 상태로 설정
+    Object.keys(TIL_DATA.categories).forEach(category => {
+        state.collapsedCategories.add(category);
+    });
+
     buildFileList();
     initSearch();
     initKeyboardShortcuts();
