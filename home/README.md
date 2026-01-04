@@ -20,5 +20,3 @@ Claude Code에서 `/til-viewer` 명령으로 모든 TIL을 인터랙티브 웹 �
 - 전체 파일 검색 (Ctrl+K)
 - 다크/라이트 테마 지원
 - 목차 자동 생성
-
-[TIL Viewer 열기](viewer.html)
