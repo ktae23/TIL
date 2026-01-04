@@ -76,6 +76,8 @@ def main():
         }
     }
     json_str = json.dumps(til_data, ensure_ascii=False)
+    # HTML script 태그 내에서 안전하게 사용하기 위해 이스케이프
+    json_str = json_str.replace("</", "<\\/").replace("<!--", "<\\!--")
 
     # 3. HTML 생성 (상대 경로 사용)
     html_content = f"""<!DOCTYPE html>
