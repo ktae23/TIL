@@ -45,6 +45,16 @@
 | 애플리케이션 방화벽 | Layer 7 | 애플리케이션 프로토콜 | 느림 | 높음 |
 | 차세대 방화벽 (NGFW) | Layer 2-7 | DPI, IPS, 악성코드 검사 | 중간 | 매우 높음 |
 
+**AWS 서비스 활용:**
+
+| 방화벽 유형 | AWS 서비스 | 설명 |
+|------------|-----------|------|
+| 패킷 필터링 | **Security Group** | Stateful, 인스턴스 레벨 |
+| Stateless 방화벽 | **NACL** | 서브넷 레벨 |
+| 웹 방화벽 (WAF) | **AWS WAF** | OWASP Top 10 방어 |
+| 네트워크 방화벽 | **Network Firewall** | VPC 레벨 IDS/IPS |
+| DDoS 방어 | **AWS Shield** | L3/L4/L7 보호 |
+
 ### 패킷 필터링 방화벽
 
 **동작 원리:**
@@ -362,6 +372,12 @@ $ sudo suricata -c /etc/suricata/suricata.yaml -i eth0
 $ tail -f /var/log/suricata/fast.log
 ```
 
+**실무적 활용 사례:**
+
+> ⚠️ **방화벽 우회 공격**: 공격자가 허용된 포트(80, 443)를 통해 악성 트래픽을 전송합니다. 패킷 필터링만으로는 부족하며, Layer 7 검사(WAF)가 필수입니다.
+
+> ⚠️ **방화벽 규칙 오류**: 잘못된 규칙 순서나 과도하게 넓은 허용 규칙이 보안 취약점이 됩니다. 최소 권한 원칙(Principle of Least Privilege)을 적용하세요.
+
 ---
 
 ## 2. 로드 밸런서를 통한 부하 분산
@@ -636,6 +652,22 @@ HTTP 헤더 및 내용 검사:
 Layer 4: 고성능 필요 시 (게임 서버, DNS, VoIP)
 Layer 7: 웹 애플리케이션 (HTTP/HTTPS)
 ```
+
+**AWS 서비스 활용:**
+
+| 로드 밸런서 유형 | AWS 서비스 | 설명 |
+|----------------|-----------|------|
+| Layer 7 (HTTP/HTTPS) | **ALB (Application Load Balancer)** | 경로/헤더 기반 라우팅 |
+| Layer 4 (TCP/UDP) | **NLB (Network Load Balancer)** | 초저지연, 고성능 |
+| Classic | **CLB (Classic Load Balancer)** | 레거시, 권장 안 함 |
+| 글로벌 가속 | **Global Accelerator** | 최적 엣지로 라우팅 |
+| 멀티 리전 | **Route 53 헬스체크** | DNS 기반 장애 조치 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **HTTP Host Header 공격**: 공격자가 Host 헤더를 조작하여 다른 백엔드로 라우팅되게 할 수 있습니다. 허용된 호스트만 처리하도록 설정하세요.
+
+> ⚠️ **세션 하이재킹**: IP Hash 없이 라운드 로빈만 사용하면 세션 쿠키를 탈취한 공격자가 다른 사용자 세션에 접근할 수 있습니다.
 
 ### SSL/TLS Offloading (SSL Termination)
 
@@ -930,46 +962,45 @@ $ sudo rm -rf /var/cache/nginx/*
 ### 캐시 전략
 
 **1. Cache-Aside (Lazy Loading):**
-```python
-import redis
-import json
-
-r = redis.Redis(host='localhost', port=6379)
-
-def get_user(user_id):
-    # 1. 캐시 확인
-    cached = r.get(f'user:{user_id}')
-    if cached:
-        return json.loads(cached)
-
-    # 2. DB 조회
-    user = db.query(f'SELECT * FROM users WHERE id={user_id}')
-
-    # 3. 캐시에 저장
-    r.setex(f'user:{user_id}', 3600, json.dumps(user))
-
-    return user
 ```
+1. 캐시 확인 → 있으면 반환
+2. 캐시 없으면 → DB 조회
+3. 조회 결과를 캐시에 저장
+4. 결과 반환
+```
+- 장점: 필요한 데이터만 캐싱, 캐시 장애 시에도 동작
+- 단점: 첫 요청은 느림 (cache miss)
 
 **2. Write-Through:**
-```python
-def update_user(user_id, data):
-    # 1. DB 업데이트
-    db.execute(f'UPDATE users SET ... WHERE id={user_id}')
-
-    # 2. 캐시 업데이트
-    r.setex(f'user:{user_id}', 3600, json.dumps(data))
 ```
+1. DB 업데이트
+2. 캐시 업데이트 (동기)
+```
+- 장점: 캐시와 DB 항상 일치
+- 단점: 쓰기 지연 발생
 
 **3. Write-Behind (Write-Back):**
-```python
-def update_user(user_id, data):
-    # 1. 캐시에만 저장 (빠름)
-    r.setex(f'user:{user_id}', 3600, json.dumps(data))
-
-    # 2. 비동기로 DB 업데이트 (나중에)
-    queue.enqueue('update_db', user_id, data)
 ```
+1. 캐시에만 저장 (빠름)
+2. 비동기로 DB 업데이트
+```
+- 장점: 쓰기 성능 우수
+- 단점: 캐시 장애 시 데이터 손실 위험
+
+**AWS 서비스 활용:**
+
+| 캐시 전략 | AWS 서비스 | 설명 |
+|----------|-----------|------|
+| In-Memory 캐시 | **ElastiCache (Redis/Memcached)** | 고성능 분산 캐시 |
+| 세션 스토어 | **ElastiCache** | 세션 데이터 저장 |
+| DB 캐싱 | **DAX (DynamoDB Accelerator)** | DynamoDB 전용 캐시 |
+| CDN 캐시 | **CloudFront** | 정적/동적 콘텐츠 캐시 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **캐시 침투 공격 (Cache Penetration)**: 존재하지 않는 키를 대량으로 요청하면 모든 요청이 DB로 전달되어 부하가 급증합니다. Bloom Filter나 빈 결과 캐싱으로 방어합니다.
+
+> ⚠️ **캐시 스탬피드 (Cache Stampede)**: 인기 있는 캐시가 만료되는 순간 대량의 요청이 동시에 DB로 몰립니다. 캐시 락이나 점진적 갱신으로 방어합니다.
 
 ---
 
@@ -1050,39 +1081,16 @@ DNS 레코드:
   api.example.com  A      203.0.113.2  (DNS only)
 ```
 
-**2. 캐시 규칙:**
-```javascript
-// Cloudflare Workers (Edge Computing)
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+**2. 캐시 규칙 (Edge Computing):**
 
-async function handleRequest(request) {
-  const url = new URL(request.url)
+엣지 컴퓨팅을 사용하면 사용자에게 가장 가까운 위치에서 코드를 실행할 수 있습니다.
 
-  // 정적 리소스 캐시
-  if (url.pathname.match(/\.(jpg|png|css|js)$/)) {
-    const cacheKey = new Request(url.toString(), request)
-    const cache = caches.default
-
-    let response = await cache.match(cacheKey)
-    if (!response) {
-      response = await fetch(request)
-      const headers = new Headers(response.headers)
-      headers.set('Cache-Control', 'public, max-age=86400')
-      response = new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers: headers
-      })
-      event.waitUntil(cache.put(cacheKey, response.clone()))
-    }
-    return response
-  }
-
-  return fetch(request)
-}
-```
+| 엣지 컴퓨팅 | AWS 서비스 | 설명 |
+|------------|-----------|------|
+| 엣지 함수 | **Lambda@Edge** | CloudFront 엣지에서 실행 |
+| 경량 함수 | **CloudFront Functions** | 간단한 변환/리다이렉트 |
+| 엣지 캐시 | **CloudFront** | 전 세계 엣지 로케이션 |
+| 원본 보호 | **Origin Shield** | 원본 서버 부하 감소 |
 
 **3. 페이지 규칙:**
 ```
@@ -1166,6 +1174,20 @@ https://imgproxy.example.com/insecure/resize:fill:300:200/plain/https://example.
   - 오류율 (4xx, 5xx)
   - 위협 차단 (방화벽)
 ```
+
+**AWS 서비스 활용:**
+
+| CDN 기능 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| CDN | **CloudFront** | 전 세계 400+ 엣지 로케이션 |
+| 원본 보호 | **Origin Shield** | 원본 요청 최소화 |
+| 실시간 로그 | **CloudFront 실시간 로그** | Kinesis Data Streams 연동 |
+| 엣지 컴퓨팅 | **Lambda@Edge / CloudFront Functions** | 엣지에서 코드 실행 |
+| 보안 | **CloudFront + WAF + Shield** | 통합 보안 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **캐시 포이즈닝 (Cache Poisoning)**: 공격자가 악성 콘텐츠를 CDN에 캐시시켜 다른 사용자에게 전달합니다. 캐시 키에 Host 헤더를 포함하고, 입력값을 검증해야 합니다.
 
 **실시간 로그 분석:**
 ```bash
@@ -1357,6 +1379,12 @@ $ proxychains4 curl http://www.example.com
 $ proxychains4 ssh user@server.com
 ```
 
+**실무적 활용 사례:**
+
+> ⚠️ **오픈 프록시 악용**: 설정이 잘못된 프록시 서버가 익명 공격에 악용됩니다. 반드시 인증을 설정하고 접근을 제한하세요.
+
+> ⚠️ **SSRF (Server-Side Request Forgery)**: 프록시를 통해 내부 네트워크의 서비스에 접근할 수 있습니다. 요청 URL을 검증하고 내부 IP 대역 접근을 차단하세요.
+
 ---
 
 ## 실무 팁
@@ -1423,6 +1451,32 @@ $ tail -f /var/log/nginx/access.log | grep -E "HTTP/[0-9.]+ [45]"
 $ ab -n 10000 -c 100 http://www.example.com/
 $ wrk -t12 -c400 -d30s http://www.example.com/
 ```
+
+---
+
+## AWS 서비스 전체 요약
+
+| 네트워크 개념 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| 패킷 필터링 방화벽 | **Security Group** | 인스턴스 레벨 Stateful 방화벽 |
+| 서브넷 방화벽 | **NACL** | 서브넷 레벨 Stateless 방화벽 |
+| 웹 방화벽 (WAF) | **AWS WAF** | SQL Injection, XSS 방어 |
+| IDS/IPS | **Network Firewall** | VPC 레벨 침입 탐지/방지 |
+| DDoS 방어 | **AWS Shield** | L3/L4/L7 DDoS 보호 |
+| L7 로드 밸런서 | **ALB (Application Load Balancer)** | HTTP/HTTPS 라우팅 |
+| L4 로드 밸런서 | **NLB (Network Load Balancer)** | TCP/UDP 고성능 로드밸런싱 |
+| 글로벌 로드 밸런싱 | **Global Accelerator** | AWS 백본 활용 가속 |
+| DNS 기반 라우팅 | **Route 53** | 지리적/가중치 기반 라우팅 |
+| CDN | **CloudFront** | 전 세계 400+ 엣지 로케이션 |
+| 원본 보호 | **Origin Shield** | CDN-원본 간 캐시 계층 |
+| 엣지 컴퓨팅 | **Lambda@Edge** | CloudFront 엣지에서 코드 실행 |
+| 경량 엣지 함수 | **CloudFront Functions** | 간단한 변환/리다이렉트 |
+| In-Memory 캐시 | **ElastiCache (Redis)** | 고성능 분산 캐시 |
+| DynamoDB 캐시 | **DAX** | DynamoDB 전용 가속기 |
+| SSL/TLS 인증서 | **ACM (Certificate Manager)** | 무료 SSL 인증서 관리 |
+| 프라이빗 연결 | **PrivateLink** | VPC 간 프라이빗 연결 |
+| API 게이트웨이 | **API Gateway** | API 관리, 인증, 캐싱 |
+| 콘텐츠 가속 | **S3 Transfer Acceleration** | 글로벌 업로드 가속 |
 
 ---
 

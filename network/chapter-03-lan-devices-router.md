@@ -217,6 +217,10 @@ $ sudo ethtool -s eth0 autoneg on
 | 대역폭 | 공유 | 독립 |
 | 보안 | 낮음 | 높음 |
 
+**실무적 활용 사례:**
+
+> ⚠️ **패킷 스니핑**: 허브 환경에서는 모든 패킷이 모든 포트로 전달되므로, 공격자가 네트워크에 연결만 해도 모든 트래픽을 캡처할 수 있습니다. 이 때문에 현대 환경에서는 스위치만 사용합니다.
+
 ### MAC 주소 테이블 (CAM Table)
 
 **MAC 주소 학습 과정:**
@@ -277,6 +281,12 @@ $ bridge fdb show br br0
 00:1a:2b:3c:4d:5e dev eth0 master br0
 a0:b1:c2:d3:e4:f5 dev eth1 master br0
 ```
+
+**실무적 활용 사례:**
+
+> ⚠️ **MAC Flooding 공격**: 공격자가 대량의 가짜 MAC 주소를 전송하면 CAM 테이블이 가득 차고, 스위치가 허브처럼 모든 포트로 트래픽을 브로드캐스트합니다. 이를 통해 패킷 스니핑이 가능해집니다.
+
+> ⚠️ **MAC Spoofing**: 공격자가 다른 장비의 MAC 주소를 도용하면 해당 장비로 가는 트래픽을 가로챌 수 있습니다.
 
 ### 프레임 전달 방식
 
@@ -379,6 +389,19 @@ $ ip -d link show eth0.10
 $ sudo ip link delete eth0.10
 ```
 
+**AWS 서비스 활용:**
+
+| VLAN 개념 | AWS 서비스 | 설명 |
+|----------|-----------|------|
+| VLAN 분리 | **VPC Subnet** | 서브넷별 네트워크 격리 |
+| 트렁크 포트 | **VPC Peering** | 여러 VPC 간 연결 |
+| VLAN 간 라우팅 | **Transit Gateway** | 여러 VPC/온프레미스 연결 |
+| 네트워크 격리 | **Security Group** | 인스턴스 레벨 트래픽 제어 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **VLAN Hopping 공격**: 공격자가 이중 802.1Q 태깅을 사용하여 다른 VLAN으로 패킷을 보낼 수 있습니다. Native VLAN을 사용하지 않거나, 사용하지 않는 포트는 별도 VLAN에 할당하여 방어합니다.
+
 ### 스패닝 트리 프로토콜 (STP)
 
 **루프 문제:**
@@ -430,6 +453,10 @@ VLAN0001            Desg FWD 4         128.1    P2p
 Switch(config)# spanning-tree mode rapid-pvst
 ```
 
+**실무적 활용 사례:**
+
+> ⚠️ **STP 공격 (BPDU Spoofing)**: 공격자가 가짜 BPDU를 전송하여 자신을 루트 브리지로 선출시키면, 모든 트래픽이 공격자를 경유하게 되어 중간자 공격이 가능합니다. BPDU Guard를 설정하여 방어합니다.
+
 ### 포트 미러링 (Port Mirroring)
 
 **용도:**
@@ -471,6 +498,15 @@ Switch# show monitor session 1
 | 전달 기준 | MAC Table | Routing Table |
 | 브로드캐스트 | 전달 | 차단 |
 | 네트워크 | 동일 네트워크 | 다른 네트워크 연결 |
+
+**AWS 서비스 활용:**
+
+| 라우터 기능 | AWS 서비스 | 설명 |
+|------------|-----------|------|
+| 라우팅 | **VPC Route Table** | 서브넷별 트래픽 경로 설정 |
+| 인터넷 연결 | **Internet Gateway** | VPC의 인터넷 연결 |
+| 온프레미스 연결 | **Virtual Private Gateway** | VPN/Direct Connect 연결 |
+| 라우터 | **Transit Gateway** | 허브-스포크 라우팅 |
 
 ### 라우팅 테이블
 
@@ -628,6 +664,12 @@ S    10.0.0.0/8 [1/0] via 192.168.1.254
 | EIGRP | Hybrid | Composite | 매우 빠름 | 높음 | Cisco 환경 |
 | BGP | Path Vector | AS Path | 느림 | 매우 높음 | ISP, 인터넷 백본 |
 
+**실무적 활용 사례:**
+
+> ⚠️ **라우팅 테이블 조작**: 공격자가 라우터에 접근하여 라우팅 테이블을 변경하면, 트래픽을 원하는 경로로 우회시킬 수 있습니다. 라우터 접근 제어와 라우팅 프로토콜 인증이 필수입니다.
+
+> ⚠️ **BGP Hijacking**: 공격자가 허위 BGP 경로를 광고하여 특정 IP 대역의 트래픽을 가로챌 수 있습니다. 2018년 AWS Route 53 DNS 트래픽이 하이재킹된 사례가 있습니다. RPKI (Resource Public Key Infrastructure)로 방어합니다.
+
 **실무 사례 - OSPF 설정 (Cisco):**
 
 ```
@@ -727,19 +769,20 @@ HostMax:   192.168.1.254        11000000.10101000.00000001. 11111110
 Broadcast: 192.168.1.255        11000000.10101000.00000001. 11111111
 Hosts/Net: 254
 
-# Python 계산
-$ python3 << 'EOF'
-import ipaddress
-
-network = ipaddress.ip_network('192.168.1.0/24')
-print(f"Network: {network}")
-print(f"Netmask: {network.netmask}")
-print(f"Broadcast: {network.broadcast_address}")
-print(f"Num hosts: {network.num_addresses - 2}")
-print(f"First host: {network.network_address + 1}")
-print(f"Last host: {network.broadcast_address - 1}")
-EOF
 ```
+
+**AWS 서비스 활용:**
+
+| 서브넷 개념 | AWS 서비스 | 설명 |
+|------------|-----------|------|
+| 서브넷 | **VPC Subnet** | 가용영역별 IP 대역 할당 |
+| 퍼블릭/프라이빗 | **Internet Gateway + Route Table** | 인터넷 연결 여부로 구분 |
+| 멀티 서브넷 | **Multi-AZ Deployment** | 고가용성 아키텍처 |
+| CIDR 블록 | **VPC CIDR** | /16 ~ /28 범위 지원 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **서브넷 스캐닝**: 공격자가 네트워크에 침입하면 해당 서브넷의 모든 호스트를 스캔합니다. 서브넷을 작게 분할하면 스캔 범위가 제한되고, 보안 그룹으로 내부 통신도 제어할 수 있습니다.
 
 ---
 
@@ -842,6 +885,19 @@ Router# show ip nat translations
 Router# show ip nat statistics
 ```
 
+**AWS 서비스 활용:**
+
+| NAT 기능 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| SNAT (아웃바운드) | **NAT Gateway** | 프라이빗 서브넷의 인터넷 접속 |
+| DNAT (인바운드) | **ALB/NLB** | 로드밸런싱 + 포트 포워딩 |
+| 포트 포워딩 | **NLB** | TCP/UDP 포트 매핑 |
+| 탄력적 IP | **Elastic IP** | 고정 공인 IP 할당 |
+
+**실무적 활용 사례:**
+
+> ⚠️ **NAT 슬립스트리밍**: 악성 웹페이지가 JavaScript로 NAT 테이블에 잘못된 매핑을 생성하여 내부 서비스를 외부에 노출시킬 수 있습니다. 최신 브라우저와 방화벽 업데이트가 중요합니다.
+
 ### 포트 포워딩
 
 **용도:**
@@ -870,6 +926,16 @@ $ sudo iptables -t nat -A PREROUTING -p tcp --dport 443 -j DNAT --to-destination
 **방화벽 유형:**
 1. **Stateless Firewall**: 각 패킷 독립적 검사
 2. **Stateful Firewall**: 연결 상태 추적
+
+**AWS 서비스 활용:**
+
+| 방화벽 기능 | AWS 서비스 | 설명 |
+|------------|-----------|------|
+| Stateful 방화벽 | **Security Group** | 인스턴스 레벨, 허용 규칙만 |
+| Stateless 방화벽 | **NACL** | 서브넷 레벨, 허용/거부 규칙 |
+| WAF | **AWS WAF** | 웹 애플리케이션 보호 |
+| 네트워크 방화벽 | **Network Firewall** | VPC 레벨 IDS/IPS |
+| DDoS 방어 | **AWS Shield** | 표준/어드밴스드 보호 |
 
 **실무 사례 - iptables 방화벽:**
 
@@ -971,6 +1037,15 @@ $ sudo tc -s qdisc show dev eth0
 $ sudo tc -s class show dev eth0
 ```
 
+**AWS 서비스 활용:**
+
+| QoS 기능 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| 우선순위 큐 | **Direct Connect SiteLink** | 저지연 트래픽 경로 |
+| 대역폭 관리 | **VPC Flow Logs + CloudWatch** | 트래픽 모니터링 |
+| 엣지 최적화 | **Global Accelerator** | AWS 백본으로 우회 |
+| CDN | **CloudFront** | 사용자 근접 콘텐츠 전송 |
+
 ---
 
 ## 실무 팁
@@ -1047,6 +1122,37 @@ Switch(config)# ip dhcp snooping vlan 10
 # Dynamic ARP Inspection
 Switch(config)# ip arp inspection vlan 10
 ```
+
+**실무적 활용 사례:**
+
+> ⚠️ **ARP Spoofing**: 공격자가 가짜 ARP 응답을 보내 자신의 MAC 주소를 게이트웨이로 등록시키면, 모든 외부 트래픽이 공격자를 경유합니다. Dynamic ARP Inspection (DAI)으로 방어합니다.
+
+> ⚠️ **DHCP Starvation**: 공격자가 대량의 DHCP 요청으로 IP 풀을 고갈시킨 후, 가짜 DHCP 서버를 운영하여 악성 게이트웨이/DNS를 배포합니다. DHCP Snooping으로 방어합니다.
+
+---
+
+## AWS 서비스 전체 요약
+
+| 네트워크 개념 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| LAN/서브넷 | **VPC Subnet** | 가용영역별 네트워크 분리 |
+| VLAN 격리 | **Security Group** | 인스턴스 레벨 트래픽 제어 |
+| 스위치 (L2) | **VPC** | 가상 네트워크 인프라 |
+| 라우터 (L3) | **Route Table** | 서브넷 라우팅 설정 |
+| 기본 게이트웨이 | **Internet Gateway** | VPC 인터넷 연결 |
+| VPN 연결 | **Virtual Private Gateway** | 온프레미스 연결 |
+| 허브 라우팅 | **Transit Gateway** | 다중 VPC/온프레미스 연결 |
+| NAT | **NAT Gateway** | 프라이빗 서브넷 인터넷 접속 |
+| 포트 포워딩 | **NLB (Network Load Balancer)** | TCP/UDP 로드밸런싱 |
+| Stateful 방화벽 | **Security Group** | 인스턴스 레벨 허용 규칙 |
+| Stateless 방화벽 | **NACL** | 서브넷 레벨 허용/거부 규칙 |
+| IDS/IPS | **Network Firewall** | VPC 트래픽 검사 |
+| WAF | **AWS WAF** | 웹 애플리케이션 보호 |
+| DDoS 방어 | **AWS Shield** | L3/L4 DDoS 보호 |
+| QoS/대역폭 최적화 | **Global Accelerator** | AWS 백본 네트워크 활용 |
+| 콘텐츠 전송 | **CloudFront** | 글로벌 CDN |
+| VPC 간 연결 | **VPC Peering** | 비용 효율적 VPC 연결 |
+| 네트워크 모니터링 | **VPC Flow Logs** | 트래픽 캡처 및 분석 |
 
 ---
 

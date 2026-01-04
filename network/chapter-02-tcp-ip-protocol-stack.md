@@ -65,20 +65,17 @@ TCP:   50 (estab 10, closed 30, orphaned 0, timewait 20)
 
 ### 소켓의 실체는 통신 제어용 제어 정보
 
-**소켓 구조체 (간략화):**
-```c
-struct socket {
-    int fd;                    // 파일 디스크립터
-    int type;                  // SOCK_STREAM (TCP), SOCK_DGRAM (UDP)
-    int state;                 // 연결 상태
-    struct sockaddr local;     // 로컬 주소:포트
-    struct sockaddr remote;    // 원격 주소:포트
-    struct tcp_info tcp_info;  // TCP 제어 정보
-    // 송수신 버퍼
-    // 타이머 정보
-    // 기타 제어 정보
-};
-```
+**소켓이 관리하는 정보:**
+
+| 정보 | 설명 |
+|------|------|
+| 파일 디스크립터 | 소켓을 식별하는 정수 |
+| 소켓 타입 | TCP (SOCK_STREAM) 또는 UDP (SOCK_DGRAM) |
+| 연결 상태 | LISTEN, ESTABLISHED, TIME_WAIT 등 |
+| 로컬 주소:포트 | 자신의 IP 주소와 포트 번호 |
+| 원격 주소:포트 | 상대방의 IP 주소와 포트 번호 |
+| TCP 제어 정보 | 시퀀스 번호, 윈도우 크기, 타이머 등 |
+| 송수신 버퍼 | 데이터를 임시 저장하는 메모리 |
 
 **TCP 제어 블록 (TCB: Transmission Control Block):**
 - 연결 상태 (LISTEN, SYN_SENT, ESTABLISHED 등)
@@ -100,43 +97,19 @@ $ ss -tep
 
 ### Socket을 호출했을 때의 동작
 
-**socket() 시스템 콜:**
-```c
-#include <sys/socket.h>
+**socket() 시스템 콜 파라미터:**
 
-int socket(int domain, int type, int protocol);
+| 파라미터 | 옵션 | 설명 |
+|---------|------|------|
+| domain (주소 체계) | AF_INET | IPv4 |
+| | AF_INET6 | IPv6 |
+| | AF_UNIX | 유닉스 도메인 소켓 (프로세스 간 통신) |
+| type (소켓 타입) | SOCK_STREAM | TCP (연결 지향, 신뢰성 보장) |
+| | SOCK_DGRAM | UDP (비연결, 빠름) |
+| | SOCK_RAW | 원시 소켓 (직접 패킷 제어) |
+| protocol | 0 | 자동 선택 (일반적으로 사용) |
 
-// domain: 주소 체계
-//   - AF_INET: IPv4
-//   - AF_INET6: IPv6
-//   - AF_UNIX: 유닉스 도메인 소켓
-//
-// type: 소켓 타입
-//   - SOCK_STREAM: TCP (연결 지향, 신뢰성)
-//   - SOCK_DGRAM: UDP (비연결, 빠름)
-//   - SOCK_RAW: 원시 소켓 (직접 패킷 제어)
-//
-// protocol: 프로토콜 (보통 0으로 자동 선택)
-```
-
-**Python 예시:**
-```python
-import socket
-
-# TCP 소켓 생성
-tcp_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# UDP 소켓 생성
-udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# 소켓 옵션 설정
-tcp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-tcp_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
-print(f"TCP Socket FD: {tcp_sock.fileno()}")
-```
-
-**실무 사례 - 소켓 옵션:**
+**소켓 옵션:**
 
 | 옵션 | 레벨 | 설명 | 사용 시기 |
 |------|------|------|-----------|
@@ -146,24 +119,19 @@ print(f"TCP Socket FD: {tcp_sock.fileno()}")
 | SO_RCVBUF | SOL_SOCKET | 수신 버퍼 크기 | 대용량 전송 |
 | SO_SNDBUF | SOL_SOCKET | 송신 버퍼 크기 | 대용량 전송 |
 
-```python
-import socket
+**AWS 서비스 활용:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+| 소켓 옵션 개념 | AWS 서비스 | 설명 |
+|--------------|-----------|------|
+| Keep-Alive | **ALB Idle Timeout** | 기본 60초, 최대 4000초 설정 가능 |
+| 버퍼 크기 | **NLB** | 대용량 TCP 트래픽 처리 최적화 |
+| 연결 재사용 | **ALB Connection Reuse** | 백엔드 연결 풀링 |
 
-# Keep-Alive 설정 (60초마다 확인)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
-sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 10)
-sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 3)
+**실무적 활용 사례:**
 
-# Nagle 알고리즘 비활성화 (실시간 애플리케이션)
-sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+> ⚠️ **소켓 고갈 공격**: 공격자가 많은 연결을 열고 닫지 않으면 서버의 파일 디스크립터가 고갈되어 새 연결을 수락할 수 없습니다.
 
-# 버퍼 크기 설정
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
-```
+> ⚠️ **Slowloris 공격**: 공격자가 HTTP 요청을 매우 느리게 보내 연결을 장시간 유지하여 서버 리소스를 고갈시킵니다.
 
 ---
 
@@ -268,37 +236,26 @@ Seq=1001
 Ack=2001
 ```
 
-**실무 사례 - connect() 타임아웃:**
+**연결 오류 유형:**
 
-```python
-import socket
-import errno
+| 오류 | 원인 | 네트워크 상황 |
+|------|------|-------------|
+| ECONNREFUSED | 서버 포트가 닫혀 있음 | RST 패킷 수신 |
+| ETIMEDOUT | 응답 없음 | SYN 패킷에 응답 없음 |
+| EHOSTUNREACH | 호스트 도달 불가 | 라우팅 실패 |
+| ENETUNREACH | 네트워크 도달 불가 | 네트워크 경로 없음 |
 
-def connect_with_timeout(host, port, timeout=5):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(timeout)
+**AWS 서비스 활용:**
 
-    try:
-        sock.connect((host, port))
-        print(f"Connected to {host}:{port}")
-        return sock
-    except socket.timeout:
-        print(f"Connection timeout after {timeout}s")
-        sock.close()
-        return None
-    except socket.error as e:
-        if e.errno == errno.ECONNREFUSED:
-            print(f"Connection refused by {host}:{port}")
-        elif e.errno == errno.EHOSTUNREACH:
-            print(f"Host {host} unreachable")
-        else:
-            print(f"Connection error: {e}")
-        sock.close()
-        return None
+| 연결 문제 | AWS 서비스 | 해결 방법 |
+|----------|-----------|----------|
+| 타임아웃 | **Security Group** | 인바운드 규칙에 포트 허용 |
+| 연결 거부 | **NACL** | 서브넷 레벨 트래픽 허용 |
+| 호스트 도달 불가 | **Route Table** | 올바른 라우팅 설정 확인 |
 
-# 사용 예시
-sock = connect_with_timeout("www.example.com", 80, timeout=3)
-```
+**실무적 활용 사례:**
+
+> ⚠️ **TCP 시퀀스 번호 예측 공격**: 이 단계에서 공격자가 초기 시퀀스 번호(ISN)를 예측할 수 있으면, 연결을 가로채거나 위조된 패킷을 주입할 수 있습니다. 현대 OS는 랜덤 ISN을 사용하여 방어합니다.
 
 **TCP 연결 상태 머신:**
 
@@ -317,43 +274,26 @@ ESTABLISHED → CLOSE_WAIT → LAST_ACK → CLOSED
 
 ### 프로토콜 스택에 HTTP 리퀘스트 메시지를 넘긴다
 
-**send() / write() 시스템 콜:**
+**send() 시스템 콜 동작:**
 
-```c
-#include <sys/socket.h>
+```
+send(sockfd, 데이터, 길이, 플래그) 호출:
 
-ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+1. 데이터를 커널 송신 버퍼에 복사
+2. TCP가 세그먼트 크기(MSS)로 분할
+3. 각 세그먼트에 TCP 헤더 추가
+4. IP 계층으로 전달
 
-// flags:
-//   - 0: 일반 전송
-//   - MSG_DONTWAIT: 논블로킹
-//   - MSG_NOSIGNAL: SIGPIPE 시그널 억제
-//   - MSG_MORE: 더 많은 데이터 대기 (Nagle 알고리즘 힌트)
+플래그 옵션:
+  - 0: 일반 전송
+  - MSG_DONTWAIT: 논블로킹
+  - MSG_NOSIGNAL: SIGPIPE 억제
+  - MSG_MORE: Nagle 힌트
 ```
 
-**Python 예시:**
-```python
-import socket
+**실무적 활용 사례:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('www.example.com', 80))
-
-# HTTP 요청 메시지
-request = b"GET / HTTP/1.1\r\n"
-request += b"Host: www.example.com\r\n"
-request += b"Connection: close\r\n\r\n"
-
-# 전체 데이터 전송 (부분 전송 시 재시도)
-sock.sendall(request)
-
-# 또는 send() 사용 (전송된 바이트 수 반환)
-total_sent = 0
-while total_sent < len(request):
-    sent = sock.send(request[total_sent:])
-    if sent == 0:
-        raise RuntimeError("Socket connection broken")
-    total_sent += sent
-```
+> ⚠️ **패킷 주입 공격**: 이 단계에서 공격자가 동일 네트워크에 있다면, 정상 패킷 사이에 악성 패킷을 주입할 수 있습니다. 올바른 시퀀스 번호를 추측해야 하므로 어렵지만, 성공 시 세션을 탈취할 수 있습니다.
 
 ### 데이터가 클 때는 분할하여 보낸다
 
@@ -397,19 +337,17 @@ $ ifconfig en0 | grep mtu
 $ ping -M do -s 1472 www.example.com  # 1472 + 28(IP+ICMP) = 1500
 ```
 
-**Python으로 MSS 확인:**
-```python
-import socket
+**AWS 서비스 활용:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('www.example.com', 80))
+| MTU 관련 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| 점보 프레임 | **VPC (같은 리전)** | EC2 인스턴스 간 9001 바이트 MTU 지원 |
+| Path MTU | **VPC Peering** | 리전 간 1500 바이트 MTU 제한 |
+| MTU 오버헤드 | **VPN** | IPsec 오버헤드로 유효 MTU 감소 |
 
-# TCP_MAXSEG 옵션으로 MSS 확인
-mss = sock.getsockopt(socket.IPPROTO_TCP, socket.TCP_MAXSEG)
-print(f"MSS: {mss} bytes")
+**실무적 활용 사례:**
 
-sock.close()
-```
+> ⚠️ **MTU 블랙홀**: ICMP "Fragmentation Needed" 패킷이 차단되면, 큰 패킷이 도달하지 못하고 연결이 중단됩니다. 일부 웹사이트만 접속되지 않는 현상이 발생합니다.
 
 ### ACK 번호를 사용하여 패킷이 도착했는지 확인한다
 
@@ -447,14 +385,18 @@ ACK=2461, SACK=[3921:5381]
 
 **재전송 타이머 (RTO: Retransmission Timeout):**
 
-```python
-# 실무 사례 - 재전송 확인 (Linux)
+```bash
+# 실무 도구 - 재전송 상태 확인 (Linux)
 $ ss -ti
 tcp   ESTAB   0        0        192.168.1.100:53214   93.184.216.34:80
          cubic wscale:7,7 rto:204 rtt:3.5/1.2 ato:40 mss:1460
          #       ^^^^^^ RTO (밀리초)
          #              ^^^ RTT (왕복 시간)
 ```
+
+**실무적 활용 사례:**
+
+> ⚠️ **ACK 스푸핑**: 공격자가 위조된 ACK를 보내면 송신자는 데이터가 전달되었다고 잘못 인식합니다. 이로 인해 데이터 손실이 발생할 수 있습니다.
 
 ### 패킷 평균 왕복 시간으로 ACK 번호의 대기 시간을 조정한다
 
@@ -515,24 +457,17 @@ Options: WScale=7
                 = 8,388,480바이트 (약 8MB)
 ```
 
-**실무 사례 - 윈도우 크기 확인:**
-```python
-import socket
-import struct
+**AWS 서비스 활용:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('www.example.com', 80))
+| TCP 윈도우 | AWS 서비스 | 설명 |
+|-----------|-----------|------|
+| 윈도우 스케일링 | **NLB** | 대용량 TCP 연결 최적화 |
+| 버퍼 튜닝 | **EC2 Enhanced Networking** | 고성능 네트워크 스택 |
+| 혼잡 제어 | **Global Accelerator** | AWS 백본 네트워크로 혼잡 회피 |
 
-# SO_RCVBUF: 수신 버퍼 크기
-rcvbuf = sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
-print(f"Receive Buffer: {rcvbuf} bytes")
+**실무적 활용 사례:**
 
-# SO_SNDBUF: 송신 버퍼 크기
-sndbuf = sock.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
-print(f"Send Buffer: {sndbuf} bytes")
-
-sock.close()
-```
+> ⚠️ **윈도우 크기 0 공격**: 공격자가 윈도우 크기를 0으로 설정하면 송신자는 데이터 전송을 중단하고 대기합니다. 이를 반복하면 연결을 장시간 유지하여 리소스를 고갈시킵니다.
 
 ### ACK 번호와 윈도우를 합승한다
 
@@ -568,73 +503,37 @@ send(1바이트) → 버퍼에 저장
 ACK 도착 또는 MSS 도달 → 한 번에 전송
 ```
 
-**실무 사례:**
-```python
-import socket
+**Nagle 알고리즘 적용 시나리오:**
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# 실시간 통신 (게임, VoIP): Nagle OFF
-sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
-# 대용량 파일 전송: Nagle ON (기본값)
-# 별도 설정 없음
-
-sock.connect(('www.example.com', 80))
-```
+| 애플리케이션 | Nagle | 이유 |
+|------------|-------|------|
+| 게임, VoIP | OFF (TCP_NODELAY) | 실시간 응답 필요 |
+| 파일 전송 | ON (기본값) | 효율적인 대역폭 사용 |
+| SSH | OFF | 키 입력 즉시 전송 |
+| HTTP/2 | ON | 멀티플렉싱으로 효율화 |
 
 ### HTTP 응답 메시지를 수신한다
 
-**recv() 시스템 콜:**
+**recv() 동작 과정:**
 
-```python
-import socket
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('www.example.com', 80))
-
-# 요청 전송
-request = b"GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
-sock.sendall(request)
-
-# 응답 수신
-response = b""
-while True:
-    chunk = sock.recv(4096)  # 최대 4096바이트씩 수신
-    if not chunk:
-        break  # 연결 종료
-    response += chunk
-
-print(response.decode('utf-8', errors='ignore'))
-sock.close()
+```
+1. 커널 수신 버퍼에 데이터 도착 확인
+2. 데이터가 없으면:
+   - 블로킹 모드: 데이터 도착까지 대기
+   - 논블로킹 모드: 즉시 반환 (EAGAIN)
+3. 데이터가 있으면:
+   - 요청한 크기만큼 사용자 버퍼로 복사
+   - 실제 복사된 바이트 수 반환
+4. 연결 종료 시: 0 반환 (EOF)
 ```
 
-**논블로킹 I/O:**
+**AWS 서비스 활용:**
 
-```python
-import socket
-import select
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.setblocking(False)  # 논블로킹 모드
-
-try:
-    sock.connect(('www.example.com', 80))
-except BlockingIOError:
-    pass  # 논블로킹 모드에서는 정상
-
-# select()로 읽기 가능 대기
-readable, writable, exceptional = select.select([sock], [sock], [sock], 5.0)
-
-if writable:
-    sock.send(b"GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n")
-
-if readable:
-    data = sock.recv(4096)
-    print(data)
-
-sock.close()
-```
+| I/O 모델 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| 비동기 처리 | **Lambda** | 이벤트 기반 비동기 실행 |
+| 연결 풀링 | **RDS Proxy** | 데이터베이스 연결 효율화 |
+| 웹소켓 | **API Gateway WebSocket** | 양방향 실시간 통신 |
 
 ---
 
@@ -672,52 +571,29 @@ sock.close()
 
 **close() vs shutdown():**
 
-```python
-import socket
+| 함수 | 동작 | 사용 시점 |
+|------|------|----------|
+| shutdown(SHUT_WR) | 송신만 종료, FIN 전송 | 송신 완료 후 수신 대기 |
+| shutdown(SHUT_RD) | 수신만 종료 | 더 이상 수신 안 함 |
+| shutdown(SHUT_RDWR) | 양방향 종료 | 즉시 종료 |
+| close() | 소켓 리소스 해제 | 완전 종료 |
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('www.example.com', 80))
+**우아한 종료 (Graceful Shutdown) 과정:**
 
-# 방법 1: shutdown() - 단방향 종료
-sock.shutdown(socket.SHUT_WR)   # 송신만 종료, 수신은 계속 가능
-# 또는
-sock.shutdown(socket.SHUT_RD)   # 수신만 종료
-# 또는
-sock.shutdown(socket.SHUT_RDWR) # 송수신 모두 종료
-
-# 방법 2: close() - 즉시 종료
-sock.close()
+```
+1. shutdown(SHUT_WR) 호출 → FIN 전송
+2. 상대방의 남은 데이터 수신 대기
+3. 상대방 FIN 수신
+4. close() 호출 → 리소스 해제
 ```
 
-**실무 사례 - 우아한 종료 (Graceful Shutdown):**
+**AWS 서비스 활용:**
 
-```python
-import socket
-
-def graceful_shutdown(sock):
-    """우아한 소켓 종료"""
-    # 1. 송신 종료 (FIN 전송)
-    sock.shutdown(socket.SHUT_WR)
-
-    # 2. 남은 데이터 수신
-    try:
-        while True:
-            data = sock.recv(4096)
-            if not data:
-                break
-            # 데이터 처리...
-    except Exception as e:
-        print(f"Error during shutdown: {e}")
-
-    # 3. 소켓 닫기
-    sock.close()
-
-# 사용 예시
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('www.example.com', 80))
-# ... 데이터 송수신 ...
-graceful_shutdown(sock)
-```
+| 연결 종료 | AWS 서비스 | 설명 |
+|----------|-----------|------|
+| 드레이닝 | **Target Group Deregistration Delay** | 기존 연결 완료까지 대기 |
+| 타임아웃 | **ALB Idle Timeout** | 유휴 연결 자동 종료 |
+| 헬스체크 | **Target Group Health Check** | 비정상 인스턴스 연결 차단 |
 
 ### 소켓을 말소한다
 
@@ -747,21 +623,15 @@ $ sudo sysctl -w net.ipv4.tcp_tw_reuse=1
 
 **SO_LINGER 옵션:**
 
-```python
-import socket
-import struct
+| 설정 | 동작 | 사용 시점 |
+|------|------|----------|
+| LINGER OFF (기본) | close() 즉시 반환, 백그라운드 종료 | 일반적인 사용 |
+| LINGER ON, timeout=0 | 즉시 RST 전송, 강제 종료 | 비정상 연결 정리 |
+| LINGER ON, timeout>0 | timeout 동안 데이터 전송 시도 | 중요 데이터 보장 |
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+**실무적 활용 사례:**
 
-# SO_LINGER 설정: (on/off, timeout_seconds)
-# on=1, timeout=0: 즉시 RST 전송 (비정상 종료)
-# on=1, timeout>0: timeout 초 동안 남은 데이터 전송 시도
-sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
-
-sock.connect(('www.example.com', 80))
-# ...
-sock.close()  # RST 전송
-```
+> ⚠️ **RST 주입 공격**: 공격자가 위조된 RST 패킷을 보내면 정상적인 TCP 연결이 강제로 끊어집니다. 이를 통해 서비스 거부 공격이 가능합니다.
 
 ### 데이터 송·수신 동작을 정리한다
 
@@ -1026,116 +896,60 @@ $ sudo arping -U -I eth0 192.168.1.100
 
 ### 제어용 짧은 데이터
 
-**DNS 조회 (UDP 사용):**
+**UDP 사용 사례:**
 
-```python
-import socket
+| 프로토콜 | 포트 | 용도 | 특징 |
+|---------|------|------|------|
+| DNS | 53 | 도메인 조회 | 빠른 응답 필요 |
+| DHCP | 67/68 | IP 할당 | 브로드캐스트 사용 |
+| NTP | 123 | 시간 동기화 | 짧은 패킷 |
+| SNMP | 161/162 | 네트워크 관리 | 간단한 쿼리/응답 |
 
-# UDP 소켓 생성
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+**AWS 서비스 활용:**
 
-# DNS 서버에 쿼리 전송 (Google DNS: 8.8.8.8)
-dns_query = b'\x00\x00\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00' + \
-            b'\x03www\x06google\x03com\x00\x00\x01\x00\x01'
+| UDP 용도 | AWS 서비스 | 설명 |
+|---------|-----------|------|
+| DNS | **Route 53 Resolver** | VPC 내 DNS 해석 |
+| NTP | **Amazon Time Sync** | EC2 인스턴스 시간 동기화 |
+| 게임/스트리밍 | **GameLift** | 실시간 게임 서버 |
 
-sock.sendto(dns_query, ('8.8.8.8', 53))
+**실무적 활용 사례:**
 
-# 응답 수신
-data, addr = sock.recvfrom(512)
-print(f"Received {len(data)} bytes from {addr}")
+> ⚠️ **UDP Flood 공격**: 대량의 UDP 패킷을 전송하여 서버의 대역폭과 리소스를 고갈시킵니다. UDP는 핸드셰이크가 없어 출발지 IP 위조가 쉽습니다.
 
-sock.close()
-```
-
-**실무 사례 - UDP 에코 서버/클라이언트:**
-
-```python
-import socket
-
-# 서버
-def udp_server(host='0.0.0.0', port=9999):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((host, port))
-    print(f"UDP server listening on {host}:{port}")
-
-    while True:
-        data, addr = sock.recvfrom(1024)
-        print(f"Received from {addr}: {data.decode()}")
-        sock.sendto(data, addr)  # 에코
-
-# 클라이언트
-def udp_client(host='127.0.0.1', port=9999):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    message = b"Hello, UDP!"
-    sock.sendto(message, (host, port))
-
-    data, addr = sock.recvfrom(1024)
-    print(f"Received from {addr}: {data.decode()}")
-
-    sock.close()
-```
+> ⚠️ **DNS Amplification 공격**: 작은 DNS 쿼리가 큰 응답을 생성하는 점을 악용합니다. 공격자는 피해자 IP를 출발지로 위조하여 DNS 서버에 쿼리를 보내고, 증폭된 응답이 피해자에게 전달됩니다.
 
 ### 음성 및 동영상 데이터
 
-**실시간 스트리밍 (RTP over UDP):**
+**실시간 스트리밍 프로토콜:**
 
-```python
-import socket
-import time
+| 프로토콜 | 전송 계층 | 용도 | 특징 |
+|---------|----------|------|------|
+| RTP | UDP | 실시간 오디오/비디오 | 타임스탬프, 시퀀스 번호 |
+| RTCP | UDP | RTP 제어 | 품질 피드백 |
+| WebRTC | UDP (ICE) | P2P 통신 | NAT 통과, DTLS 암호화 |
+| HLS/DASH | TCP | 적응형 스트리밍 | HTTP 기반 |
 
-def stream_video(host, port):
-    """간단한 비디오 스트리밍 (UDP)"""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+**AWS 서비스 활용:**
 
-    frame_number = 0
-    while True:
-        # 프레임 데이터 (실제로는 비디오 인코더에서 가져옴)
-        frame_data = f"Frame {frame_number}".encode()
-
-        # 전송 (재전송 없음, 손실 허용)
-        sock.sendto(frame_data, (host, port))
-
-        frame_number += 1
-        time.sleep(1/30)  # 30 FPS
-
-# 사용 예시
-# stream_video('224.0.0.1', 5000)  # 멀티캐스트
-```
-
-**WebRTC - UDP 기반 실시간 통신:**
-
-```python
-# aiortc 라이브러리 사용 예시
-from aiortc import RTCPeerConnection, RTCSessionDescription
-import asyncio
-
-async def run_webrtc():
-    pc = RTCPeerConnection()
-
-    @pc.on("track")
-    async def on_track(track):
-        if track.kind == "video":
-            # 비디오 프레임 수신 (UDP)
-            while True:
-                frame = await track.recv()
-                # 프레임 처리...
-
-    # STUN/TURN 서버를 통한 NAT 통과
-    # UDP 홀 펀칭...
-```
+| 스트리밍 용도 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| 라이브 스트리밍 | **MediaLive** | 실시간 비디오 인코딩 |
+| VOD | **MediaConvert** | 비디오 트랜스코딩 |
+| WebRTC | **Kinesis Video Streams** | 양방향 비디오 스트리밍 |
+| CDN 배포 | **CloudFront** | 전 세계 콘텐츠 전송 |
 
 **QUIC (HTTP/3) - UDP 기반 신뢰성 있는 전송:**
 
-QUIC는 UDP 위에 TCP와 유사한 신뢰성 메커니즘을 구현했습니다.
+| 특성 | TCP/TLS (HTTP/2) | QUIC (HTTP/3) |
+|------|-----------------|---------------|
+| 핸드셰이크 | 3-Way + TLS = 2 RTT | 0~1 RTT |
+| 헤드오브라인 블로킹 | 있음 | 없음 (스트림 독립) |
+| 연결 마이그레이션 | 불가 | 가능 (Connection ID) |
 
-```
-TCP/TLS (HTTP/2):
-  3-Way Handshake + TLS Handshake = 2 RTT
+**실무적 활용 사례:**
 
-QUIC (HTTP/3):
-  단일 Handshake = 0~1 RTT (0-RTT 재연결)
-```
+> ⚠️ **WebRTC SRTP 키 탈취**: DTLS 협상 과정에서 키 교환이 노출되면 미디어 스트림이 복호화될 수 있습니다. SRTP 암호화가 중요합니다.
 
 ---
 
@@ -1199,31 +1013,47 @@ $ sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 $ sudo iptables -A INPUT -p tcp --dport 22 -m limit --limit 3/min -j ACCEPT
 ```
 
-### 4. 프로그래밍 모범 사례
+### 4. AWS 서비스 활용
 
-**연결 풀 사용:**
-```python
-from urllib3 import PoolManager
+**연결 풀과 타임아웃 관리:**
 
-# HTTP 연결 풀
-http = PoolManager(maxsize=10, block=True)
+| 요구사항 | AWS 서비스 | 설정 |
+|---------|-----------|------|
+| HTTP 연결 풀 | **ALB** | Connection reuse 자동 제공 |
+| 데이터베이스 연결 풀 | **RDS Proxy** | 연결 풀링, 자동 장애 조치 |
+| 연결 타임아웃 | **ALB Idle Timeout** | 1~4000초 설정 가능 |
+| 요청 타임아웃 | **API Gateway** | 최대 29초 통합 타임아웃 |
 
-# 연결 재사용
-response = http.request('GET', 'http://www.example.com')
-```
+**실무적 활용 사례:**
 
-**타임아웃 설정:**
-```python
-import socket
+> ⚠️ **연결 풀 고갈**: 연결을 제대로 반환하지 않으면 풀이 고갈되어 새 요청을 처리할 수 없습니다. RDS Proxy는 유휴 연결을 자동으로 정리하여 이 문제를 완화합니다.
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.settimeout(5.0)  # 5초 타임아웃
+> ⚠️ **타임아웃 불일치**: 클라이언트와 서버의 타임아웃 설정이 다르면 예기치 않은 연결 종료가 발생합니다. ALB Idle Timeout보다 백엔드 Keep-Alive를 길게 설정해야 합니다.
 
-try:
-    sock.connect(('www.example.com', 80))
-except socket.timeout:
-    print("Connection timeout")
-```
+---
+
+## AWS 서비스 전체 요약
+
+| 네트워크 개념 | AWS 서비스 | 설명 |
+|-------------|-----------|------|
+| TCP 연결 관리 | **ALB (Application Load Balancer)** | 연결 재사용, Idle Timeout 설정 |
+| 대용량 TCP 트래픽 | **NLB (Network Load Balancer)** | 초당 수백만 연결 처리 |
+| 연결 풀링 | **RDS Proxy** | 데이터베이스 연결 효율화 |
+| 보안 그룹 | **Security Group** | 인스턴스 레벨 방화벽 |
+| 네트워크 ACL | **NACL** | 서브넷 레벨 트래픽 제어 |
+| 라우팅 | **Route Table** | VPC 내 트래픽 라우팅 |
+| MTU 최적화 | **VPC** | 점보 프레임 (9001 바이트) 지원 |
+| 연결 드레이닝 | **Target Group** | Deregistration Delay 설정 |
+| 실시간 통신 | **API Gateway WebSocket** | 양방향 WebSocket 지원 |
+| 비동기 처리 | **Lambda** | 이벤트 기반 실행 |
+| DNS 해석 | **Route 53 Resolver** | VPC 내 DNS |
+| 시간 동기화 | **Amazon Time Sync** | NTP 서비스 |
+| 게임 서버 | **GameLift** | UDP 기반 게임 호스팅 |
+| 라이브 스트리밍 | **MediaLive** | 실시간 비디오 인코딩 |
+| CDN | **CloudFront** | 전 세계 콘텐츠 전송 |
+| DDoS 방어 | **AWS Shield** | SYN Flood, UDP Flood 방어 |
+| WAF | **AWS WAF** | 애플리케이션 계층 공격 방어 |
+| 네트워크 가속 | **Global Accelerator** | AWS 백본 네트워크 활용 |
 
 ---
 
