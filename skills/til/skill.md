@@ -13,13 +13,21 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 - 저장소 경로: $TIL_ROOT
 - 카테고리별 폴더 구조: java/, domain/, spring/, docker/, database/ 등
 
+## 경로 설정 지침
+
+**이 지침은 매 실행마다 동일하게 적용됩니다:**
+
+1. `저장소 경로:` 라인의 값이 `$TIL_ROOT`이면 → Step 0 실행 (경로 설정 필요)
+2. `저장소 경로:` 라인의 값이 실제 경로면 → Step 0 건너뜀
+3. 경로 설정 시 이 파일의 `저장소 경로:` 라인을 실제 경로로 업데이트
+
 ## 실행 단계
 
 /til 실행 시 다음 단계를 순차적으로 진행합니다. **반드시 AskUserQuestion 도구를 사용하여 선택지 기반으로 입력받습니다.**
 
 ### Step 0. TIL 경로 설정 (최초 1회)
 
-스킬 최초 실행 시 `$TIL_ROOT` 변수가 설정되어 있지 않으면:
+스킬 최초 실행 시 `저장소 경로`가 `$TIL_ROOT`로 되어 있으면:
 
 1. 현재 작업 디렉토리(pwd)를 확인합니다
 2. **AskUserQuestion 도구**를 사용하여 TIL 저장소 경로를 확인합니다:
@@ -29,17 +37,16 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
      - 현재 디렉토리 경로 (Recommended)
    - 사용자가 "Other"를 선택하면 직접 경로 입력
 
-3. 확인된 경로를 `$TIL_ROOT`에 설정하고, 이 skill.md 파일의 `$TIL_ROOT` 값을 실제 경로로 업데이트합니다:
-   - 위의 "저장소 경로" 라인을 실제 경로로 변경
-   - 예: `- 저장소 경로: /Users/username/til`
+3. 확인된 경로로 이 skill.md 파일의 `저장소 경로` 값을 업데이트합니다:
+   - `- 저장소 경로: $TIL_ROOT` → `- 저장소 경로: /Users/username/til`
 
 **이후 실행에서는 이 단계를 건너뜁니다.**
 
 ### Step 1. 카테고리 선택
 
-1. 먼저 기존 카테고리 목록을 조회합니다:
+1. 먼저 기존 카테고리 목록을 조회합니다 (저장소 경로 사용):
    ```bash
-   ls -d $TIL_ROOT/*/
+   ls -d {저장소_경로}/*/
    ```
 
 2. **AskUserQuestion 도구**를 사용하여 카테고리 선택지를 제공합니다:
@@ -87,7 +94,7 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
 1. 마크다운 파일 작성:
    - 파일명: `{주제-kebab-case}.md`
-   - 경로: `$TIL_ROOT/{category}/{filename}.md`
+   - 경로: `{저장소_경로}/{category}/{filename}.md`
 
 2. 파일 내용:
    - 제목 (# 헤더)
@@ -98,14 +105,9 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
 3. 마크다운 미리보기:
 
-   마크다운 파일 작성 완료 후 `/md-preview` skill을 사용하여 HTML 미리보기를 엽니다:
-   ```
-   /md-preview 스킬 실행 (생성된 마크다운 파일 선택)
-   ```
-
-   또는 Skill 도구를 사용하여 직접 호출:
-   ```
-   Skill tool을 사용하여 md-preview 스킬 실행
+   마크다운 파일 작성 완료 후 브라우저에서 미리보기를 엽니다:
+   ```bash
+   open "{생성된_파일_경로}"
    ```
 
 4. 미리보기 확인 및 Git 진행:
@@ -120,11 +122,12 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
    사용자가 "수정 필요"를 선택하면:
    - 수정할 내용을 입력받아 파일 수정
-   - 다시 `/md-preview` skill을 실행하여 미리보기 열기
+   - 다시 미리보기 열기
    - 이 단계 반복
 
    사용자가 "Push 진행"을 선택하면:
    ```bash
+   cd {저장소_경로}
    git add .
    git commit -m "docs: add TIL - {제목}"
    git push
@@ -143,12 +146,13 @@ TIL(Today I Learned) 저장소에 학습 내용을 기록하고 관리합니다.
 
 ```
 /til
+→ Step 0: [경로 확인] (최초 1회만)
 → Step 1: [카테고리 선택] java / spring / docker / database  → "java" 선택
 → Step 2: [주제 입력] Stream API / Optional 활용 / 람다식  → "Other" 선택 후 "Stream API 병렬 처리" 입력
 → Step 3: [내용 입력] → "Other" 선택 후 학습 내용 입력
 → Step 4: [스타일 선택] 코드 예제 많이 / 간결하게 / 상세하게 / 비교 표 포함  → "코드 예제 많이" 선택
 → Step 5: [최종 확인] 시작 / 취소  → "시작" 선택
-→ 마크다운 파일 생성 → /md-preview 스킬로 HTML 미리보기 열림
+→ 마크다운 파일 생성 → 미리보기 자동 열림
 → [미리보기 확인] Push 진행 / 수정 필요 / 취소  → "Push 진행" 선택
 → git commit → git push
 ```
