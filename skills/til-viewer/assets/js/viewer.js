@@ -27,10 +27,15 @@ function init() {
     buildFileList();
     initSearch();
     initKeyboardShortcuts();
+    initRouter();
 
-    // Load last viewed file if exists
+    // 우선순위: URL hash > localStorage
+    const hashFile = getFileFromHash();
     const lastFile = localStorage.getItem('til-last-file');
-    if (lastFile) {
+
+    if (hashFile && findFileByPath(hashFile)) {
+        loadFile(hashFile, { updateUrl: false });
+    } else if (lastFile && findFileByPath(lastFile)) {
         loadFile(lastFile);
     }
 }
@@ -103,12 +108,23 @@ function findFileByPath(path) {
     return null;
 }
 
-function loadFile(filePath) {
+function loadFile(filePath, options = {}) {
     const file = findFileByPath(filePath);
     if (!file) return;
 
     state.currentFile = filePath;
     localStorage.setItem('til-last-file', filePath);
+
+    // URL hash 업데이트
+    if (options.updateUrl !== false) {
+        updateHash(filePath);
+    }
+
+    // 해당 카테고리 자동 펼치기
+    const category = filePath.split('/')[0];
+    if (state.collapsedCategories.has(category)) {
+        state.collapsedCategories.delete(category);
+    }
 
     // Render markdown
     const contentDiv = document.getElementById('content');
@@ -299,6 +315,40 @@ function initKeyboardShortcuts() {
         if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
             e.preventDefault();
             document.getElementById('theme-toggle').click();
+        }
+    });
+}
+
+// ========================================
+// URL ROUTING
+// ========================================
+function getFileFromHash() {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return null;
+    return decodeURIComponent(hash);
+}
+
+function updateHash(filePath) {
+    if (filePath) {
+        const newHash = '#' + encodeURIComponent(filePath);
+        if (window.location.hash !== newHash) {
+            history.pushState(null, '', newHash);
+        }
+    }
+}
+
+function initRouter() {
+    window.addEventListener('hashchange', () => {
+        const filePath = getFileFromHash();
+        if (filePath && filePath !== state.currentFile) {
+            loadFile(filePath, { updateUrl: false });
+        }
+    });
+
+    window.addEventListener('popstate', () => {
+        const filePath = getFileFromHash();
+        if (filePath) {
+            loadFile(filePath, { updateUrl: false });
         }
     });
 }
