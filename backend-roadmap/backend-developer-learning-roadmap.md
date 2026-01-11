@@ -39,9 +39,14 @@
 
 ## 학습 로드맵
 
+> 각 단계별 상세 문서를 참고하세요:
+> - [Phase 1: 기초 단계](./phase1-fundamentals.md) - 언어, DB, 프레임워크
+> - [Phase 2: 중급 단계](./phase2-intermediate.md) - API 설계, 인증, Git, 테스트
+> - [Phase 3: 고급 단계](./phase3-advanced.md) - 아키텍처, 캐싱, DevOps
+
 ### Phase 1: 기초 단계
 
-백엔드 개발의 첫 단계로, 프로그래밍 언어와 기본 개념을 익힙니다.
+백엔드 개발의 첫 단계로, 프로그래밍 언어와 기본 개념을 익힙니다. [상세 보기 →](./phase1-fundamentals.md)
 
 #### 1. 프로그래밍 언어 선택
 
@@ -107,7 +112,7 @@ DELETE FROM users WHERE id = 1;
 
 ### Phase 2: 중급 단계
 
-실무에서 필요한 핵심 기술들을 익힙니다.
+실무에서 필요한 핵심 기술들을 익힙니다. [상세 보기 →](./phase2-intermediate.md)
 
 #### 1. RESTful API 설계
 
@@ -166,7 +171,7 @@ git push origin feature/new-feature
 
 ### Phase 3: 고급 단계
 
-대규모 시스템 설계와 운영에 필요한 기술을 학습합니다.
+대규모 시스템 설계와 운영에 필요한 기술을 학습합니다. [상세 보기 →](./phase3-advanced.md)
 
 #### 1. 아키텍처 패턴
 
