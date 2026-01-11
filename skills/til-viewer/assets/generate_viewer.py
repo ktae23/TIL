@@ -63,20 +63,25 @@ def main():
         }
     }
     json_str = json.dumps(til_data, ensure_ascii=False)
+    # </script> 태그가 JSON 내에 있으면 스크립트가 깨지므로 이스케이프
+    json_str = json_str.replace("</script>", "<\\/script>")
 
     # 3. HTML 생성
+    # 상대 경로 사용 (HTML이 assets 폴더에 생성됨)
     html_content = f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIL Viewer</title>
-    <link rel="stylesheet" href="{ASSETS_PATH}/css/viewer.css">
-    <link rel="stylesheet" href="{ASSETS_PATH}/lib/highlight/github.min.css" id="hljs-light">
-    <link rel="stylesheet" href="{ASSETS_PATH}/lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="css/viewer.css">
+    <link rel="stylesheet" href="lib/highlight/github.min.css" id="hljs-light">
+    <link rel="stylesheet" href="lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="header">
+        <button class="menu-button" id="menu-button">☰</button>
         <h1>TIL Viewer</h1>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search files and content... (Ctrl+K)" autocomplete="off" />
@@ -97,22 +102,24 @@ def main():
             <div id="toc-list"></div>
         </div>
     </div>
-    <script src="{ASSETS_PATH}/lib/marked.min.js"></script>
-    <script src="{ASSETS_PATH}/lib/fuse.min.js"></script>
-    <script src="{ASSETS_PATH}/lib/highlight/highlight.min.js"></script>
+    <script src="lib/marked.min.js"></script>
+    <script src="lib/fuse.min.js"></script>
+    <script src="lib/highlight/highlight.min.js"></script>
     <script>const TIL_DATA = {json_str};</script>
-    <script src="{ASSETS_PATH}/js/viewer.js"></script>
+    <script src="js/viewer.js"></script>
 </body>
 </html>"""
 
-    with open("/tmp/til-viewer.html", "w", encoding="utf-8") as f:
+    # HTML을 assets 폴더에 생성 (상대 경로가 동작하도록)
+    output_path = os.path.join(ASSETS_PATH, "til-viewer.html")
+    with open(output_path, "w", encoding="utf-8") as f:
         f.write(html_content)
 
     total_files = til_data["metadata"]["totalFiles"]
     print(f"카테고리: {len(categories)}개")
     print(f"파일: {total_files}개")
     print(f"총 라인: {total_lines}줄")
-    print("파일 위치: /tmp/til-viewer.html")
+    print(f"파일 위치: {output_path}")
 
 if __name__ == "__main__":
     main()

@@ -28,6 +28,7 @@ function init() {
     initSearch();
     initKeyboardShortcuts();
     initRouter();
+    initMobileMenu();
 
     // 우선순위: URL hash > localStorage
     const hashFile = getFileFromHash();
@@ -143,6 +144,11 @@ function loadFile(filePath, options = {}) {
 
     // Scroll to top
     document.getElementById('content-area').scrollTop = 0;
+
+    // 모바일에서 파일 선택 시 사이드바 닫기
+    if (window.closeMobileSidebar) {
+        window.closeMobileSidebar();
+    }
 }
 
 // ========================================
@@ -351,6 +357,38 @@ function initRouter() {
             loadFile(filePath, { updateUrl: false });
         }
     });
+}
+
+// ========================================
+// MOBILE MENU
+// ========================================
+function initMobileMenu() {
+    const menuButton = document.getElementById('menu-button');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    }
+
+    menuButton.addEventListener('click', () => {
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // 전역으로 closeSidebar 노출 (loadFile에서 사용)
+    window.closeMobileSidebar = closeSidebar;
 }
 
 // ========================================

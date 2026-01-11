@@ -134,6 +134,40 @@ body {
 }
 
 /* ========================================
+   MOBILE MENU
+   ======================================== */
+.menu-button {
+    display: none;
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
+
+.menu-button:hover {
+    background: var(--bg-secondary);
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* ========================================
    SIDEBAR - CATEGORY & FILES
    ======================================== */
 .category {
