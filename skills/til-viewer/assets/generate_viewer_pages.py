@@ -91,7 +91,9 @@ def main():
     <link rel="stylesheet" href="assets/lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="header">
+        <button class="menu-button" id="menu-button">☰</button>
         <h1>TIL Viewer</h1>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search files and content... (Ctrl+K)" autocomplete="off" />
