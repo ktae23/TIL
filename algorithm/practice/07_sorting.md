@@ -1,4 +1,4 @@
-# 정렬 (Sorting)
+# 7. 정렬 (Sorting)
 
 > 관련 코드: `section3_essential1/sorting/SortingBasic.java`
 

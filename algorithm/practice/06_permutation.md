@@ -1,4 +1,4 @@
-# 순열 (Permutation)
+# 6. 순열 (Permutation)
 
 > 관련 코드: `section2_basic/permutation/PermutationBasic.java`
 

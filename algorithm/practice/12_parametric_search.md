@@ -1,4 +1,4 @@
-# 파라메트릭 서치 (Parametric Search)
+# 12. 파라메트릭 서치 (Parametric Search)
 
 > 관련 코드: `section5_essential2/parametric/ParametricSearchBasic.java`
 

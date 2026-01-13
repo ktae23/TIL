@@ -1,4 +1,4 @@
-# 이분 탐색 (Binary Search)
+# 11. 이분 탐색 (Binary Search)
 
 > 관련 코드: `section5_essential2/binarysearch/BinarySearchBasic.java`
 

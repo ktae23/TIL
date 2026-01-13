@@ -1,4 +1,4 @@
-# 그리디 알고리즘 (Greedy)
+# 9. 그리디 알고리즘 (Greedy)
 
 > 관련 코드: `section3_essential1/greedy/GreedyBasic.java`
 

@@ -1,4 +1,4 @@
-# 너비 우선 탐색 (BFS)
+# 16. 너비 우선 탐색 (BFS)
 
 > 관련 코드: `section6_graph/traversal/BFSBasic.java`
 

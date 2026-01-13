@@ -1,4 +1,4 @@
-# 트리 순회 (Tree Traversal)
+# 18. 트리 순회 (Tree Traversal)
 
 > 관련 코드: `section6_graph/tree/TreeTraversal.java`
 

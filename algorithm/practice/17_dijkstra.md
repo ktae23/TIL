@@ -1,4 +1,4 @@
-# 다익스트라 알고리즘 (Dijkstra)
+# 17. 다익스트라 알고리즘 (Dijkstra)
 
 > 관련 코드: `section6_graph/shortest/DijkstraBasic.java`, `DijkstraProblems.java`
 

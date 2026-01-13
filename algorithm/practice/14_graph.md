@@ -1,4 +1,4 @@
-# 그래프 표현 (Graph Representation)
+# 14. 그래프 표현 (Graph Representation)
 
 > 관련 코드: `section6_graph/basics/GraphRepresentation.java`
 

@@ -1,4 +1,4 @@
-# 투 포인터 (Two Pointer)
+# 13. 투 포인터 (Two Pointer)
 
 > 관련 코드: `section5_essential2/twopointer/TwoPointerBasic.java`
 

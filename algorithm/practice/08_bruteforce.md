@@ -1,4 +1,4 @@
-# 브루트포스 / 완전탐색 (Brute Force)
+# 8. 브루트포스 / 완전탐색 (Brute Force)
 
 > 관련 코드: `section3_essential1/bruteforce/BruteForceBasic.java`
 

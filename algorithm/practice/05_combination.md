@@ -1,4 +1,4 @@
-# 조합 (Combination)
+# 5. 조합 (Combination)
 
 > 관련 코드: `section2_basic/combination/CombinationBasic.java`
 

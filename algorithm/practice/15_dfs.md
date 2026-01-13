@@ -1,4 +1,4 @@
-# 깊이 우선 탐색 (DFS)
+# 15. 깊이 우선 탐색 (DFS)
 
 > 관련 코드: `section6_graph/traversal/DFSBasic.java`
 

@@ -1,4 +1,4 @@
-# 재귀함수 (Recursion)
+# 4. 재귀함수 (Recursion)
 
 > 관련 코드: `section2_basic/recursion/RecursionBasic.java`
 
