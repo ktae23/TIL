@@ -95,10 +95,10 @@ def generate_algorithm_practice(til_path, output_dir):
         body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; }}
         .app-container {{ display: flex; height: 100vh; }}
         .sidebar {{ width: var(--sidebar-width); background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }}
-        .sidebar-header {{ padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }}
-        .sidebar-header h1 {{ font-size: 16px; font-weight: 600; }}
-        .sidebar-header a {{ color: var(--text-secondary); text-decoration: none; font-size: 12px; }}
-        .sidebar-header a:hover {{ color: var(--accent-color); }}
+        .sidebar-header {{ padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px; }}
+        .sidebar-header h1 {{ font-size: 16px; font-weight: 600; margin: 0; }}
+        .back-link {{ color: var(--accent-color); text-decoration: none; font-size: 13px; padding: 4px 8px; border-radius: 4px; background: var(--bg-tertiary); }}
+        .back-link:hover {{ opacity: 0.8; }}
         .theme-toggle {{ padding: 4px 8px; font-size: 12px; background: var(--bg-tertiary); border: none; border-radius: 4px; color: var(--text-primary); cursor: pointer; }}
         .topic-list {{ flex: 1; overflow-y: auto; padding: 8px; }}
         .topic-item {{ padding: 10px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-bottom: 4px; transition: background 0.2s; }}
@@ -151,7 +151,7 @@ def generate_algorithm_practice(til_path, output_dir):
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>Algorithm</h1>
-                <a href="index.html">← TIL</a>
+                <a href="index.html" class="back-link">← TIL</a>
                 <button class="theme-toggle" id="theme-toggle">Dark</button>
             </div>
             <div class="topic-list" id="topic-list"></div>
