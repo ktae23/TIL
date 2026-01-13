@@ -33,7 +33,7 @@ def main():
 
     for md_file in sorted(glob(f"{TIL_PATH}/**/*.md", recursive=True)):
         rel_path = os.path.relpath(md_file, TIL_PATH)
-        if rel_path.startswith("skills/"):
+        if rel_path.startswith("skills/") or rel_path.startswith("algorithm/practice"):
             continue
         parts = rel_path.split("/")
         if len(parts) < 2:

@@ -27,22 +27,22 @@ def generate_algorithm_practice(til_path, output_dir):
 
     # MD 파일과 Java 파일 매핑
     mapping = {
-        '01_complexity': 'TimeSpaceComplexity.java',
-        '02_recursion': 'RecursionBasic.java',
-        '03_combination': 'CombinationBasic.java',
-        '04_permutation': 'PermutationBasic.java',
-        '05_sorting': 'SortingBasic.java',
-        '06_bruteforce': 'BruteForceBasic.java',
-        '07_greedy': 'GreedyBasic.java',
-        '08_dp': 'DPBasic.java',
-        '09_binary_search': 'BinarySearchBasic.java',
-        '10_parametric_search': 'ParametricSearchBasic.java',
-        '11_two_pointer': 'TwoPointerBasic.java',
-        '12_graph': 'GraphRepresentation.java',
-        '13_dfs': 'DFSBasic.java',
-        '14_bfs': 'BFSBasic.java',
-        '15_dijkstra': 'DijkstraBasic.java',
-        '16_tree': 'TreeTraversal.java',
+        '00_complexity': 'TimeSpaceComplexity.java',
+        '03_recursion': 'RecursionBasic.java',
+        '04_combination': 'CombinationBasic.java',
+        '05_permutation': 'PermutationBasic.java',
+        '06_sorting': 'SortingBasic.java',
+        '07_bruteforce': 'BruteForceBasic.java',
+        '08_greedy': 'GreedyBasic.java',
+        '09_dp': 'DPBasic.java',
+        '10_binary_search': 'BinarySearchBasic.java',
+        '11_parametric_search': 'ParametricSearchBasic.java',
+        '12_two_pointer': 'TwoPointerBasic.java',
+        '13_graph': 'GraphRepresentation.java',
+        '14_dfs': 'DFSBasic.java',
+        '15_bfs': 'BFSBasic.java',
+        '16_dijkstra': 'DijkstraBasic.java',
+        '17_tree': 'TreeTraversal.java',
     }
 
     topics = []
@@ -227,9 +227,57 @@ def generate_algorithm_practice(til_path, output_dir):
             const mdContent = document.getElementById('md-content');
             mdContent.innerHTML = marked.parse(topic.md_content);
             mdContent.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+            buildTOC();
             document.getElementById('editor-title').textContent = topic.java_file || 'Example.java';
             if (state.editor) state.editor.setValue(topic.java_code || '// Java 코드');
             document.getElementById('sidebar').classList.remove('open');
+        }}
+
+        function buildTOC() {{
+            const mdContent = document.getElementById('md-content');
+            const headings = mdContent.querySelectorAll('h2');
+            if (headings.length === 0) return;
+
+            // 기존 TOC 제거
+            const oldToc = mdContent.querySelector('.inline-toc');
+            if (oldToc) oldToc.remove();
+
+            // 인라인 TOC 생성
+            const toc = document.createElement('div');
+            toc.className = 'inline-toc';
+            toc.style.cssText = 'background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 24px;';
+
+            const tocTitle = document.createElement('div');
+            tocTitle.style.cssText = 'font-weight: 600; margin-bottom: 12px; font-size: 14px;';
+            tocTitle.textContent = '📑 목차';
+            toc.appendChild(tocTitle);
+
+            const tocList = document.createElement('div');
+            tocList.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px 16px;';
+
+            headings.forEach((heading, idx) => {{
+                const id = 'section-' + idx;
+                heading.id = id;
+                const a = document.createElement('a');
+                a.href = '#' + id;
+                a.textContent = heading.textContent;
+                a.style.cssText = 'color: var(--accent-color); text-decoration: none; font-size: 13px;';
+                a.onclick = (e) => {{
+                    e.preventDefault();
+                    heading.scrollIntoView({{ behavior: 'smooth' }});
+                }};
+                tocList.appendChild(a);
+            }});
+
+            toc.appendChild(tocList);
+
+            // h1 다음에 삽입
+            const h1 = mdContent.querySelector('h1');
+            if (h1 && h1.nextSibling) {{
+                h1.parentNode.insertBefore(toc, h1.nextSibling);
+            }} else {{
+                mdContent.insertBefore(toc, mdContent.firstChild);
+            }}
         }}
 
         function initTabs() {{

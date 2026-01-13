@@ -1,4 +1,4 @@
-# 시간 복잡도와 공간 복잡도
+# 0. 시간 복잡도와 공간 복잡도
 
 > 관련 코드: `section2_basic/complexity/TimeSpaceComplexity.java`
 
