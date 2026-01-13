@@ -102,6 +102,9 @@ def main():
     </div>
     <div class="main-container">
         <div class="sidebar" id="sidebar">
+            <div class="special-links">
+                <a href="algorithm-practice.html" class="special-link">📚 Algorithm Practice</a>
+            </div>
             <div id="file-list"></div>
         </div>
         <div class="content-area" id="content-area">
