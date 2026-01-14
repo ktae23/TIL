@@ -12,14 +12,18 @@
 
 | 전략 | 설명 | 장점 | 단점 |
 |------|------|------|------|
-| **1. 빌드 시 API 호출** | 빌드 타임에 백엔드 API를 호출하여 ID 목록 조회 | 구현이 단순함, 기존 API 재사용 | 빌드 시간 증가, API 서버 부하, 타임아웃 위험 |
-| **2. AWS Lambda + DB 직접 조회** | Lambda 함수로 DB에서 직접 ID 목록 조회 | API 서버 부하 없음, 필요한 데이터만 조회 | Lambda 추가 관리, DB 연결 설정 필요, Cold start |
-| **3. 사전 생성 후 S3 주입** | 백엔드에서 주기적으로 SiteMap 생성 → S3 저장 → 빌드 시 주입 | 빌드 시간 최소화, 안정적 | 실시간성 떨어짐, 추가 배치 작업 필요 |
+| **1. 빌드 시 백엔드 API 호출** | 빌드 타임에 백엔드 API를 호출하여 ID 목록 조회 | 구현이 단순함, 기존 API 재사용 | 빌드 시간 증가, API 서버 부하, 타임아웃 위험 |
+| **2. API Gateway + Lambda** | API Gateway + Lambda로 ID 목록 전용 엔드포인트 구성 | 백엔드 서버 부하 분리, 독립적 스케일링 | 추가 인프라 비용, Cold start 지연 |
+| **3. 사전 생성 후 S3 주입** | 배치로 SiteMap 생성 → S3 저장 → 빌드 시 주입 | 빌드 시간 최소화, 안정적 | 실시간성 떨어짐, 추가 배치 작업 필요 |
 | **4. ISR/On-demand 생성** | 요청 시점에 동적으로 SiteMap 생성 (Next.js ISR 등) | 항상 최신 데이터, 빌드 부담 없음 | 캐시 전략 필요, 초기 응답 지연 가능 |
+| **5. Redis/ElastiCache 캐싱** | ID 목록을 Redis에 캐싱, 빌드 시 캐시 조회 | 빠른 응답, DB 부하 감소 | 캐시 동기화 로직 필요, 추가 인프라 |
+| **6. CDN Edge 동적 생성** | Cloudflare Workers, Vercel Edge에서 생성 | 글로벌 저지연, 서버리스 | Edge 런타임 제약, 복잡한 로직 어려움 |
 
 ## 일반적인 방법
 
-**빌드 시 API 호출 (전략 1)**이 가장 일반적이다.
+**빌드 시 API 호출 (전략 1)**이 가장 일반적으로 사용된다.
+
+대부분의 서비스가 소~중규모(ID 수천 개 이하)이고, 이 정도 규모에서는 빌드 시 API를 호출해도 시간/부하 문제가 크지 않기 때문이다. 또한 별도 인프라 구축 없이 기존 백엔드 API를 그대로 재사용할 수 있어 구현이 가장 단순하다.
 
 ```javascript
 // next-sitemap.config.js 또는 빌드 스크립트
@@ -29,9 +33,13 @@ async function fetchBuildingIds() {
 }
 ```
 
-- 대부분의 정적 사이트 생성기(Next.js, Gatsby 등)에서 기본적으로 지원
-- 추가 인프라 없이 구현 가능
-- 소규모~중규모 사이트에 적합
+**왜 일반적인가?**
+- 대부분의 서비스가 소~중규모이므로 복잡한 아키텍처가 불필요
+- Next.js, Gatsby 등 SSG 프레임워크에서 기본 패턴으로 지원
+- 추가 인프라(Lambda, S3 등) 없이 즉시 구현 가능
+- 기존 백엔드 API 엔드포인트 재사용
+
+**한계점:** ID가 수만 개 이상이거나, 빌드 빈도가 높아 API 서버 부하가 문제되면 다른 전략 검토 필요
 
 ## 잘 알려진 방법 (Best Practice)
 
@@ -54,7 +62,7 @@ async function fetchBuildingIds() {
 - 백엔드 API 서버에 부하 없음
 - 실패해도 이전 버전 SiteMap 유지 가능
 
-**사용 사례:** 네이버, 카카오, 쿠팡 등 대형 서비스
+**적합한 경우:** 수만 개 이상의 동적 URL을 가진 대형 서비스, 빌드 시간을 예측 가능하게 유지해야 하는 경우
 
 ## 효율적인 방법 추천
 
@@ -62,9 +70,10 @@ async function fetchBuildingIds() {
 
 | 규모 | ID 개수 | 추천 전략 |
 |------|---------|-----------|
-| 소규모 | ~1,000개 | 빌드 시 API 호출 |
-| 중규모 | 1,000~10,000개 | Lambda + DB 또는 API 호출 (페이지네이션) |
+| 소규모 | ~1,000개 | 빌드 시 백엔드 API 호출 |
+| 중규모 | 1,000~10,000개 | API Gateway + Lambda 또는 Redis 캐싱 |
 | 대규모 | 10,000개 이상 | **S3 사전 생성 (강력 추천)** |
+| 글로벌 서비스 | 규모 무관 | CDN Edge + S3 조합 |
 
 ### 대규모 서비스 권장 아키텍처
 
@@ -91,6 +100,101 @@ async function fetchBuildingIds() {
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```
+
+### 구현 예시 (API Gateway + Lambda 방식)
+
+```
+┌─────────────────────────────────────────────────────┐
+│            API Gateway + Lambda 아키텍처             │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  [CI/CD 빌드]                                       │
+│       │                                             │
+│       ▼                                             │
+│  [API Gateway] ──▶ [Lambda] ──▶ [RDS/DB]           │
+│       │               │                             │
+│       │               ▼                             │
+│       │         [ID 목록 응답]                       │
+│       │               │                             │
+│       ◀───────────────┘                             │
+│       │                                             │
+│       ▼                                             │
+│  [SiteMap 생성 & 배포]                              │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+**Lambda 함수 (ID 목록 조회용)**
+```typescript
+// lambda/get-building-ids.ts
+import { APIGatewayProxyHandler } from 'aws-lambda';
+import mysql from 'mysql2/promise';
+
+export const handler: APIGatewayProxyHandler = async (event) => {
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+
+  // 페이지네이션 지원
+  const page = parseInt(event.queryStringParameters?.page || '1');
+  const limit = parseInt(event.queryStringParameters?.limit || '10000');
+  const offset = (page - 1) * limit;
+
+  const [rows] = await connection.execute(
+    'SELECT id FROM buildings WHERE is_active = 1 LIMIT ? OFFSET ?',
+    [limit, offset]
+  );
+
+  const [countResult] = await connection.execute(
+    'SELECT COUNT(*) as total FROM buildings WHERE is_active = 1'
+  );
+
+  await connection.end();
+
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=3600', // 1시간 캐시
+    },
+    body: JSON.stringify({
+      ids: rows.map((row: any) => row.id),
+      pagination: {
+        page,
+        limit,
+        total: countResult[0].total,
+        hasNext: offset + limit < countResult[0].total,
+      },
+    }),
+  };
+};
+```
+
+**빌드 시 호출**
+```typescript
+// scripts/fetch-ids-for-sitemap.ts
+async function fetchAllBuildingIds(): Promise<number[]> {
+  const API_URL = 'https://api-gateway-id.execute-api.ap-northeast-2.amazonaws.com/prod/building-ids';
+  const allIds: number[] = [];
+  let page = 1;
+  let hasNext = true;
+
+  while (hasNext) {
+    const response = await fetch(`${API_URL}?page=${page}&limit=10000`);
+    const data = await response.json();
+    allIds.push(...data.ids);
+    hasNext = data.pagination.hasNext;
+    page++;
+  }
+
+  return allIds;
+}
+```
+
+---
 
 ### 구현 예시 (S3 사전 생성 방식)
 
@@ -168,11 +272,13 @@ npm run build
 
 | 상황 | 추천 |
 |------|------|
-| 빠르게 구현하고 싶다 | 빌드 시 API 호출 |
+| 빠르게 구현하고 싶다 | 빌드 시 백엔드 API 호출 |
+| 백엔드 부하 분리가 필요하다 | API Gateway + Lambda |
 | 대규모 + 안정성 중요 | **S3 사전 생성** ⭐ |
 | 실시간성이 중요하다 | ISR/On-demand |
-| 인프라 최소화하고 싶다 | API 호출 + 캐싱 |
+| DB 부하를 줄이고 싶다 | Redis/ElastiCache 캐싱 |
+| 글로벌 서비스 | CDN Edge 동적 생성 |
 
-**최종 추천:** 수만 개 이상의 동적 URL이 있다면 **S3 사전 생성 방식**이 가장 효율적이고 안정적이다. 빌드 시간을 예측 가능하게 유지하면서 백엔드 부하도 분산시킬 수 있다.
+**최종 추천:** 수만 개 이상의 동적 URL이 있다면 **S3 사전 생성 방식**이 가장 효율적이고 안정적이다. 중규모 서비스에서 백엔드 서버 부하가 걱정된다면 **API Gateway + Lambda**로 ID 조회를 분리하는 것도 좋은 선택이다.
 
 *마지막 업데이트: 2025년 01월*
