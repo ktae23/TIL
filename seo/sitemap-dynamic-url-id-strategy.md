@@ -94,32 +94,65 @@ async function fetchBuildingIds() {
 
 ### 구현 예시 (S3 사전 생성 방식)
 
-**Lambda 함수 (Python)**
-```python
-import boto3
-import pymysql
-from datetime import datetime
+**Lambda 함수 (Node.js/TypeScript)**
+```typescript
+// lambda/generate-sitemap.ts
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import mysql from 'mysql2/promise';
 
-def lambda_handler(event, context):
-    # DB에서 ID 목록 조회
-    connection = pymysql.connect(host='...', user='...', password='...', db='...')
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT id FROM buildings WHERE is_active = 1")
-        building_ids = [row[0] for row in cursor.fetchall()]
+const s3Client = new S3Client({ region: 'ap-northeast-2' });
 
-    # SiteMap XML 생성
-    sitemap_xml = generate_sitemap(building_ids)
+interface BuildingRow {
+  id: number;
+}
 
-    # S3 업로드
-    s3 = boto3.client('s3')
-    s3.put_object(
-        Bucket='my-sitemap-bucket',
-        Key='sitemaps/buildings.xml',
-        Body=sitemap_xml,
-        ContentType='application/xml'
-    )
+function generateSitemap(ids: number[], baseUrl: string): string {
+  const urls = ids.map(id => `
+    <url>
+      <loc>${baseUrl}/building/${id}</loc>
+      <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>0.8</priority>
+    </url>`).join('');
 
-    return {'statusCode': 200, 'body': f'Generated sitemap with {len(building_ids)} URLs'}
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>`;
+}
+
+export const handler = async () => {
+  // DB에서 ID 목록 조회
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+
+  const [rows] = await connection.execute<BuildingRow[]>(
+    'SELECT id FROM buildings WHERE is_active = 1'
+  );
+  const buildingIds = rows.map(row => row.id);
+
+  await connection.end();
+
+  // SiteMap XML 생성
+  const sitemapXml = generateSitemap(buildingIds, 'https://example.com');
+
+  // S3 업로드
+  await s3Client.send(new PutObjectCommand({
+    Bucket: 'my-sitemap-bucket',
+    Key: 'sitemaps/buildings.xml',
+    Body: sitemapXml,
+    ContentType: 'application/xml',
+  }));
+
+  return {
+    statusCode: 200,
+    body: `Generated sitemap with ${buildingIds.length} URLs`
+  };
+};
 ```
 
 **빌드 스크립트**
