@@ -211,6 +211,11 @@ function performSearch(query) {
 
     const results = state.searchIndex.search(query);
 
+    // 모바일에서 검색 시 사이드바 자동 열기
+    if (window.openMobileSidebar) {
+        window.openMobileSidebar();
+    }
+
     // Display search results
     const container = document.getElementById('file-list');
     container.innerHTML = '';
@@ -387,8 +392,9 @@ function initMobileMenu() {
 
     overlay.addEventListener('click', closeSidebar);
 
-    // 전역으로 closeSidebar 노출 (loadFile에서 사용)
+    // 전역으로 사이드바 제어 함수 노출
     window.closeMobileSidebar = closeSidebar;
+    window.openMobileSidebar = openSidebar;
 }
 
 // ========================================
