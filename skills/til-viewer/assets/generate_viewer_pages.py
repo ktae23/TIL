@@ -33,7 +33,7 @@ def main():
 
     for md_file in sorted(glob(f"{TIL_PATH}/**/*.md", recursive=True)):
         rel_path = os.path.relpath(md_file, TIL_PATH)
-        if rel_path.startswith("skills/") or rel_path.startswith("algorithm/practice"):
+        if rel_path.startswith("skills/"):
             continue
         parts = rel_path.split("/")
         if len(parts) < 2:
@@ -102,9 +102,6 @@ def main():
     </div>
     <div class="main-container">
         <div class="sidebar" id="sidebar">
-            <div class="special-links">
-                <a href="algorithm-practice.html" class="special-link">📚 Algorithm Practice</a>
-            </div>
             <div id="file-list"></div>
         </div>
         <div class="content-area" id="content-area">
