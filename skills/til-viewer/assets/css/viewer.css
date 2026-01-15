@@ -168,6 +168,31 @@ body {
 }
 
 /* ========================================
+   SIDEBAR - SPECIAL LINKS
+   ======================================== */
+.special-links {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.special-link {
+    display: block;
+    padding: 10px 12px;
+    background: var(--accent-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.special-link:hover {
+    opacity: 0.9;
+}
+
+/* ========================================
    SIDEBAR - CATEGORY & FILES
    ======================================== */
 .category {

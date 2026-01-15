@@ -39,10 +39,14 @@ til skill에서 TIL 저장소 경로를 읽습니다:
 
 ### Step 2. Python 스크립트로 뷰어 생성
 
-Bash로 Python 스크립트를 실행합니다:
+Bash로 두 개의 Python 스크립트를 실행합니다:
 
 ```bash
+# TIL Viewer 생성
 python3 "{SKILL_DIR}/assets/generate_viewer.py" "{TIL_PATH}" "{SKILL_DIR}/assets"
+
+# Algorithm Practice 뷰어 생성
+python3 "{SKILL_DIR}/assets/generate_algorithm_practice.py" "{TIL_PATH}" "{SKILL_DIR}/assets"
 ```
 
 **경로 치환 예시:**
@@ -51,12 +55,13 @@ python3 "{SKILL_DIR}/assets/generate_viewer.py" "{TIL_PATH}" "{SKILL_DIR}/assets
 
 ```bash
 python3 "/Users/username/.claude/skills/til-viewer/assets/generate_viewer.py" "/Users/username/til" "/Users/username/.claude/skills/til-viewer/assets"
+python3 "/Users/username/.claude/skills/til-viewer/assets/generate_algorithm_practice.py" "/Users/username/til" "/Users/username/.claude/skills/til-viewer/assets"
 ```
 
 ### Step 3. 브라우저 열기
 
 ```bash
-open /tmp/til-viewer.html
+open "{SKILL_DIR}/assets/til-viewer.html"
 ```
 
 ### Step 4. 완료 메시지
@@ -70,12 +75,12 @@ TIL Viewer를 생성했습니다.
   - 카테고리: {N}개
   - 파일: {N}개
   - 총 라인: {N}줄
-
-파일 위치: /tmp/til-viewer.html
+  - Algorithm Practice: {N}개 토픽
 
 사용 팁:
   - Ctrl+K: 검색
   - Ctrl+D: 다크/라이트 테마 전환
+  - 사이드바 상단 "Algorithm Practice" 버튼으로 알고리즘 실습 페이지 이동
 ```
 
 ## 주의사항
@@ -83,5 +88,9 @@ TIL Viewer를 생성했습니다.
 - **Read 도구 사용 금지**: 마크다운 파일을 Read 도구로 개별 읽으면 컨텍스트 폭발
 - Python 스크립트 한 번 실행으로 모든 처리 완료
 - 파일 크기: HTML 파일이 2-3MB가 될 수 있음
-- 임시 파일: `/tmp/til-viewer.html`은 시스템 재부팅 시 삭제될 수 있음
 - **경로는 항상 동적으로 탐지**: 하드코딩된 절대 경로 사용 금지
+
+## 생성 파일
+
+- `til-viewer.html`: TIL 메인 뷰어
+- `algorithm-practice.html`: 알고리즘 실습 뷰어 (algorithm/practice 폴더 기반)

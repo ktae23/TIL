@@ -28,21 +28,21 @@ def generate_algorithm_practice(til_path, output_dir):
     # MD 파일과 Java 파일 매핑
     mapping = {
         '00_complexity': 'TimeSpaceComplexity.java',
-        '04_recursion': 'RecursionBasic.java',
-        '05_combination': 'CombinationBasic.java',
-        '06_permutation': 'PermutationBasic.java',
-        '07_sorting': 'SortingBasic.java',
-        '08_bruteforce': 'BruteForceBasic.java',
-        '09_greedy': 'GreedyBasic.java',
-        '10_dp': 'DPBasic.java',
-        '11_binary_search': 'BinarySearchBasic.java',
-        '12_parametric_search': 'ParametricSearchBasic.java',
-        '13_two_pointer': 'TwoPointerBasic.java',
-        '14_graph': 'GraphRepresentation.java',
-        '15_dfs': 'DFSBasic.java',
-        '16_bfs': 'BFSBasic.java',
-        '17_dijkstra': 'DijkstraBasic.java',
-        '18_tree': 'TreeTraversal.java',
+        '03_recursion': 'RecursionBasic.java',
+        '04_combination': 'CombinationBasic.java',
+        '05_permutation': 'PermutationBasic.java',
+        '06_sorting': 'SortingBasic.java',
+        '07_bruteforce': 'BruteForceBasic.java',
+        '08_greedy': 'GreedyBasic.java',
+        '09_dp': 'DPBasic.java',
+        '10_binary_search': 'BinarySearchBasic.java',
+        '11_parametric_search': 'ParametricSearchBasic.java',
+        '12_two_pointer': 'TwoPointerBasic.java',
+        '13_graph': 'GraphRepresentation.java',
+        '14_dfs': 'DFSBasic.java',
+        '15_bfs': 'BFSBasic.java',
+        '16_dijkstra': 'DijkstraBasic.java',
+        '17_tree': 'TreeTraversal.java',
     }
 
     topics = []
@@ -84,10 +84,10 @@ def generate_algorithm_practice(til_path, output_dir):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithm Practice - TIL</title>
-    <link rel="stylesheet" href="assets/lib/codemirror/codemirror.min.css">
-    <link rel="stylesheet" href="assets/lib/codemirror/dracula.min.css">
-    <link rel="stylesheet" href="assets/lib/highlight/github.min.css" id="hljs-light">
-    <link rel="stylesheet" href="assets/lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="lib/codemirror/codemirror.min.css">
+    <link rel="stylesheet" href="lib/codemirror/dracula.min.css">
+    <link rel="stylesheet" href="lib/highlight/github.min.css" id="hljs-light">
+    <link rel="stylesheet" href="lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
     <style>
         :root {{ --bg-primary: #ffffff; --bg-secondary: #f6f8fa; --bg-tertiary: #e1e4e8; --text-primary: #24292e; --text-secondary: #586069; --border-color: #e1e4e8; --accent-color: #0366d6; --sidebar-width: 260px; }}
         [data-theme="dark"] {{ --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-tertiary: #21262d; --text-primary: #c9d1d9; --text-secondary: #8b949e; --border-color: #30363d; --accent-color: #58a6ff; }}
@@ -141,9 +141,6 @@ def generate_algorithm_practice(til_path, output_dir):
         .editor-wrapper {{ flex: 1; overflow: hidden; }}
         .CodeMirror {{ height: 100% !important; font-size: 14px; font-family: 'Fira Code', 'Monaco', monospace; }}
         .loading {{ display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); }}
-        .top-btn {{ position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-color); color: white; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; z-index: 1000; }}
-        .top-btn.visible {{ opacity: 1; visibility: visible; }}
-        .top-btn:hover {{ transform: scale(1.1); }}
         @media (max-width: 768px) {{ .sidebar {{ position: fixed; left: -260px; top: 0; height: 100%; z-index: 100; transition: left 0.3s; }} .sidebar.open {{ left: 0; }} .mobile-header {{ display: flex !important; }} }}
         .mobile-header {{ display: none; padding: 12px 16px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); align-items: center; gap: 12px; }}
         .menu-btn {{ background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-primary); }}
@@ -154,7 +151,7 @@ def generate_algorithm_practice(til_path, output_dir):
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>Algorithm</h1>
-                <a href="index.html" class="back-link">← TIL</a>
+                <a href="til-viewer.html" class="back-link">← TIL</a>
                 <button class="theme-toggle" id="theme-toggle">Dark</button>
             </div>
             <div class="topic-list" id="topic-list"></div>
@@ -190,12 +187,11 @@ def generate_algorithm_practice(til_path, output_dir):
                 </div>
             </div>
         </main>
-        <button class="top-btn" id="top-btn" title="맨 위로">↑</button>
     </div>
-    <script src="assets/lib/marked.min.js"></script>
-    <script src="assets/lib/highlight/highlight.min.js"></script>
-    <script src="assets/lib/codemirror/codemirror.min.js"></script>
-    <script src="assets/lib/codemirror/clike.min.js"></script>
+    <script src="lib/marked.min.js"></script>
+    <script src="lib/highlight/highlight.min.js"></script>
+    <script src="lib/codemirror/codemirror.min.js"></script>
+    <script src="lib/codemirror/clike.min.js"></script>
     <script>
         const TOPICS = {data_json};
         const state = {{ currentTopic: null, currentTab: 'description', theme: localStorage.getItem('algo-theme') || 'light', editor: null, originalCode: '' }};
@@ -313,13 +309,6 @@ def generate_algorithm_practice(til_path, output_dir):
             }};
             document.getElementById('reset-btn').onclick = () => state.editor.setValue(state.originalCode);
             document.getElementById('menu-btn').onclick = () => document.getElementById('sidebar').classList.toggle('open');
-
-            const topBtn = document.getElementById('top-btn');
-            const mdContent = document.getElementById('md-content');
-            mdContent.addEventListener('scroll', () => {{
-                topBtn.classList.toggle('visible', mdContent.scrollTop > 300);
-            }});
-            topBtn.onclick = () => mdContent.scrollTo({{ top: 0, behavior: 'smooth' }});
         }}
 
         function applyTheme(theme) {{
