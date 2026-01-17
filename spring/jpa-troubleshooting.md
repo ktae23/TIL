@@ -535,10 +535,13 @@ public class Product {
 
 ### Soft Delete 패턴
 
+#### 방법 1: @SQLRestriction (Hibernate 6.3+, 권장)
+
 ```java
 @Entity
-@Where(clause = "deleted = false")  // 기본 조회 시 삭제된 데이터 제외
-@SQLDelete(sql = "UPDATE members SET deleted = true WHERE id = ?")
+@Table(name = "members")
+@SQLRestriction("deleted = false")  // @Where 대체 (Hibernate 6.3+)
+@SQLDelete(sql = "UPDATE members SET deleted = true, deleted_at = NOW() WHERE id = ?")
 public class Member {
 
     @Id @GeneratedValue
@@ -549,14 +552,103 @@ public class Member {
     private LocalDateTime deletedAt;
 }
 
-// 삭제된 데이터도 조회 필요 시
+// 삭제된 데이터 포함 조회 - Native Query 사용
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    @Query("SELECT m FROM Member m WHERE m.id = :id")
-    @Where(clause = "")  // 조건 무시
+    @Query(value = "SELECT * FROM members WHERE id = :id", nativeQuery = true)
     Optional<Member> findByIdIncludeDeleted(@Param("id") Long id);
+
+    @Query(value = "SELECT * FROM members WHERE deleted = true", nativeQuery = true)
+    List<Member> findAllDeleted();
 }
 ```
+
+#### 방법 2: @Filter (동적 ON/OFF 가능)
+
+```java
+@Entity
+@Table(name = "members")
+@FilterDef(name = "deletedFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
+@Filter(name = "deletedFilter", condition = "deleted = :isDeleted")
+@SQLDelete(sql = "UPDATE members SET deleted = true, deleted_at = NOW() WHERE id = ?")
+public class Member {
+
+    @Id @GeneratedValue
+    private Long id;
+
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+}
+```
+
+```java
+@Repository
+@RequiredArgsConstructor
+public class MemberQueryRepository {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    // 삭제되지 않은 데이터만 조회 (필터 활성화)
+    public List<Member> findAllActive() {
+        Session session = em.unwrap(Session.class);
+        session.enableFilter("deletedFilter")
+               .setParameter("isDeleted", false);
+
+        return em.createQuery("SELECT m FROM Member m", Member.class)
+                 .getResultList();
+    }
+
+    // 삭제된 데이터만 조회
+    public List<Member> findAllDeleted() {
+        Session session = em.unwrap(Session.class);
+        session.enableFilter("deletedFilter")
+               .setParameter("isDeleted", true);
+
+        return em.createQuery("SELECT m FROM Member m", Member.class)
+                 .getResultList();
+    }
+
+    // 전체 데이터 조회 (필터 비활성화)
+    public List<Member> findAllIncludeDeleted() {
+        Session session = em.unwrap(Session.class);
+        session.disableFilter("deletedFilter");
+
+        return em.createQuery("SELECT m FROM Member m", Member.class)
+                 .getResultList();
+    }
+}
+```
+
+#### @Filter 자동 활성화 (AOP)
+
+```java
+@Aspect
+@Component
+@RequiredArgsConstructor
+public class SoftDeleteFilterAspect {
+
+    @PersistenceContext
+    private EntityManager em;
+
+    @Before("execution(* com.example.repository..*Repository.*(..))")
+    public void enableSoftDeleteFilter() {
+        Session session = em.unwrap(Session.class);
+        session.enableFilter("deletedFilter")
+               .setParameter("isDeleted", false);
+    }
+}
+```
+
+#### 비교
+
+| 구분 | @SQLRestriction | @Filter |
+|------|-----------------|---------|
+| 동적 ON/OFF | 불가 | 가능 |
+| 파라미터 | 불가 | 가능 |
+| 설정 복잡도 | 낮음 | 높음 |
+| 사용 권장 | 항상 적용 시 | 조건부 적용 시 |
 
 ---
 
