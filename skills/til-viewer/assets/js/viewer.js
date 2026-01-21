@@ -131,40 +131,6 @@ function loadFile(filePath, options = {}) {
     const contentDiv = document.getElementById('content');
     contentDiv.innerHTML = marked.parse(file.content);
 
-    // Convert internal .md links to hash-based links
-    contentDiv.querySelectorAll('a[href$=".md"]').forEach(link => {
-        const href = link.getAttribute('href');
-        // Skip external links
-        if (href.startsWith('http://') || href.startsWith('https://')) return;
-
-        // Resolve relative path to absolute path within TIL
-        const currentDir = filePath.split('/').slice(0, -1).join('/');
-        let targetPath = href;
-
-        if (href.startsWith('../')) {
-            // Handle ../category/file.md
-            const parts = currentDir.split('/');
-            let hrefParts = href.split('/');
-            while (hrefParts[0] === '..') {
-                parts.pop();
-                hrefParts.shift();
-            }
-            targetPath = [...parts, ...hrefParts].join('/');
-        } else if (href.startsWith('./')) {
-            // Handle ./file.md
-            targetPath = currentDir + '/' + href.slice(2);
-        } else if (!href.startsWith('/')) {
-            // Handle relative path without prefix
-            targetPath = currentDir ? currentDir + '/' + href : href;
-        }
-
-        // Clean up path (remove empty segments)
-        targetPath = targetPath.split('/').filter(p => p).join('/');
-
-        // Convert to hash link
-        link.setAttribute('href', '#' + targetPath);
-    });
-
     // Highlight code blocks
     contentDiv.querySelectorAll('pre code').forEach(block => {
         hljs.highlightElement(block);
