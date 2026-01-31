@@ -8,6 +8,7 @@ Java 애플리케이션의 메트릭 수집, Virtual Thread 모니터링, 그리
 - [Micrometer를 이용한 메트릭 수집](#micrometer를-이용한-메트릭-수집)
 - [Virtual Thread 모니터링](#virtual-thread-모니터링)
 - [Virtual Thread Pinning 감지](#virtual-thread-pinning-감지)
+- [MDC와 Virtual Thread](#mdc와-virtual-thread)
 - [Prometheus + Grafana 연동](#prometheus--grafana-연동)
 - [실전 모니터링 대시보드](#실전-모니터링-대시보드)
 
@@ -838,6 +839,505 @@ public @interface DetectPinning {
 
 ---
 
+## MDC와 Virtual Thread
+
+### MDC (Mapped Diagnostic Context)란?
+
+MDC는 로깅 프레임워크(SLF4J, Logback, Log4j)에서 제공하는 **스레드별 컨텍스트 저장소**이다. 요청 ID, 사용자 ID 등을 저장하면 해당 스레드의 모든 로그에 자동으로 포함된다.
+
+```java
+import org.slf4j.MDC;
+
+// 요청 시작 시 컨텍스트 설정
+MDC.put("requestId", UUID.randomUUID().toString());
+MDC.put("userId", "user123");
+MDC.put("traceId", "abc-123-xyz");
+
+// 이후 모든 로그에 자동으로 포함됨
+log.info("주문 처리 시작");  // [requestId=abc-123, userId=user123] 주문 처리 시작
+log.info("결제 완료");       // [requestId=abc-123, userId=user123] 결제 완료
+
+// 요청 종료 시 정리
+MDC.clear();
+```
+
+### Logback 패턴 설정
+
+```xml
+<!-- logback.xml -->
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{requestId}] [%X{userId}] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- JSON 포맷 (ELK 스택용) -->
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>requestId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
+```
+
+### MDC 주요 용도
+
+| 용도 | MDC Key 예시 | 설명 |
+|------|-------------|------|
+| **요청 추적** | requestId, correlationId | 단일 요청의 전체 흐름 추적 |
+| **분산 트레이싱** | traceId, spanId | MSA 환경에서 서비스 간 추적 |
+| **사용자 식별** | userId, sessionId | 사용자별 로그 필터링 |
+| **멀티테넌시** | tenantId | 테넌트별 로그 분리 |
+| **성능 분석** | startTime | 요청 처리 시간 계산 |
+
+### Virtual Thread에서 MDC 문제점
+
+MDC는 내부적으로 **ThreadLocal**을 사용한다. Virtual Thread는 Carrier Thread 위에서 실행되며, 새 Virtual Thread를 생성하면 MDC 컨텍스트가 전파되지 않는다.
+
+```java
+// ❌ 문제: Virtual Thread 간 MDC 전파 안 됨
+MDC.put("requestId", "req-123");
+log.info("Main: {}", MDC.get("requestId"));  // Main: req-123
+
+Thread.startVirtualThread(() -> {
+    log.info("Virtual: {}", MDC.get("requestId"));  // Virtual: null ❌
+});
+
+// ❌ ExecutorService도 동일한 문제
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    MDC.put("requestId", "req-456");
+
+    executor.submit(() -> {
+        log.info("Task: {}", MDC.get("requestId"));  // Task: null ❌
+    });
+}
+```
+
+### 해결 방법 1: 수동 MDC 전파
+
+```java
+public class MdcVirtualThreadUtils {
+
+    // MDC 컨텍스트를 복사하여 Virtual Thread 실행
+    public static Thread startVirtualThreadWithMdc(Runnable task) {
+        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+
+        return Thread.startVirtualThread(() -> {
+            if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+            }
+            try {
+                task.run();
+            } finally {
+                MDC.clear();
+            }
+        });
+    }
+
+    // Callable 버전
+    public static <T> Callable<T> wrapWithMdc(Callable<T> task) {
+        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+
+        return () -> {
+            if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+            }
+            try {
+                return task.call();
+            } finally {
+                MDC.clear();
+            }
+        };
+    }
+
+    // Runnable 버전
+    public static Runnable wrapWithMdc(Runnable task) {
+        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+
+        return () -> {
+            if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+            }
+            try {
+                task.run();
+            } finally {
+                MDC.clear();
+            }
+        };
+    }
+}
+
+// 사용 예시
+MDC.put("requestId", "req-123");
+
+MdcVirtualThreadUtils.startVirtualThreadWithMdc(() -> {
+    log.info("Virtual: {}", MDC.get("requestId"));  // Virtual: req-123 ✅
+});
+```
+
+### 해결 방법 2: MDC 전파 ExecutorService 래퍼
+
+```java
+public class MdcAwareVirtualThreadExecutor implements ExecutorService {
+
+    private final ExecutorService delegate;
+
+    public MdcAwareVirtualThreadExecutor() {
+        this.delegate = Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        delegate.execute(wrapWithMdc(command));
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        return delegate.submit(wrapWithMdc(task));
+    }
+
+    @Override
+    public Future<?> submit(Runnable task) {
+        return delegate.submit(wrapWithMdc(task));
+    }
+
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        return delegate.submit(wrapWithMdc(task), result);
+    }
+
+    private Runnable wrapWithMdc(Runnable task) {
+        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+        return () -> {
+            if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+            }
+            try {
+                task.run();
+            } finally {
+                MDC.clear();
+            }
+        };
+    }
+
+    private <T> Callable<T> wrapWithMdc(Callable<T> task) {
+        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+        return () -> {
+            if (contextMap != null) {
+                MDC.setContextMap(contextMap);
+            }
+            try {
+                return task.call();
+            } finally {
+                MDC.clear();
+            }
+        };
+    }
+
+    // ... 나머지 ExecutorService 메서드 위임 ...
+
+    @Override
+    public void close() {
+        delegate.close();
+    }
+
+    @Override
+    public void shutdown() {
+        delegate.shutdown();
+    }
+
+    @Override
+    public List<Runnable> shutdownNow() {
+        return delegate.shutdownNow();
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return delegate.isShutdown();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return delegate.isTerminated();
+    }
+
+    @Override
+    public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate.awaitTermination(timeout, unit);
+    }
+
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+        return delegate.invokeAll(tasks.stream().map(this::wrapWithMdc).toList());
+    }
+
+    @Override
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+        return delegate.invokeAll(tasks.stream().map(this::wrapWithMdc).toList(), timeout, unit);
+    }
+
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+        return delegate.invokeAny(tasks.stream().map(this::wrapWithMdc).toList());
+    }
+
+    @Override
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return delegate.invokeAny(tasks.stream().map(this::wrapWithMdc).toList(), timeout, unit);
+    }
+}
+```
+
+### 해결 방법 3: ScopedValue 사용 (JDK 21+ Preview)
+
+**ScopedValue**는 Virtual Thread 환경을 위해 설계된 ThreadLocal의 대안이다.
+
+```java
+// ScopedValue 정의 (불변, 상속 가능)
+public class RequestContext {
+    public static final ScopedValue<String> REQUEST_ID = ScopedValue.newInstance();
+    public static final ScopedValue<String> USER_ID = ScopedValue.newInstance();
+}
+
+// 사용 예시
+public void handleRequest(String requestId, String userId) {
+    ScopedValue.where(RequestContext.REQUEST_ID, requestId)
+        .where(RequestContext.USER_ID, userId)
+        .run(() -> {
+            // 이 블록 내에서는 어디서든 값 접근 가능
+            processRequest();
+        });
+}
+
+private void processRequest() {
+    String requestId = RequestContext.REQUEST_ID.get();
+    log.info("Processing request: {}", requestId);
+
+    // Virtual Thread에서도 자동 전파!
+    Thread.startVirtualThread(() -> {
+        String id = RequestContext.REQUEST_ID.get();  // 정상 동작 ✅
+        log.info("Virtual thread has requestId: {}", id);
+    }).join();
+}
+
+// StructuredTaskScope와 함께 사용
+public Response handleRequestWithScope(String requestId) throws Exception {
+    return ScopedValue.where(RequestContext.REQUEST_ID, requestId)
+        .call(() -> {
+            try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+                // 모든 하위 작업에 requestId 자동 전파
+                var userTask = scope.fork(() -> fetchUser());
+                var orderTask = scope.fork(() -> fetchOrder());
+
+                scope.join().throwIfFailed();
+                return new Response(userTask.get(), orderTask.get());
+            }
+        });
+}
+```
+
+### 해결 방법 4: Spring의 TaskDecorator 사용
+
+```java
+@Configuration
+public class AsyncConfig {
+
+    @Bean
+    public TaskDecorator mdcTaskDecorator() {
+        return runnable -> {
+            Map<String, String> contextMap = MDC.getCopyOfContextMap();
+            return () -> {
+                if (contextMap != null) {
+                    MDC.setContextMap(contextMap);
+                }
+                try {
+                    runnable.run();
+                } finally {
+                    MDC.clear();
+                }
+            };
+        };
+    }
+
+    @Bean
+    public Executor virtualThreadExecutor(TaskDecorator mdcTaskDecorator) {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setTaskDecorator(mdcTaskDecorator);
+        executor.setVirtualThreads(true);  // Spring 6.1+
+        executor.initialize();
+        return executor;
+    }
+}
+
+// 또는 직접 ThreadFactory 설정
+@Bean
+public ExecutorService mdcAwareVirtualThreadExecutor() {
+    return Executors.newThreadPerTaskExecutor(
+        Thread.ofVirtual()
+            .name("mdc-vthread-", 0)
+            .factory()
+    );
+}
+```
+
+### MDC 필터 (Spring Web)
+
+```java
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class MdcFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+        try {
+            // 요청 시작 시 MDC 설정
+            String requestId = Optional.ofNullable(httpRequest.getHeader("X-Request-ID"))
+                .orElse(UUID.randomUUID().toString());
+            String userId = Optional.ofNullable(httpRequest.getHeader("X-User-ID"))
+                .orElse("anonymous");
+
+            MDC.put("requestId", requestId);
+            MDC.put("userId", userId);
+            MDC.put("method", httpRequest.getMethod());
+            MDC.put("uri", httpRequest.getRequestURI());
+            MDC.put("clientIp", getClientIp(httpRequest));
+
+            chain.doFilter(request, response);
+
+        } finally {
+            // 요청 종료 시 MDC 정리
+            MDC.clear();
+        }
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
+    }
+}
+```
+
+### WebFlux에서 MDC (Reactor Context)
+
+```java
+// WebFlux는 ThreadLocal 대신 Reactor Context 사용
+@Component
+public class MdcContextWebFilter implements WebFilter {
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String requestId = exchange.getRequest().getHeaders()
+            .getFirst("X-Request-ID");
+        if (requestId == null) {
+            requestId = UUID.randomUUID().toString();
+        }
+
+        Map<String, String> contextMap = Map.of(
+            "requestId", requestId,
+            "path", exchange.getRequest().getPath().value()
+        );
+
+        return chain.filter(exchange)
+            .contextWrite(ctx -> ctx.put("MDC", contextMap));
+    }
+}
+
+// Reactor Context에서 MDC로 복원하는 Hook
+@Configuration
+public class ReactorMdcConfig {
+
+    @PostConstruct
+    public void setupMdcHook() {
+        Hooks.onEachOperator("mdc",
+            Operators.lift((scannable, subscriber) ->
+                new MdcContextSubscriber<>(subscriber)));
+    }
+}
+
+// 로그 출력 시 Context에서 MDC 복원
+public class MdcContextSubscriber<T> extends BaseSubscriber<T> {
+
+    private final CoreSubscriber<? super T> delegate;
+
+    public MdcContextSubscriber(CoreSubscriber<? super T> delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    protected void hookOnNext(T value) {
+        delegate.currentContext().<Map<String, String>>getOrEmpty("MDC")
+            .ifPresent(MDC::setContextMap);
+        try {
+            delegate.onNext(value);
+        } finally {
+            MDC.clear();
+        }
+    }
+}
+```
+
+### MDC vs ScopedValue 비교
+
+| 구분 | MDC (ThreadLocal) | ScopedValue |
+|------|------------------|-------------|
+| **설계 목적** | 단일 스레드 | Virtual Thread 환경 |
+| **값 변경** | 가변 (put/remove) | 불변 |
+| **상속** | 수동 복사 필요 | 자동 상속 |
+| **메모리 누수** | clear() 필수 | 스코프 종료 시 자동 정리 |
+| **성능** | Virtual Thread에서 비효율 | 최적화됨 |
+| **상태** | 정식 | Preview (JDK 21+) |
+
+### MDC 모니터링 Best Practice
+
+```java
+@Aspect
+@Component
+public class MdcMonitoringAspect {
+
+    private final MeterRegistry registry;
+
+    @Around("@annotation(Monitored)")
+    public Object monitorWithMdc(ProceedingJoinPoint pjp) throws Throwable {
+        String requestId = MDC.get("requestId");
+
+        Timer.Sample sample = Timer.start(registry);
+
+        try {
+            return pjp.proceed();
+        } catch (Exception e) {
+            // 에러 로그에 MDC 정보 포함
+            log.error("Error processing request [requestId={}]: {}",
+                requestId, e.getMessage(), e);
+            registry.counter("errors",
+                "requestId", requestId,
+                "exception", e.getClass().getSimpleName()
+            ).increment();
+            throw e;
+        } finally {
+            sample.stop(registry.timer("request_duration",
+                "method", pjp.getSignature().getName()
+            ));
+        }
+    }
+}
+```
+
+---
+
 ## Prometheus + Grafana 연동
 
 ### Spring Boot Actuator 설정
@@ -1079,6 +1579,7 @@ groups:
 | **Virtual Thread** | JFR, 커스텀 Gauge | Active, Mounted, Created |
 | **Pinning** | JFR, `-Djdk.tracePinnedThreads` | Count, Duration, Stack Trace |
 | **ExecutorService** | Micrometer Timer/Counter | Submitted, Completed, Failed |
+| **MDC (로깅 컨텍스트)** | ScopedValue, TaskDecorator | requestId, traceId 전파 |
 
 ### Pinning 방지 체크리스트
 
@@ -1087,5 +1588,13 @@ groups:
 - [ ] 동기화 블록 내 I/O 작업 제거
 - [ ] JFR 기반 Pinning 모니터링 설정
 - [ ] CI/CD에 Pinning 감지 테스트 추가
+
+### Virtual Thread에서 MDC 체크리스트
+
+- [ ] Virtual Thread 사용 시 MDC 전파 확인
+- [ ] `MDC.getCopyOfContextMap()` + `MDC.setContextMap()` 패턴 적용
+- [ ] 또는 ScopedValue 도입 검토 (JDK 21+ Preview)
+- [ ] Spring 사용 시 TaskDecorator 설정
+- [ ] 요청 종료 시 `MDC.clear()` 호출 확인
 
 *마지막 업데이트: 2026년 01월*
