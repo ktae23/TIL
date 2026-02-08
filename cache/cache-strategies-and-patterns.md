@@ -1,9 +1,10 @@
-# 캐시 전략 (Caching Strategies)
+# 캐시 전략과 패턴 (Caching Strategies & Patterns)
 
-캐시를 효과적으로 사용하기 위한 다양한 읽기/쓰기 전략을 알아봅니다. 각 전략의 특징과 적합한 사용 사례를 이해하면 시스템에 맞는 최적의 캐싱 방식을 선택할 수 있습니다.
+캐시를 효과적으로 사용하기 위한 다양한 읽기/쓰기 전략과 패턴을 체계적으로 정리합니다. 각 전략의 특징과 적합한 사용 사례를 이해하면 시스템에 맞는 최적의 캐싱 방식을 선택할 수 있습니다.
 
 ## 목차
 
+- [캐시 전략 개요](#캐시-전략-개요)
 - [읽기 전략](#읽기-전략)
   - [Cache-Aside (Lazy Loading)](#1-cache-aside-lazy-loading)
   - [Read-Through](#2-read-through)
@@ -11,8 +12,26 @@
   - [Write-Through](#3-write-through)
   - [Write-Behind (Write-Back)](#4-write-behind-write-back)
   - [Write-Around](#5-write-around)
-- [전략 비교](#전략-비교)
+- [전략/패턴 비교](#전략패턴-비교)
 - [캐시 무효화](#캐시-무효화)
+  - [TTL 기반](#1-ttl-기반-time-to-live)
+  - [이벤트 기반](#2-이벤트-기반-무효화)
+  - [패턴 기반 삭제](#3-패턴-기반-삭제)
+- [전략/패턴 선택 가이드](#전략패턴-선택-가이드)
+
+---
+
+## 캐시 전략 개요
+
+캐시 전략은 크게 **읽기 전략**과 **쓰기 전략**으로 나뉩니다. 읽기 전략은 데이터를 어떻게 캐시에서 조회하고 로드할지를, 쓰기 전략은 데이터 변경 시 캐시와 DB를 어떻게 동기화할지를 결정합니다. 실무에서는 읽기 전략과 쓰기 전략을 조합하여 사용합니다.
+
+| 구분 | 전략 | 핵심 |
+|------|------|------|
+| 읽기 | Cache-Aside | 앱이 캐시와 DB를 직접 관리 |
+| 읽기 | Read-Through | 캐시가 DB 로딩을 담당 |
+| 쓰기 | Write-Through | 캐시와 DB에 동기로 동시 쓰기 |
+| 쓰기 | Write-Behind | 캐시에 먼저 쓰고, DB는 비동기로 나중에 |
+| 쓰기 | Write-Around | DB에만 쓰고, 캐시는 읽기 시 로드 |
 
 ---
 
@@ -22,12 +41,29 @@
 
 **가장 널리 사용되는 전략.** 애플리케이션이 캐시와 DB를 직접 관리합니다.
 
+#### 동작 방식
+
 ```
-[읽기 흐름]
+읽기:
+┌──────────┐         ┌──────────┐         ┌──────────┐
+│   App    │──1.GET──│  Cache   │         │    DB    │
+│          │←─2.Miss─│          │         │          │
+│          │─────────3.SELECT───────────→│          │
+│          │←────────4.Data──────────────│          │
+│          │──5.SET──│          │         │          │
+└──────────┘         └──────────┘         └──────────┘
+
+쓰기:
+App → DB 직접 쓰기 → 캐시 삭제 (또는 업데이트)
+```
+
+```
 1. 캐시에서 데이터 조회
 2. 캐시 히트 → 데이터 반환
 3. 캐시 미스 → DB에서 조회 → 캐시에 저장 → 데이터 반환
 ```
+
+#### 구현 (직접 관리)
 
 ```java
 @Service
@@ -72,7 +108,7 @@ public class ProductService {
 }
 ```
 
-**Spring @Cacheable 사용 시:**
+#### Spring @Cacheable 사용 시
 
 ```java
 @Service
@@ -91,11 +127,13 @@ public class ProductService {
 }
 ```
 
+#### 장단점
+
 | 장점 | 단점 |
 |------|------|
 | 구현이 간단함 | 첫 요청 시 지연 발생 (Cache Miss) |
-| 필요한 데이터만 캐싱 | 데이터 불일치 가능 (캐시 만료 전 DB 변경 시) |
-| 캐시 장애 시에도 서비스 가능 | 애플리케이션에서 캐시 로직 관리 필요 |
+| 필요한 데이터만 캐싱 (메모리 효율) | 데이터 불일치 가능 (캐시 만료 전 DB 변경 시) |
+| 캐시 장애 시에도 DB에서 조회 가능 | 애플리케이션에서 캐시 로직 관리 필요 |
 
 ---
 
@@ -103,15 +141,22 @@ public class ProductService {
 
 캐시 라이브러리가 DB 로딩을 담당. 애플리케이션은 캐시만 바라봅니다.
 
+#### 동작 방식
+
 ```
-[읽기 흐름]
-1. 애플리케이션 → 캐시에 데이터 요청
-2. 캐시 히트 → 데이터 반환
-3. 캐시 미스 → 캐시가 직접 DB에서 로드 → 저장 → 반환
+┌──────────┐         ┌──────────┐         ┌──────────┐
+│   App    │──1.GET──│  Cache   │──Miss──→│    DB    │
+│          │         │ (with    │←─Data───│          │
+│          │←─2.Data─│  loader) │         │          │
+└──────────┘         └──────────┘         └──────────┘
+
+Cache가 직접 DB에서 데이터 로드
+앱은 캐시만 바라봄
 ```
 
+#### 구현 (Caffeine + CacheLoader)
+
 ```java
-// Caffeine + CacheLoader 예시
 @Configuration
 public class CacheConfig {
 
@@ -137,11 +182,48 @@ public class ProductService {
 }
 ```
 
+#### 구현 (Spring Cache + CaffeineCacheManager)
+
+```java
+@Configuration
+public class CacheConfig {
+
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager manager = new CaffeineCacheManager();
+        manager.setCaffeine(Caffeine.newBuilder()
+            .maximumSize(10000)
+            .expireAfterWrite(Duration.ofMinutes(10))
+            .recordStats());
+        return manager;
+    }
+}
+
+@Service
+public class UserService {
+
+    @Cacheable(value = "users", key = "#id")
+    public User getUser(Long id) {
+        // 캐시 미스 시에만 실행
+        return userRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    @CacheEvict(value = "users", key = "#id")
+    public void updateUser(Long id, UserUpdateRequest request) {
+        userRepository.update(id, request);
+    }
+}
+```
+
+#### 장단점
+
 | 장점 | 단점 |
 |------|------|
-| 애플리케이션 코드가 단순 | 캐시 라이브러리 지원 필요 |
+| 애플리케이션 코드가 단순 | 캐시 라이브러리/제품에 의존 |
 | 로딩 로직 중앙화 | 첫 요청 시 지연 발생 |
 | 중복 DB 조회 방지 | 캐시 장애 시 서비스 불가 |
+|  | 커스터마이징 제한적 |
 
 ---
 
@@ -151,13 +233,20 @@ public class ProductService {
 
 데이터를 캐시와 DB에 **동시에** 씁니다. 항상 일관성 보장.
 
+#### 동작 방식
+
 ```
-[쓰기 흐름]
-1. 애플리케이션 → 캐시에 쓰기 요청
-2. 캐시 → DB에 저장 (동기)
-3. 캐시 → 캐시에 저장
-4. 성공 응답
+┌──────────┐         ┌──────────┐         ┌──────────┐
+│   App    │──1.SET──│  Cache   │──2.SET──│    DB    │
+│          │         │          │         │          │
+│          │←──3.OK──│          │←──OK────│          │
+└──────────┘         └──────────┘         └──────────┘
+
+쓰기 요청 시 캐시와 DB 동시 업데이트
+캐시 쓰기 완료 후 응답
 ```
+
+#### 구현 (직접 관리)
 
 ```java
 @Service
@@ -200,7 +289,23 @@ public class ProductService {
 }
 ```
 
-**@CachePut 사용:**
+#### 트랜잭션 적용 시 캐시 실패 처리
+
+```java
+@Transactional
+public void updateStockWithTransaction(Long productId, int quantity) {
+    stockRepository.update(productId, quantity);
+
+    try {
+        redisTemplate.opsForValue().set("stock:" + productId, quantity);
+    } catch (Exception e) {
+        // 캐시 실패 시 트랜잭션 롤백 또는 로깅
+        throw new CacheUpdateException(e);
+    }
+}
+```
+
+#### @CachePut 사용
 
 ```java
 @CachePut(value = "products", key = "#result.id")
@@ -216,10 +321,12 @@ public Product update(Long id, ProductUpdateRequest request) {
 }
 ```
 
+#### 장단점
+
 | 장점 | 단점 |
 |------|------|
 | 캐시-DB 항상 일관성 유지 | 쓰기 지연 증가 (두 곳에 저장) |
-| 읽기 시 캐시 미스 적음 | 사용되지 않는 데이터도 캐싱 |
+| 읽기 시 캐시 미스 적음 (항상 Cache Hit 가능) | 사용되지 않는 데이터도 캐싱 |
 
 ---
 
@@ -227,12 +334,20 @@ public Product update(Long id, ProductUpdateRequest request) {
 
 캐시에 먼저 쓰고, DB 저장은 **비동기로** 나중에 처리.
 
+#### 동작 방식
+
 ```
-[쓰기 흐름]
-1. 애플리케이션 → 캐시에 저장
-2. 즉시 성공 응답
-3. (비동기) 캐시 → 일정 시간/조건 후 DB에 일괄 저장
+┌──────────┐         ┌──────────┐         ┌──────────┐
+│   App    │──1.SET──│  Cache   │         │    DB    │
+│          │←──2.OK──│          │         │          │
+│          │         │  (Queue) │──Later──│          │
+└──────────┘         └──────────┘         └──────────┘
+
+캐시에 먼저 쓰고 즉시 응답
+DB에는 비동기로 나중에 쓰기
 ```
+
+#### 구현 (스케줄러 방식)
 
 ```java
 @Service
@@ -271,7 +386,7 @@ public class ViewCountService {
 }
 ```
 
-**메시지 큐 활용:**
+#### 구현 (메시지 큐 활용)
 
 ```java
 @Service
@@ -302,9 +417,11 @@ public void saveOrder(Order order) {
 }
 ```
 
+#### 장단점
+
 | 장점 | 단점 |
 |------|------|
-| 쓰기 성능 매우 빠름 | 데이터 유실 위험 (캐시 장애 시) |
+| 쓰기 성능 매우 빠름 (즉시 응답) | 데이터 유실 위험 (캐시 장애 시) |
 | DB 부하 감소 (일괄 처리) | 복잡한 구현 |
 | 쓰기 집중 워크로드에 적합 | 일시적 데이터 불일치 |
 
@@ -314,6 +431,8 @@ public void saveOrder(Order order) {
 
 DB에만 쓰고, 캐시는 읽기 시에 로드. 자주 읽히지 않는 데이터에 적합.
 
+#### 동작 방식
+
 ```
 [쓰기 흐름]
 1. 애플리케이션 → DB에만 저장
@@ -322,6 +441,8 @@ DB에만 쓰고, 캐시는 읽기 시에 로드. 자주 읽히지 않는 데이�
 [읽기 흐름]
 Cache-Aside와 동일
 ```
+
+#### 구현
 
 ```java
 @Service
@@ -354,6 +475,8 @@ public class LogService {
 }
 ```
 
+#### 장단점
+
 | 장점 | 단점 |
 |------|------|
 | 불필요한 캐시 쓰기 방지 | 읽기 시 캐시 미스 발생 |
@@ -362,7 +485,7 @@ public class LogService {
 
 ---
 
-## 전략 비교
+## 전략/패턴 비교
 
 | 전략 | 읽기 성능 | 쓰기 성능 | 일관성 | 복잡도 | 적합한 케이스 |
 |------|----------|----------|--------|--------|--------------|
@@ -371,16 +494,6 @@ public class LogService {
 | **Write-Through** | 매우 높음 | 낮음 | 높음 | 보통 | 일관성 중요한 경우 |
 | **Write-Behind** | 높음 | 매우 높음 | 낮음 | 높음 | 쓰기 집중, 성능 중요 |
 | **Write-Around** | 보통 | 높음 | 보통 | 낮음 | 쓰기 많고 읽기 적은 경우 |
-
-### 조합 예시
-
-```
-읽기: Cache-Aside + 쓰기: Write-Through
-→ 읽기 성능 좋고, 데이터 일관성도 보장
-
-읽기: Read-Through + 쓰기: Write-Behind
-→ 고성능 필요한 경우, 일시적 불일치 허용
-```
 
 ---
 
@@ -446,4 +559,67 @@ invalidateByPattern("product:category:123:*");
 
 ---
 
-*마지막 업데이트: 2025년 12월*
+## 전략/패턴 선택 가이드
+
+### 사용 사례별 권장
+
+```
+읽기 빈번, 쓰기 적음:
+→ Cache-Aside 또는 Read-Through
+
+읽기/쓰기 비슷:
+→ Write-Through
+
+쓰기 빈번 (로그, 조회수 등):
+→ Write-Behind
+
+강한 일관성 필요:
+→ Write-Through
+
+고성능 필요:
+→ Cache-Aside + Write-Behind 조합
+```
+
+### 조합 패턴
+
+읽기 전략과 쓰기 전략을 조합하면 다양한 요구사항에 대응할 수 있습니다.
+
+```
+읽기: Cache-Aside + 쓰기: Write-Through
+→ 읽기 성능 좋고, 데이터 일관성도 보장
+
+읽기: Read-Through + 쓰기: Write-Behind
+→ 고성능 필요한 경우, 일시적 불일치 허용
+```
+
+```java
+// Cache-Aside + Write-Behind + Write-Through 조합 예시
+@Service
+public class ProductService {
+
+    // 읽기: Cache-Aside
+    public Product getProduct(Long id) {
+        Product cached = cache.get(id);
+        if (cached != null) return cached;
+
+        Product product = repository.findById(id);
+        cache.set(id, product);
+        return product;
+    }
+
+    // 쓰기: Write-Behind (조회수 등 손실 허용 데이터)
+    public void incrementView(Long id) {
+        viewCountCache.increment(id);  // 캐시만
+    }
+
+    // 쓰기: Write-Through (재고 등 중요 데이터)
+    public void updateStock(Long id, int qty) {
+        repository.updateStock(id, qty);
+        cache.set("stock:" + id, qty);
+    }
+}
+```
+
+---
+
+*마지막 업데이트: 2026년 02월*

@@ -1,21 +1,27 @@
-# MySQL Lock 심화
+# MySQL Lock 완전 정리
 
-InnoDB의 잠금 메커니즘인 Gap Lock, Next-Key Lock과 데드락 발생 조건을 정리합니다.
+MySQL(InnoDB)에서 동시성 제어를 위해 사용되는 Lock의 종류, 동작 원리, 심화 메커니즘, 그리고 실무 트러블슈팅을 체계적으로 정리한다.
 
 ## 목차
 
-1. [InnoDB 잠금 종류](#1-innodb-잠금-종류)
-2. [Gap Lock](#2-gap-lock)
-3. [Next-Key Lock](#3-next-key-lock)
-4. [데드락 발생 조건](#4-데드락-발생-조건)
-5. [락 모니터링](#5-락-모니터링)
-6. [락 최적화 전략](#6-락-최적화-전략)
+1. [MySQL Lock 개요](#1-mysql-lock-개요)
+2. [Lock 종류](#2-lock-종류)
+   - [Shared Lock vs Exclusive Lock](#shared-lock-vs-exclusive-lock)
+   - [Lock 레벨별 분류](#lock-레벨별-분류)
+   - [InnoDB Lock 종류](#innodb-lock-종류)
+3. [심화: Gap Lock, Next-Key Lock](#3-심화-gap-lock-next-key-lock)
+   - [Gap Lock](#gap-lock)
+   - [Next-Key Lock](#next-key-lock)
+4. [실무 예제 및 트러블슈팅](#4-실무-예제-및-트러블슈팅)
+   - [데드락 발생 조건](#데드락-발생-조건)
+   - [락 모니터링](#락-모니터링)
+   - [락 최적화 전략](#락-최적화-전략)
 
 ---
 
-## 1. InnoDB 잠금 종류
+## 1. MySQL Lock 개요
 
-### 잠금 유형 분류
+Lock은 여러 트랜잭션이 동시에 같은 데이터에 접근할 때 **데이터 일관성**을 보장하기 위한 메커니즘이다.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -37,7 +43,19 @@ InnoDB의 잠금 메커니즘인 Gap Lock, Next-Key Lock과 데드락 발생 조
 └─────────────────────────────────────────────────────────────┘
 ```
 
+---
+
+## 2. Lock 종류
+
 ### Shared Lock vs Exclusive Lock
+
+| 구분 | Shared Lock (S Lock) | Exclusive Lock (X Lock) |
+|------|---------------------|------------------------|
+| **용도** | 읽기 작업 | 쓰기 작업 |
+| **다른 S Lock과 호환** | O (호환) | X (비호환) |
+| **다른 X Lock과 호환** | X (비호환) | X (비호환) |
+| **발생 시점** | `SELECT ... FOR SHARE` | `SELECT ... FOR UPDATE`, `UPDATE`, `DELETE` |
+| **특징** | 여러 트랜잭션이 동시에 읽기 가능 | 하나의 트랜잭션만 쓰기 가능 |
 
 ```sql
 -- Shared Lock (S Lock): 읽기 잠금
@@ -53,23 +71,87 @@ UPDATE users SET name = 'Kim' WHERE id = 1;
 
 ### Intention Lock
 
+테이블 레벨에서 행 잠금 의도를 표시하는 Lock이다.
+
 ```
 IS: 테이블 내 특정 행에 S Lock을 걸겠다는 의도
 IX: 테이블 내 특정 행에 X Lock을 걸겠다는 의도
-
-호환성 매트릭스:
-       IS    IX    S     X
-IS     O     O     O     X
-IX     O     O     X     X
-S      O     X     O     X
-X      X     X     X     X
 ```
+
+### Lock 호환성 매트릭스
+
+|  | IS | IX | S | X |
+|--|----|----|---|---|
+| **IS** | O | O | O | X |
+| **IX** | O | O | X | X |
+| **S** | O | X | O | X |
+| **X** | X | X | X | X |
+
+### Lock 레벨별 분류
+
+| Lock 레벨 | 설명 | 장점 | 단점 |
+|-----------|------|------|------|
+| **Global Lock** | 데이터베이스 전체에 Lock | 단순함 | 동시성 매우 낮음 |
+| **Table Lock** | 테이블 단위 Lock | 구현 단순, 오버헤드 적음 | 동시성 낮음 |
+| **Row Lock** | 행 단위 Lock | 높은 동시성 | 오버헤드 큼, Deadlock 가능성 |
+
+### InnoDB Lock 종류
+
+#### Record Lock
+
+- **정의**: 인덱스 레코드에 거는 Lock
+- **특징**: 테이블에 인덱스가 없어도 숨겨진 Clustered Index를 사용
+
+```sql
+-- Record Lock 발생 예시
+SELECT * FROM users WHERE id = 1 FOR UPDATE;
+```
+
+#### Gap Lock
+
+- **정의**: 인덱스 레코드 사이의 간격(Gap)에 거는 Lock
+- **용도**: Phantom Read 방지
+- **특징**: 범위 내 새로운 레코드 삽입 방지
+
+```sql
+-- Gap Lock 발생 예시 (id가 10~20 사이에 Lock)
+SELECT * FROM users WHERE id BETWEEN 10 AND 20 FOR UPDATE;
+```
+
+#### Next-Key Lock
+
+- **정의**: Record Lock + Gap Lock의 조합
+- **특징**: InnoDB의 기본 Lock 방식 (REPEATABLE READ)
+
+| Lock 종류 | 잠금 범위 | Phantom Read 방지 |
+|-----------|----------|------------------|
+| Record Lock | 해당 레코드만 | X |
+| Gap Lock | 레코드 사이 간격 | O |
+| Next-Key Lock | 레코드 + 앞쪽 간격 | O |
+
+#### Insert Intention Lock
+
+- **정의**: INSERT 전에 획득하는 특수한 Gap Lock
+- **특징**: 같은 Gap 내 서로 다른 위치에 INSERT하는 경우 서로 대기하지 않음
+
+#### Auto-Increment Lock
+
+- **정의**: AUTO_INCREMENT 컬럼 값 생성 시 사용되는 테이블 레벨 Lock
+- **모드**: `innodb_autoinc_lock_mode` 설정으로 제어
+
+| 모드 | 값 | 설명 |
+|------|---|------|
+| Traditional | 0 | 모든 INSERT에 테이블 Lock |
+| Consecutive | 1 | 단순 INSERT는 Mutex, Bulk INSERT는 테이블 Lock |
+| Interleaved | 2 | Lock 없이 Mutex만 사용 (가장 빠름) |
 
 ---
 
-## 2. Gap Lock
+## 3. 심화: Gap Lock, Next-Key Lock
 
-### 정의
+### Gap Lock
+
+#### 동작 원리
 
 ```
 Gap Lock: 인덱스 레코드 사이의 "간격"을 잠금
@@ -79,7 +161,7 @@ Gap Lock: 인덱스 레코드 사이의 "간격"을 잠금
      (-∞, 10), (10, 20), (20, +∞) 간격 존재
 ```
 
-### 동작 예시
+#### 동작 예시
 
 ```sql
 -- 테이블 상태: id = 10, 20, 30
@@ -96,7 +178,7 @@ INSERT INTO table (id) VALUES (22);  -- 대기! Gap Lock에 의해 차단
 INSERT INTO table (id) VALUES (5);   -- 성공! 범위 밖
 ```
 
-### Gap Lock 발생 조건
+#### Gap Lock 발생 조건
 
 ```sql
 -- REPEATABLE READ 격리 수준에서 발생
@@ -113,11 +195,9 @@ SELECT * FROM t WHERE status = 'PENDING' FOR UPDATE;
 SELECT * FROM t WHERE id = 15 FOR UPDATE;  -- id=15 없음 → Gap Lock
 ```
 
----
+### Next-Key Lock
 
-## 3. Next-Key Lock
-
-### 정의
+#### 동작 원리
 
 ```
 Next-Key Lock = Record Lock + Gap Lock
@@ -132,7 +212,7 @@ SELECT * FROM t WHERE id = 20 FOR UPDATE;
 - 총: (10, 20] ← Next-Key Lock
 ```
 
-### 잠금 범위 시각화
+#### 잠금 범위 시각화
 
 ```
 레코드: 10, 20, 30
@@ -146,7 +226,7 @@ SELECT * FROM t WHERE id = 20 FOR UPDATE;
 └───────────────────────────────────────┘
 ```
 
-### 잠금 에스컬레이션 예시
+#### 잠금 에스컬레이션 예시
 
 ```sql
 -- 인덱스 없는 컬럼 조건
@@ -162,9 +242,11 @@ CREATE INDEX idx_age ON users(age);
 
 ---
 
-## 4. 데드락 발생 조건
+## 4. 실무 예제 및 트러블슈팅
 
-### 데드락 4가지 필요조건
+### 데드락 발생 조건
+
+#### 데드락 4가지 필요조건
 
 ```
 1. 상호 배제 (Mutual Exclusion)
@@ -180,7 +262,7 @@ CREATE INDEX idx_age ON users(age);
    - 트랜잭션들이 순환 형태로 서로의 리소스 대기
 ```
 
-### 데드락 예시 1: 기본 패턴
+#### 데드락 예시 1: 기본 패턴
 
 ```sql
 -- 트랜잭션 A
@@ -198,7 +280,7 @@ UPDATE accounts SET balance = balance + 50 WHERE id = 1;   -- Wait for id=1
 -- 데드락! A는 B를, B는 A를 기다림
 ```
 
-### 데드락 예시 2: Gap Lock 데드락
+#### 데드락 예시 2: Gap Lock 데드락
 
 ```sql
 -- 테이블: id = 10, 20
@@ -220,7 +302,7 @@ INSERT INTO t (id) VALUES (18);  -- A의 Gap Lock 대기
 -- 데드락!
 ```
 
-### InnoDB 데드락 처리
+#### InnoDB 데드락 처리
 
 ```sql
 -- InnoDB는 자동으로 데드락 감지
@@ -231,28 +313,24 @@ ERROR 1213 (40001): Deadlock found when trying to get lock;
 try restarting transaction
 ```
 
----
+### 락 모니터링
 
-## 5. 락 모니터링
-
-### 현재 락 상태 확인
+#### 현재 락 상태 확인
 
 ```sql
--- 현재 락 대기 상태
-SELECT * FROM information_schema.INNODB_LOCK_WAITS;
+-- MySQL 8.0+
+SELECT * FROM performance_schema.data_locks;
+SELECT * FROM performance_schema.data_lock_waits;
 
--- 현재 락 정보
+-- MySQL 5.7 이하
+SELECT * FROM information_schema.INNODB_LOCK_WAITS;
 SELECT * FROM information_schema.INNODB_LOCKS;
 
 -- 현재 트랜잭션
 SELECT * FROM information_schema.INNODB_TRX;
-
--- MySQL 8.0+
-SELECT * FROM performance_schema.data_locks;
-SELECT * FROM performance_schema.data_lock_waits;
 ```
 
-### InnoDB 상태 확인
+#### InnoDB 상태 확인
 
 ```sql
 SHOW ENGINE INNODB STATUS\G
@@ -263,7 +341,7 @@ SHOW ENGINE INNODB STATUS\G
 -- SEMAPHORES: 락 대기 정보
 ```
 
-### 락 타임아웃 설정
+#### 락 타임아웃 설정
 
 ```sql
 -- 락 대기 타임아웃 (기본 50초)
@@ -275,11 +353,9 @@ ERROR 1205 (HY000): Lock wait timeout exceeded;
 try restarting transaction
 ```
 
----
+### 락 최적화 전략
 
-## 6. 락 최적화 전략
-
-### 데드락 방지
+#### 데드락 방지
 
 ```sql
 -- 1. 일관된 락 순서
@@ -297,7 +373,7 @@ CREATE INDEX idx_status ON orders(status);
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 ```
 
-### 락 범위 최소화
+#### 락 범위 최소화
 
 ```sql
 -- Bad: 전체 조회 후 처리
@@ -312,7 +388,7 @@ FOR UPDATE SKIP LOCKED LIMIT 10;
 -- 10개만 락, 이미 잠긴 건 스킵
 ```
 
-### 낙관적 락 활용
+#### 낙관적 락 활용
 
 ```sql
 -- 버전 컬럼 사용
@@ -324,7 +400,7 @@ WHERE id = 1 AND version = 5;
 -- 재시도 또는 충돌 처리
 ```
 
-### 재시도 로직
+#### 재시도 로직
 
 ```java
 @Retryable(
@@ -339,13 +415,18 @@ public void processOrder(Long orderId) {
 
 ---
 
-## 핵심 정리
+## 전체 요약
 
-| 락 종류 | 범위 | 목적 |
-|--------|------|------|
-| Record Lock | 단일 레코드 | 특정 행 보호 |
-| Gap Lock | 레코드 간 간격 | Phantom Read 방지 |
-| Next-Key Lock | Record + Gap | InnoDB 기본 |
+| Lock 종류 | 잠금 대상 | 주요 용도 |
+|-----------|----------|----------|
+| Shared Lock | 레코드 | 읽기 보호 |
+| Exclusive Lock | 레코드 | 쓰기 보호 |
+| Intention Lock | 테이블 (의도 표시) | 행 잠금 의도 선언 |
+| Record Lock | 인덱스 레코드 | 특정 행 보호 |
+| Gap Lock | 인덱스 간격 | Phantom Read 방지 |
+| Next-Key Lock | 레코드 + 간격 | InnoDB 기본 Lock 방식 |
+| Insert Intention Lock | 간격 | INSERT 동시성 향상 |
+| Auto-Increment Lock | 테이블 | AUTO_INCREMENT 값 생성 |
 
 | 데드락 조건 | 설명 |
 |------------|------|
@@ -356,4 +437,4 @@ public void processOrder(Long orderId) {
 
 ---
 
-*마지막 업데이트: 2025년 01월*
+*마지막 업데이트: 2026년 02월*
