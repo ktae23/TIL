@@ -28,21 +28,21 @@ def generate_algorithm_practice(til_path, output_dir):
     # MD 파일과 Java 파일 매핑
     mapping = {
         '00_complexity': 'TimeSpaceComplexity.java',
-        '03_recursion': 'RecursionBasic.java',
-        '04_combination': 'CombinationBasic.java',
-        '05_permutation': 'PermutationBasic.java',
-        '06_sorting': 'SortingBasic.java',
-        '07_bruteforce': 'BruteForceBasic.java',
-        '08_greedy': 'GreedyBasic.java',
-        '09_dp': 'DPBasic.java',
-        '10_binary_search': 'BinarySearchBasic.java',
-        '11_parametric_search': 'ParametricSearchBasic.java',
-        '12_two_pointer': 'TwoPointerBasic.java',
-        '13_graph': 'GraphRepresentation.java',
-        '14_dfs': 'DFSBasic.java',
-        '15_bfs': 'BFSBasic.java',
-        '16_dijkstra': 'DijkstraBasic.java',
-        '17_tree': 'TreeTraversal.java',
+        '04_recursion': 'RecursionBasic.java',
+        '05_combination': 'CombinationBasic.java',
+        '06_permutation': 'PermutationBasic.java',
+        '07_sorting': 'SortingBasic.java',
+        '08_bruteforce': 'BruteForceBasic.java',
+        '09_greedy': 'GreedyBasic.java',
+        '10_dp': 'DPBasic.java',
+        '11_binary_search': 'BinarySearchBasic.java',
+        '12_parametric_search': 'ParametricSearchBasic.java',
+        '13_two_pointer': 'TwoPointerBasic.java',
+        '14_graph': 'GraphRepresentation.java',
+        '15_dfs': 'DFSBasic.java',
+        '16_bfs': 'BFSBasic.java',
+        '17_dijkstra': 'DijkstraBasic.java',
+        '18_tree': 'TreeTraversal.java',
     }
 
     topics = []
@@ -78,16 +78,25 @@ def generate_algorithm_practice(til_path, output_dir):
     data_json = json.dumps(topics, ensure_ascii=False)
     data_json = data_json.replace("</", "<\\/").replace("<!--", "<\\!--")
 
+    # 출력 디렉토리에 따라 assets 경로 결정
+    # generate_viewer_pages.py가 dist/ 에 생성하면 assets/ 접두사 필요
+    # generate_viewer.py가 assets/ 폴더에 직접 생성하면 접두사 불필요
+    assets_dir = os.path.join(output_dir, "assets")
+    asset_prefix = "assets/" if os.path.isdir(assets_dir) else ""
+
+    # 뒤로가기 링크: dist에 index.html이 있으면 index.html, 아니면 til-viewer.html
+    back_href = "index.html" if os.path.exists(os.path.join(output_dir, "index.html")) else "til-viewer.html"
+
     html_content = f'''<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithm Practice - TIL</title>
-    <link rel="stylesheet" href="lib/codemirror/codemirror.min.css">
-    <link rel="stylesheet" href="lib/codemirror/dracula.min.css">
-    <link rel="stylesheet" href="lib/highlight/github.min.css" id="hljs-light">
-    <link rel="stylesheet" href="lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="{asset_prefix}lib/codemirror/codemirror.min.css">
+    <link rel="stylesheet" href="{asset_prefix}lib/codemirror/dracula.min.css">
+    <link rel="stylesheet" href="{asset_prefix}lib/highlight/github.min.css" id="hljs-light">
+    <link rel="stylesheet" href="{asset_prefix}lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
     <style>
         :root {{ --bg-primary: #ffffff; --bg-secondary: #f6f8fa; --bg-tertiary: #e1e4e8; --text-primary: #24292e; --text-secondary: #586069; --border-color: #e1e4e8; --accent-color: #0366d6; --sidebar-width: 260px; }}
         [data-theme="dark"] {{ --bg-primary: #0d1117; --bg-secondary: #161b22; --bg-tertiary: #21262d; --text-primary: #c9d1d9; --text-secondary: #8b949e; --border-color: #30363d; --accent-color: #58a6ff; }}
@@ -151,7 +160,7 @@ def generate_algorithm_practice(til_path, output_dir):
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h1>Algorithm</h1>
-                <a href="til-viewer.html" class="back-link">← TIL</a>
+                <a href="{back_href}" class="back-link">← TIL</a>
                 <button class="theme-toggle" id="theme-toggle">Dark</button>
             </div>
             <div class="topic-list" id="topic-list"></div>
@@ -188,10 +197,10 @@ def generate_algorithm_practice(til_path, output_dir):
             </div>
         </main>
     </div>
-    <script src="lib/marked.min.js"></script>
-    <script src="lib/highlight/highlight.min.js"></script>
-    <script src="lib/codemirror/codemirror.min.js"></script>
-    <script src="lib/codemirror/clike.min.js"></script>
+    <script src="{asset_prefix}lib/marked.min.js"></script>
+    <script src="{asset_prefix}lib/highlight/highlight.min.js"></script>
+    <script src="{asset_prefix}lib/codemirror/codemirror.min.js"></script>
+    <script src="{asset_prefix}lib/codemirror/clike.min.js"></script>
     <script>
         const TOPICS = {data_json};
         const state = {{ currentTopic: null, currentTab: 'description', theme: localStorage.getItem('algo-theme') || 'light', editor: null, originalCode: '' }};
