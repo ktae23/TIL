@@ -21,27 +21,22 @@
 └────────────────────────┬────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────┐
-│  Phase 3. JavaScript 핵심                                 │
-│  "버튼 클릭, 데이터 불러오기 — 웹에 생명 불어넣기"              │
-└────────────────────────┬────────────────────────────────┘
-                         ↓
-┌─────────────────────────────────────────────────────────┐
-│  Phase 4. 백엔드 & 서버                                    │
+│  Phase 3. 백엔드 & 서버                                    │
 │  "HTTP, WS/WAS, API — 서버가 요청을 처리하는 방법"            │
 └────────────────────────┬────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────┐
-│  Phase 5. 데이터베이스 & 인프라                              │
+│  Phase 4. 데이터베이스 & 인프라                              │
 │  "데이터 저장, 캐시, 클라우드, 컨테이너"                      │
 └────────────────────────┬────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────┐
-│  Phase 6. 프론트엔드 심화                                   │
-│  "TypeScript + React로 현대적 UI 구축"                      │
+│  Phase 5. 프론트엔드                                       │
+│  "JavaScript → TypeScript → React로 현대적 UI 구축"        │
 └────────────────────────┬────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────┐
-│  Phase 7. 실전 역량 강화 (지속)                              │
+│  Phase 6. 실전 역량 강화 (지속)                              │
 │  "테스트, 아키텍처, 보안 — 현업 수준으로"                      │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -405,326 +400,7 @@ button.addEventListener('click', function(event) {
 
 ---
 
-## Phase 3. JavaScript 핵심
-
-> "웹에 생명을 불어넣는 언어를 제대로 이해한다"
-
-### var, let, const — 변수 선언의 3가지 방법
-
-```javascript
-// var — 오래된 방식, 쓰지 마세요
-var name = "철수";
-var name = "영희";   // 같은 이름으로 다시 선언 가능 (버그 원인!)
-
-// let — 값이 바뀔 수 있는 변수
-let score = 0;
-score = 100;         // OK: 값 변경 가능
-// let score = 200;  // 에러: 같은 이름으로 재선언 불가
-
-// const — 값이 바뀌지 않는 변수 (기본으로 사용 권장)
-const PI = 3.14;
-// PI = 3.15;        // 에러: 재할당 불가
-```
-
-```
-  var vs let vs const 비교
-
-  ┌──────────┬────────────┬────────────┬────────────┐
-  │          │    var     │    let     │   const    │
-  ├──────────┼────────────┼────────────┼────────────┤
-  │ 스코프    │ 함수 전체  │ { } 블록   │ { } 블록   │
-  │ 재선언    │ 가능       │ 불가       │ 불가       │
-  │ 재할당    │ 가능       │ 가능       │ 불가       │
-  │ 권장도    │ 사용 금지  │ 필요할 때   │ 기본 선택   │
-  └──────────┴────────────┴────────────┴────────────┘
-
-  규칙: const를 기본으로 쓰고, 값이 변해야 할 때만 let 사용
-```
-
-### 스코프와 클로저 — "변수가 보이는 범위"
-
-```javascript
-// 스코프 = 변수에 접근할 수 있는 범위
-
-const global = "나는 어디서든 보여요";       // 전역 스코프
-
-function outer() {
-  const outerVar = "outer 함수 안에서만 보여요";  // 함수 스코프
-
-  if (true) {
-    const blockVar = "이 { } 안에서만 보여요";    // 블록 스코프
-    console.log(global);    // 보임
-    console.log(outerVar);  // 보임
-    console.log(blockVar);  // 보임
-  }
-
-  console.log(blockVar);    // 에러! 블록 밖이라 안 보임
-}
-```
-
-```
-  스코프 체인 — 안에서 밖은 보이지만, 밖에서 안은 안 보임
-
-  ┌─────────────────────────────────── 전역 스코프 ──┐
-  │  const global = "전역"                           │
-  │                                                 │
-  │  ┌─────────────────────────── 함수 스코프 ──┐    │
-  │  │  const outerVar = "함수"                │    │
-  │  │                                        │    │
-  │  │  ┌──────────────── 블록 스코프 ──┐      │    │
-  │  │  │  const blockVar = "블록"     │      │    │
-  │  │  │                              │      │    │
-  │  │  │  여기서는 모든 변수 접근 가능!  │      │    │
-  │  │  │  global, outerVar, blockVar  │      │    │
-  │  │  └──────────────────────────────┘      │    │
-  │  │                                        │    │
-  │  │  여기서는 blockVar 접근 불가             │    │
-  │  └────────────────────────────────────────┘    │
-  │                                                 │
-  │  여기서는 outerVar, blockVar 접근 불가             │
-  └─────────────────────────────────────────────────┘
-```
-
-### 클로저 — "함수가 태어난 환경을 기억한다"
-
-```javascript
-// 비유: 카운터 기계를 만드는 공장
-function createCounter() {
-  let count = 0;           // 이 변수는 공장 안에만 존재
-
-  return {
-    increment: () => ++count,  // 공장 밖에서도 count에 접근 가능!
-    getCount: () => count,
-  };
-}
-
-const myCounter = createCounter();
-myCounter.increment();  // 1
-myCounter.increment();  // 2
-myCounter.getCount();   // 2
-
-// 밖에서 직접 count를 건드릴 수는 없음 (캡슐화!)
-// console.log(count);  // 에러
-```
-
-```
-  클로저의 동작 원리:
-
-  createCounter() 호출
-  ┌─────────────────────────────────┐
-  │  let count = 0                  │  ← 이 환경이 메모리에 유지됨
-  │                                 │
-  │  return {                       │
-  │    increment: () => ++count, ───────▶ count를 "기억"하는 함수
-  │    getCount: () => count,    ───────▶ count를 "기억"하는 함수
-  │  }                              │
-  └─────────────────────────────────┘
-          │
-          ▼
-  함수가 반환된 후에도 count는 사라지지 않음!
-  increment()를 호출할 때마다 같은 count를 참조
-```
-
-### `this` 바인딩 — "나는 누구인가?"
-
-```javascript
-const user = {
-  name: "철수",
-  greet() {
-    console.log(`안녕, 나는 ${this.name}`);  // this = user 객체
-  }
-};
-
-user.greet();           // "안녕, 나는 철수"    ← this는 user
-
-const greetFunc = user.greet;
-greetFunc();            // "안녕, 나는 undefined" ← this는 window (메서드가 아닌 일반 호출)
-```
-
-```
-  this가 결정되는 규칙 — "어떻게 호출했느냐"에 따라 다름
-
-  ┌───────────────────────────────────────────────┐
-  │  호출 방식             │ this가 가리키는 것     │
-  ├───────────────────────┼───────────────────────┤
-  │  obj.method()         │ obj (점 앞의 객체)     │
-  │  func()               │ window (또는 undefined)│
-  │  new Constructor()    │ 새로 만든 객체          │
-  │  func.call(obj)       │ obj (명시적 지정)      │
-  │  () => {}  (화살표)    │ 바깥 스코프의 this     │
-  └───────────────────────┴───────────────────────┘
-
-  헷갈리면 화살표 함수를 쓰세요 — this가 바뀌지 않아 예측 가능
-```
-
-### 비동기 프로그래밍 — "라면 끓이면서 설거지하기"
-
-JavaScript는 **싱글 스레드**(일꾼이 1명)이지만, 비동기 처리로 여러 일을 효율적으로 합니다.
-
-```
-  동기 (Synchronous)                 비동기 (Asynchronous)
-  ──────────────────                 ──────────────────
-
-  라면 끓이기 시작     3분            라면 끓이기 시작     3분
-       ↓           (대기)                 ↓
-  라면 기다리기...                    (라면 타이머 설정)
-       ↓                                 ↓
-  설거지하기          5분            설거지하기          3분
-       ↓                                 ↓
-  총 소요: 8분                       (라면 완성!)       +2분
-                                         ↓
-                                    총 소요: 5분        ← 더 빠름!
-```
-
-### 이벤트 루프 — "어떤 순서로 실행될까?"
-
-```javascript
-console.log("1. 시작");                    // ① 즉시 실행
-
-setTimeout(() => {
-  console.log("2. setTimeout");            // ④ 마지막 (Task Queue)
-}, 0);
-
-Promise.resolve().then(() => {
-  console.log("3. Promise");               // ③ 세번째 (Microtask Queue — 우선)
-});
-
-console.log("4. 끝");                      // ② 즉시 실행
-
-// 출력 순서: 1. 시작 → 4. 끝 → 3. Promise → 2. setTimeout
-```
-
-```
-  왜 이 순서일까? — 이벤트 루프의 동작:
-
-  ┌─────────────────────────┐
-  │      Call Stack          │  ← 지금 실행 중인 코드
-  │  (한 번에 하나만 실행)     │
-  └───────────┬─────────────┘
-              │ Call Stack이 비면
-              │ 아래 순서대로 확인
-              ▼
-  ┌─────────────────────────┐
-  │   Microtask Queue       │  ← Promise.then() 등 (먼저!)
-  │   [Promise 콜백]        │
-  └───────────┬─────────────┘
-              │ Microtask가 비면
-              ▼
-  ┌─────────────────────────┐
-  │   Task Queue            │  ← setTimeout 등 (나중에)
-  │   [setTimeout 콜백]     │
-  └─────────────────────────┘
-
-  규칙: Call Stack 비움 → Microtask 전부 처리 → Task 하나 처리 → 반복
-```
-
-### 콜백 → Promise → async/await — "비동기 코드의 진화"
-
-```javascript
-// 1. 콜백 (옛날 방식) — "콜백 지옥"
-getUser(userId, function(user) {
-  getOrders(user.id, function(orders) {
-    getOrderDetail(orders[0].id, function(detail) {
-      console.log(detail);  // 점점 깊어지는 들여쓰기
-    });
-  });
-});
-
-// 2. Promise (개선) — 체이닝으로 깔끔해짐
-getUser(userId)
-  .then(user => getOrders(user.id))
-  .then(orders => getOrderDetail(orders[0].id))
-  .then(detail => console.log(detail))
-  .catch(error => console.error(error));  // 에러 처리 한 곳에서
-
-// 3. async/await (현재 권장) — 동기 코드처럼 읽힘
-async function showOrderDetail(userId) {
-  try {
-    const user = await getUser(userId);           // 결과 나올 때까지 기다림
-    const orders = await getOrders(user.id);      // 순서대로 실행
-    const detail = await getOrderDetail(orders[0].id);
-    console.log(detail);
-  } catch (error) {
-    console.error(error);                         // try-catch로 에러 처리
-  }
-}
-```
-
-```
-  진화 과정 비교:
-
-  콜백          func(a, function(b) {           ← 들여쓰기 지옥
-                  func(b, function(c) {
-                    func(c, function(d) { ... })
-                  })
-                })
-
-  Promise       func(a)                         ← 평탄해짐, 하지만 .then 체인
-                  .then(b => func(b))
-                  .then(c => func(c))
-
-  async/await   const b = await func(a);        ← 마치 동기 코드처럼 읽힘!
-                const c = await func(b);
-                const d = await func(c);
-```
-
-### Promise 유틸리티 — "여러 비동기 작업을 동시에"
-
-```javascript
-// Promise.all — 모두 성공해야 성공 (하나라도 실패하면 전체 실패)
-// 비유: 팀 프로젝트 — 팀원 모두 제출해야 완성
-const [users, products, orders] = await Promise.all([
-  fetch('/api/users'),
-  fetch('/api/products'),
-  fetch('/api/orders'),
-]);
-
-// Promise.race — 가장 빨리 끝난 것의 결과만 사용
-// 비유: 달리기 시합 — 1등만 인정
-const fastest = await Promise.race([
-  fetch('/api/server1'),
-  fetch('/api/server2'),
-]);
-
-// Promise.allSettled — 성공이든 실패든 모든 결과를 받음
-// 비유: 설문조사 — 응답/미응답 모두 집계
-const results = await Promise.allSettled([
-  fetch('/api/a'),
-  fetch('/api/b'),  // 이게 실패해도 a의 결과는 받을 수 있음
-]);
-```
-
-### 모듈 시스템 — "코드를 파일별로 정리하기"
-
-```
-  ┌─ utils.js ─────────────────┐    ┌─ app.js ─────────────────────────┐
-  │                             │    │                                  │
-  │  // 이 파일에서 만든 기능을    │    │  // 다른 파일의 기능을 가져와 사용   │
-  │  // 외부로 공개              │    │                                  │
-  │  export function add(a, b) {│◀───│  import { add, multiply }       │
-  │    return a + b;            │    │    from './utils.js';            │
-  │  }                          │    │                                  │
-  │                             │    │  console.log(add(2, 3));  // 5   │
-  │  export function multiply(  │    │                                  │
-  │    a, b) {                  │    └──────────────────────────────────┘
-  │    return a * b;            │
-  │  }                          │
-  └─────────────────────────────┘
-
-  레고 블록처럼 기능을 모듈로 나누면:
-     - 코드를 재사용할 수 있고
-     - 파일이 작아져서 관리하기 쉽고
-     - 이름 충돌을 방지할 수 있음
-```
-
-### 실습 과제
-
-1. **To-Do 앱** (Vanilla JS): 할 일 추가/삭제/완료 체크, 로컬 스토리지에 저장
-2. **날씨 앱**: `fetch`로 날씨 API 호출 → 도시 이름 입력하면 날씨 표시
-
----
-
-## Phase 4. 백엔드 & 서버
+## Phase 3. 백엔드 & 서버
 
 > "서버가 요청을 받아 처리하고 응답하는 전체 구조를 이해한다"
 
@@ -1053,6 +729,17 @@ HTTP는 백엔드 개발의 기본 언어입니다. 모든 API 통신이 HTTP �
   └─────────────────────────────────────────────────────────────┘
 ```
 
+### Java/Spring 학습 리소스
+
+| 리소스 | 설명 |
+|--------|------|
+| [Oracle Java Tutorials](https://docs.oracle.com/javase/tutorial/) | Java 공식 튜토리얼, 언어 기초부터 고급까지 |
+| [Spring 공식 문서](https://docs.spring.io/spring-framework/reference/) | Spring Framework 레퍼런스 (Core, Web, Data 등) |
+| [Spring Boot 공식 문서](https://docs.spring.io/spring-boot/reference/) | Spring Boot 설정, 자동 구성, 배포 가이드 |
+| [Spring Guides](https://spring.io/guides) | 주제별 실습 가이드 (REST API, JPA, Security 등) |
+| [Baeldung](https://www.baeldung.com/) | Java/Spring 심화 튜토리얼, 실전 예제 풍부 |
+| [Spring Academy](https://spring.academy/) | VMware 공식 Spring 학습 플랫폼 (무료/유료) |
+
 ### TIL 참고 자료
 
 | 자료 | 내용 |
@@ -1069,7 +756,7 @@ HTTP는 백엔드 개발의 기본 언어입니다. 모든 API 통신이 HTTP �
 
 ---
 
-## Phase 5. 데이터베이스 & 인프라
+## Phase 4. 데이터베이스 & 인프라
 
 > "데이터를 저장하고, 만든 것을 세상에 공개한다"
 
@@ -1259,9 +946,317 @@ HTTP는 백엔드 개발의 기본 언어입니다. 모든 API 통신이 HTTP �
 
 ---
 
-## Phase 6. 프론트엔드 심화
+## Phase 5. 프론트엔드
 
-> "타입 안전성과 현대 프론트엔드 아키텍처를 익힌다"
+> "JavaScript로 웹에 생명을 불어넣고, TypeScript + React로 현대적 UI를 구축한다"
+
+### JavaScript 기초 — var, let, const
+
+```javascript
+// var — 오래된 방식, 쓰지 마세요
+var name = "철수";
+var name = "영희";   // 같은 이름으로 다시 선언 가능 (버그 원인!)
+
+// let — 값이 바뀔 수 있는 변수
+let score = 0;
+score = 100;         // OK: 값 변경 가능
+// let score = 200;  // 에러: 같은 이름으로 재선언 불가
+
+// const — 값이 바뀌지 않는 변수 (기본으로 사용 권장)
+const PI = 3.14;
+// PI = 3.15;        // 에러: 재할당 불가
+```
+
+```
+  var vs let vs const 비교
+
+  ┌──────────┬────────────┬────────────┬────────────┐
+  │          │    var     │    let     │   const    │
+  ├──────────┼────────────┼────────────┼────────────┤
+  │ 스코프    │ 함수 전체  │ { } 블록   │ { } 블록   │
+  │ 재선언    │ 가능       │ 불가       │ 불가       │
+  │ 재할당    │ 가능       │ 가능       │ 불가       │
+  │ 권장도    │ 사용 금지  │ 필요할 때   │ 기본 선택   │
+  └──────────┴────────────┴────────────┴────────────┘
+
+  규칙: const를 기본으로 쓰고, 값이 변해야 할 때만 let 사용
+```
+
+### 스코프와 클로저 — "변수가 보이는 범위"
+
+```javascript
+// 스코프 = 변수에 접근할 수 있는 범위
+
+const global = "나는 어디서든 보여요";       // 전역 스코프
+
+function outer() {
+  const outerVar = "outer 함수 안에서만 보여요";  // 함수 스코프
+
+  if (true) {
+    const blockVar = "이 { } 안에서만 보여요";    // 블록 스코프
+    console.log(global);    // 보임
+    console.log(outerVar);  // 보임
+    console.log(blockVar);  // 보임
+  }
+
+  console.log(blockVar);    // 에러! 블록 밖이라 안 보임
+}
+```
+
+```
+  스코프 체인 — 안에서 밖은 보이지만, 밖에서 안은 안 보임
+
+  ┌─────────────────────────────────── 전역 스코프 ──┐
+  │  const global = "전역"                           │
+  │                                                 │
+  │  ┌─────────────────────────── 함수 스코프 ──┐    │
+  │  │  const outerVar = "함수"                │    │
+  │  │                                        │    │
+  │  │  ┌──────────────── 블록 스코프 ──┐      │    │
+  │  │  │  const blockVar = "블록"     │      │    │
+  │  │  │                              │      │    │
+  │  │  │  여기서는 모든 변수 접근 가능!  │      │    │
+  │  │  │  global, outerVar, blockVar  │      │    │
+  │  │  └──────────────────────────────┘      │    │
+  │  │                                        │    │
+  │  │  여기서는 blockVar 접근 불가             │    │
+  │  └────────────────────────────────────────┘    │
+  │                                                 │
+  │  여기서는 outerVar, blockVar 접근 불가             │
+  └─────────────────────────────────────────────────┘
+```
+
+### 클로저 — "함수가 태어난 환경을 기억한다"
+
+```javascript
+// 비유: 카운터 기계를 만드는 공장
+function createCounter() {
+  let count = 0;           // 이 변수는 공장 안에만 존재
+
+  return {
+    increment: () => ++count,  // 공장 밖에서도 count에 접근 가능!
+    getCount: () => count,
+  };
+}
+
+const myCounter = createCounter();
+myCounter.increment();  // 1
+myCounter.increment();  // 2
+myCounter.getCount();   // 2
+
+// 밖에서 직접 count를 건드릴 수는 없음 (캡슐화!)
+// console.log(count);  // 에러
+```
+
+```
+  클로저의 동작 원리:
+
+  createCounter() 호출
+  ┌─────────────────────────────────┐
+  │  let count = 0                  │  ← 이 환경이 메모리에 유지됨
+  │                                 │
+  │  return {                       │
+  │    increment: () => ++count, ───────▶ count를 "기억"하는 함수
+  │    getCount: () => count,    ───────▶ count를 "기억"하는 함수
+  │  }                              │
+  └─────────────────────────────────┘
+          │
+          ▼
+  함수가 반환된 후에도 count는 사라지지 않음!
+  increment()를 호출할 때마다 같은 count를 참조
+```
+
+### `this` 바인딩 — "나는 누구인가?"
+
+```javascript
+const user = {
+  name: "철수",
+  greet() {
+    console.log(`안녕, 나는 ${this.name}`);  // this = user 객체
+  }
+};
+
+user.greet();           // "안녕, 나는 철수"    ← this는 user
+
+const greetFunc = user.greet;
+greetFunc();            // "안녕, 나는 undefined" ← this는 window (메서드가 아닌 일반 호출)
+```
+
+```
+  this가 결정되는 규칙 — "어떻게 호출했느냐"에 따라 다름
+
+  ┌───────────────────────────────────────────────┐
+  │  호출 방식             │ this가 가리키는 것     │
+  ├───────────────────────┼───────────────────────┤
+  │  obj.method()         │ obj (점 앞의 객체)     │
+  │  func()               │ window (또는 undefined)│
+  │  new Constructor()    │ 새로 만든 객체          │
+  │  func.call(obj)       │ obj (명시적 지정)      │
+  │  () => {}  (화살표)    │ 바깥 스코프의 this     │
+  └───────────────────────┴───────────────────────┘
+
+  헷갈리면 화살표 함수를 쓰세요 — this가 바뀌지 않아 예측 가능
+```
+
+### 비동기 프로그래밍 — "라면 끓이면서 설거지하기"
+
+JavaScript는 **싱글 스레드**(일꾼이 1명)이지만, 비동기 처리로 여러 일을 효율적으로 합니다.
+
+```
+  동기 (Synchronous)                 비동기 (Asynchronous)
+  ──────────────────                 ──────────────────
+
+  라면 끓이기 시작     3분            라면 끓이기 시작     3분
+       ↓           (대기)                 ↓
+  라면 기다리기...                    (라면 타이머 설정)
+       ↓                                 ↓
+  설거지하기          5분            설거지하기          3분
+       ↓                                 ↓
+  총 소요: 8분                       (라면 완성!)       +2분
+                                         ↓
+                                    총 소요: 5분        ← 더 빠름!
+```
+
+### 이벤트 루프 — "어떤 순서로 실행될까?"
+
+```javascript
+console.log("1. 시작");                    // ① 즉시 실행
+
+setTimeout(() => {
+  console.log("2. setTimeout");            // ④ 마지막 (Task Queue)
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("3. Promise");               // ③ 세번째 (Microtask Queue — 우선)
+});
+
+console.log("4. 끝");                      // ② 즉시 실행
+
+// 출력 순서: 1. 시작 → 4. 끝 → 3. Promise → 2. setTimeout
+```
+
+```
+  왜 이 순서일까? — 이벤트 루프의 동작:
+
+  ┌─────────────────────────┐
+  │      Call Stack          │  ← 지금 실행 중인 코드
+  │  (한 번에 하나만 실행)     │
+  └───────────┬─────────────┘
+              │ Call Stack이 비면
+              │ 아래 순서대로 확인
+              ▼
+  ┌─────────────────────────┐
+  │   Microtask Queue       │  ← Promise.then() 등 (먼저!)
+  │   [Promise 콜백]        │
+  └───────────┬─────────────┘
+              │ Microtask가 비면
+              ▼
+  ┌─────────────────────────┐
+  │   Task Queue            │  ← setTimeout 등 (나중에)
+  │   [setTimeout 콜백]     │
+  └─────────────────────────┘
+
+  규칙: Call Stack 비움 → Microtask 전부 처리 → Task 하나 처리 → 반복
+```
+
+### 콜백 → Promise → async/await — "비동기 코드의 진화"
+
+```javascript
+// 1. 콜백 (옛날 방식) — "콜백 지옥"
+getUser(userId, function(user) {
+  getOrders(user.id, function(orders) {
+    getOrderDetail(orders[0].id, function(detail) {
+      console.log(detail);  // 점점 깊어지는 들여쓰기
+    });
+  });
+});
+
+// 2. Promise (개선) — 체이닝으로 깔끔해짐
+getUser(userId)
+  .then(user => getOrders(user.id))
+  .then(orders => getOrderDetail(orders[0].id))
+  .then(detail => console.log(detail))
+  .catch(error => console.error(error));  // 에러 처리 한 곳에서
+
+// 3. async/await (현재 권장) — 동기 코드처럼 읽힘
+async function showOrderDetail(userId) {
+  try {
+    const user = await getUser(userId);           // 결과 나올 때까지 기다림
+    const orders = await getOrders(user.id);      // 순서대로 실행
+    const detail = await getOrderDetail(orders[0].id);
+    console.log(detail);
+  } catch (error) {
+    console.error(error);                         // try-catch로 에러 처리
+  }
+}
+```
+
+```
+  진화 과정 비교:
+
+  콜백          func(a, function(b) {           ← 들여쓰기 지옥
+                  func(b, function(c) {
+                    func(c, function(d) { ... })
+                  })
+                })
+
+  Promise       func(a)                         ← 평탄해짐, 하지만 .then 체인
+                  .then(b => func(b))
+                  .then(c => func(c))
+
+  async/await   const b = await func(a);        ← 마치 동기 코드처럼 읽힘!
+                const c = await func(b);
+                const d = await func(c);
+```
+
+### Promise 유틸리티 — "여러 비동기 작업을 동시에"
+
+```javascript
+// Promise.all — 모두 성공해야 성공 (하나라도 실패하면 전체 실패)
+// 비유: 팀 프로젝트 — 팀원 모두 제출해야 완성
+const [users, products, orders] = await Promise.all([
+  fetch('/api/users'),
+  fetch('/api/products'),
+  fetch('/api/orders'),
+]);
+
+// Promise.race — 가장 빨리 끝난 것의 결과만 사용
+// 비유: 달리기 시합 — 1등만 인정
+const fastest = await Promise.race([
+  fetch('/api/server1'),
+  fetch('/api/server2'),
+]);
+
+// Promise.allSettled — 성공이든 실패든 모든 결과를 받음
+// 비유: 설문조사 — 응답/미응답 모두 집계
+const results = await Promise.allSettled([
+  fetch('/api/a'),
+  fetch('/api/b'),  // 이게 실패해도 a의 결과는 받을 수 있음
+]);
+```
+
+### 모듈 시스템 — "코드를 파일별로 정리하기"
+
+```
+  ┌─ utils.js ─────────────────┐    ┌─ app.js ─────────────────────────┐
+  │                             │    │                                  │
+  │  // 이 파일에서 만든 기능을    │    │  // 다른 파일의 기능을 가져와 사용   │
+  │  // 외부로 공개              │    │                                  │
+  │  export function add(a, b) {│◀───│  import { add, multiply }       │
+  │    return a + b;            │    │    from './utils.js';            │
+  │  }                          │    │                                  │
+  │                             │    │  console.log(add(2, 3));  // 5   │
+  │  export function multiply(  │    │                                  │
+  │    a, b) {                  │    └──────────────────────────────────┘
+  │    return a * b;            │
+  │  }                          │
+  └─────────────────────────────┘
+
+  레고 블록처럼 기능을 모듈로 나누면:
+     - 코드를 재사용할 수 있고
+     - 파일이 작아져서 관리하기 쉽고
+     - 이름 충돌을 방지할 수 있음
+```
 
 ### TypeScript — "실수를 미리 잡아주는 JavaScript"
 
@@ -1474,7 +1469,7 @@ function Counter() {
 
 ---
 
-## Phase 7. 실전 역량 강화 (지속)
+## Phase 6. 실전 역량 강화 (지속)
 
 > "현업 수준의 개발자로 성장한다"
 
