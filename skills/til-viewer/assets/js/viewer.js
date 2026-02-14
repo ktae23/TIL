@@ -4,6 +4,42 @@
 // Note: TIL_DATA is injected inline in the HTML file
 
 // ========================================
+// PDF PRINT TEMPLATE (window.print() 벡터 방식용)
+// ========================================
+const PDF_PRINT_TEMPLATE = `<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><style>
+@page { margin: 15mm; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',Roboto,sans-serif;
+  color:#212529; line-height:1.6; background:#fff; }
+.content-inner { max-width:100%; }
+.content-inner h1 { font-size:2rem; margin-bottom:8px; padding-bottom:16px; border-bottom:2px solid #3182f6; }
+.content-inner h2 { font-size:1.5rem; margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid #dee2e6; }
+.content-inner h3 { font-size:1.25rem; margin:24px 0 12px; color:#3182f6; }
+.content-inner h4 { font-size:1.1rem; margin:20px 0 10px; }
+.content-inner p { margin-bottom:16px; }
+.content-inner ul,.content-inner ol { margin-bottom:16px; padding-left:24px; }
+.content-inner li { margin-bottom:8px; }
+.content-inner pre { background:#f4f4f5; border-radius:8px; padding:16px; overflow-x:auto; margin-bottom:16px; border:1px solid #dee2e6; line-height:1.45; page-break-inside:avoid; }
+.content-inner code { font-family:'SF Mono',Monaco,Consolas,'Courier New',monospace; font-size:0.9em; }
+.content-inner :not(pre)>code { background:#f4f4f5; padding:2px 6px; border-radius:4px; }
+.content-inner pre code { background:transparent; padding:0; }
+.content-inner blockquote { border-left:4px solid #3182f6; padding:12px 16px; margin:16px 0; color:#495057; background:#f8f9fa; border-radius:0 8px 8px 0; page-break-inside:avoid; }
+.content-inner table { width:100%; border-collapse:collapse; margin-bottom:16px; page-break-inside:auto; }
+.content-inner th,.content-inner td { border:1px solid #dee2e6; padding:10px 12px; text-align:left; }
+.content-inner th { background:#f8f9fa; font-weight:600; }
+.content-inner tr { page-break-inside:avoid; }
+.content-inner hr { border:none; border-top:1px solid #dee2e6; margin:32px 0; }
+.content-inner a { color:#3182f6; text-decoration:none; }
+.content-inner strong { color:#3182f6; }
+.content-inner img { max-width:100%; height:auto; page-break-inside:avoid; }
+h1,h2,h3,h4 { page-break-after:avoid; }
+/* highlight.js github theme */
+pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}
+.hljs{color:#24292e;background:#fff}.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}.hljs-built_in,.hljs-symbol{color:#e36209}.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}.hljs-subst{color:#24292e}.hljs-section{color:#005cc5;font-weight:700}.hljs-bullet{color:#735c0f}.hljs-emphasis{color:#24292e;font-style:italic}.hljs-strong{color:#24292e;font-weight:700}.hljs-addition{color:#22863a;background-color:#f0fff4}.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+</style></head><body><div class="content-inner" id="pdf-content"></div></body></html>`;
+
+// ========================================
 // APPLICATION STATE
 // ========================================
 const state = {
@@ -230,6 +266,10 @@ function loadFile(filePath, options = {}) {
 
     // Init checkboxes
     initCheckboxes();
+
+    // Show PDF download button
+    const pdfBtn = document.getElementById('pdf-download-btn');
+    if (pdfBtn) pdfBtn.style.display = '';
 
     // Close sidebar on mobile
     if (window.innerWidth <= 768) {
@@ -486,11 +526,55 @@ function initKeyboardShortcuts() {
             case 'Home':
                 scrollToTop();
                 break;
+            case 'p':
+            case 'P':
+                downloadPDF();
+                break;
             case '?':
                 showShortcuts();
                 break;
         }
     });
+}
+
+// ========================================
+// PDF DOWNLOAD (window.print() 벡터 방식)
+// ========================================
+function downloadPDF() {
+    var file = findFileByPath(state.currentFile);
+    if (!file) return;
+
+    var btn = document.getElementById('pdf-download-btn');
+    btn.textContent = '⏳';
+    btn.disabled = true;
+
+    var iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:600px;border:none;';
+    document.body.appendChild(iframe);
+
+    var doc = iframe.contentDocument;
+    doc.open();
+    doc.write(PDF_PRINT_TEMPLATE);
+    doc.close();
+
+    iframe.onload = function() {
+        var target = doc.getElementById('pdf-content');
+        target.innerHTML = marked.parse(file.content);
+        target.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
+
+        setTimeout(function() {
+            // Chrome은 iframe 프린트 시 부모 페이지 title을 파일명으로 사용
+            var originalTitle = document.title;
+            document.title = file.title;
+            iframe.contentWindow.print();
+            document.title = originalTitle;
+            setTimeout(function() {
+                document.body.removeChild(iframe);
+                btn.textContent = '📥';
+                btn.disabled = false;
+            }, 1000);
+        }, 300);
+    };
 }
 
 // ========================================

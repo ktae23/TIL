@@ -693,3 +693,16 @@ body {
         right: 16px;
     }
 }
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+@media print {
+    .header, .sidebar, .toc-panel, .quick-actions,
+    .overlay, .search-container, .progress-bar,
+    .shortcuts-modal { display: none !important; }
+    .content-area { padding: 0 !important; overflow: visible !important; }
+    .content-inner { max-width: 100% !important; }
+    .container, .main-container { display: block !important; }
+    pre { white-space: pre-wrap !important; word-break: break-all !important; }
+}
