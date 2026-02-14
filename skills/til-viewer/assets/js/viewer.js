@@ -630,6 +630,9 @@ function printFiles(files, title, onDone) {
         target.innerHTML = html;
         target.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
 
+        // 다이어그램 pre 블록을 PNG 이미지로 변환
+        convertDiagramsToImages(target);
+
         setTimeout(function() {
             var originalTitle = document.title;
             document.title = title;
@@ -641,6 +644,92 @@ function printFiles(files, title, onDone) {
             }, 1000);
         }, 300);
     };
+}
+
+// ========================================
+// DIAGRAM TO PNG CONVERSION
+// ========================================
+var DIAGRAM_CHARS = /[─│┌┐└┘├┤┬┴┼┏┓┗┛┣┫┳┻╋═║╔╗╚╝╠╣╦╩╬▸▶◀◁△▽→←↑↓↔⇒⇐⇑⇓]/;
+var ASCII_DIAGRAM = /[\+\-\|]{4,}/;
+
+function isDiagramBlock(text) {
+    return DIAGRAM_CHARS.test(text) || (ASCII_DIAGRAM.test(text) && /\+.*\-.*\+/.test(text));
+}
+
+function preToImageDataURL(preEl) {
+    var text = preEl.textContent;
+    var lines = text.split('\n');
+    // 끝 빈줄 제거
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+    if (lines.length === 0) return null;
+
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+    var fontSize = 13;
+    var lineHeight = Math.ceil(fontSize * 1.55);
+    var font = fontSize + 'px Consolas, Monaco, "Courier New", monospace';
+    var padding = 16;
+    var dpr = 2;
+
+    // 최대 너비 측정
+    ctx.font = font;
+    var maxWidth = 0;
+    lines.forEach(function(line) {
+        var w = ctx.measureText(line).width;
+        if (w > maxWidth) maxWidth = w;
+    });
+
+    var totalW = maxWidth + padding * 2;
+    var totalH = lines.length * lineHeight + padding * 2;
+    canvas.width = totalW * dpr;
+    canvas.height = totalH * dpr;
+    ctx.scale(dpr, dpr);
+
+    // 배경
+    ctx.fillStyle = '#f4f4f5';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(0, 0, totalW, totalH, 8);
+    } else {
+        ctx.rect(0, 0, totalW, totalH);
+    }
+    ctx.fill();
+
+    // 테두리
+    ctx.strokeStyle = '#dee2e6';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(0.5, 0.5, totalW - 1, totalH - 1, 8);
+    } else {
+        ctx.rect(0.5, 0.5, totalW - 1, totalH - 1);
+    }
+    ctx.stroke();
+
+    // 텍스트 렌더링
+    ctx.font = font;
+    ctx.fillStyle = '#24292e';
+    ctx.textBaseline = 'top';
+    lines.forEach(function(line, i) {
+        ctx.fillText(line, padding, padding + i * lineHeight);
+    });
+
+    return canvas.toDataURL('image/png');
+}
+
+function convertDiagramsToImages(container) {
+    var preBlocks = container.querySelectorAll('pre');
+    preBlocks.forEach(function(pre) {
+        if (!isDiagramBlock(pre.textContent)) return;
+
+        var dataUrl = preToImageDataURL(pre);
+        if (!dataUrl) return;
+
+        var img = pre.ownerDocument.createElement('img');
+        img.src = dataUrl;
+        img.style.cssText = 'max-width:100%; height:auto; page-break-inside:avoid; display:block; margin-bottom:16px;';
+        pre.parentNode.replaceChild(img, pre);
+    });
 }
 
 // ========================================
