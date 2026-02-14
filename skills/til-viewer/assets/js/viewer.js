@@ -644,6 +644,10 @@ function toggleSelectMode() {
         removeSelectBar();
     } else {
         showSelectBar();
+        // 모바일에서 선택 모드 진입 시 사이드바 열기
+        if (window.innerWidth <= 768) {
+            openMobileSidebar();
+        }
     }
     buildFileList();
 
@@ -656,14 +660,18 @@ function showSelectBar() {
     var bar = document.createElement('div');
     bar.id = 'select-bar';
     bar.innerHTML = '<span id="select-count">0개 선택</span>' +
-        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>합본 PDF 다운로드</button>' +
-        '<button onclick="toggleSelectMode()">취소</button>';
+        '<button onclick="toggleSelectMode()">취소</button>' +
+        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>합본 PDF 다운로드</button>';
     document.body.appendChild(bar);
+    var qa = document.getElementById('quick-actions');
+    if (qa) qa.classList.add('has-select-bar');
 }
 
 function removeSelectBar() {
     var bar = document.getElementById('select-bar');
     if (bar) bar.remove();
+    var qa = document.getElementById('quick-actions');
+    if (qa) qa.classList.remove('has-select-bar');
 }
 
 function updateSelectBar() {

@@ -692,6 +692,47 @@ body {
         bottom: 16px;
         right: 16px;
     }
+
+    /* 선택 모드 시 quick-actions를 select-bar 위로 올림 */
+    .quick-actions.has-select-bar {
+        bottom: 72px;
+    }
+
+    /* 선택 바 모바일 레이아웃 */
+    #select-bar {
+        flex-wrap: wrap;
+        padding: 10px 16px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        gap: 8px;
+    }
+
+    #select-bar span {
+        font-size: 0.85rem;
+    }
+
+    #select-bar button {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+
+    #select-download-btn {
+        width: 100%;
+        margin-left: 0;
+        text-align: center;
+        padding: 12px;
+    }
+
+    /* 체크박스 터치 영역 확대 */
+    .file-select-cb {
+        transform: scale(1.4);
+        margin-right: 12px;
+    }
+
+    /* 카테고리 전체선택 터치 영역 */
+    .category-select-all {
+        font-size: 1.1rem;
+        padding: 4px 8px;
+    }
 }
 
 /* ========================================
