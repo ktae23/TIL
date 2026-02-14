@@ -101,7 +101,7 @@ They must submit.
 ```
 I can prepare the report.
 We should review the documents.
-They must submit the tax return.
+They must submit the application.
 ```
 
 **Step 3: 부사/전치사구 추가**
@@ -109,7 +109,7 @@ They must submit the tax return.
 ```
 I can prepare the report by tomorrow.
 We should review the documents before the meeting.
-They must submit the tax return to the office immediately.
+They must submit the application to the office immediately.
 ```
 
 **Step 4: 조동사 + be + -ing (진행 의미 추가)**
@@ -139,31 +139,31 @@ Although the deadline passed, we should still try to submit.
 I think we must finish this project before the holiday.
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인**:
+**직장/일상생활**:
 
 ```
-Taxpayers must file their returns by March 31.
-(납세자는 3월 31일까지 신고해야 한다.)
+All employees must complete the safety training by Friday.
+(모든 직원은 금요일까지 안전 교육을 완료해야 한다.)
 
-You can claim a deduction for home office expenses.
-(재택근무 비용에 대해 공제를 신청할 수 있습니다.)
+You can request a day off through the company app.
+(회사 앱을 통해 휴가를 신청할 수 있습니다.)
 
-This income might be subject to additional tax.
-(이 소득은 추가 세금 대상일 수 있습니다.)
+The delivery might be delayed due to the holiday.
+(배송이 공휴일로 인해 지연될 수 있습니다.)
 
-The tax authority may impose penalties for late filing.
-(세무 당국은 늦은 신고에 대해 과태료를 부과할 수 있습니다.)
+The airline may cancel flights because of the storm.
+(항공사가 폭풍 때문에 항공편을 취소할 수 있습니다.)
 
-We should verify the withholding tax calculation before submission.
-(제출 전에 원천징수세 계산을 확인해야 합니다.)
+We should check the reservation before leaving for the restaurant.
+(식당으로 출발하기 전에 예약을 확인해야 합니다.)
 
-The client could have deducted those expenses last year.
-(그 고객은 작년에 그 비용을 공제할 수 있었다. — 하지만 안 했다.)
+He could have finished the assignment last weekend.
+(그는 지난 주말에 과제를 끝낼 수 있었다. — 하지만 안 했다.)
 ```
 
-**일반 비즈니스 도메인**:
+**프로젝트/고객 소통**:
 
 ```
 The meeting should finish within 30 minutes.
@@ -210,13 +210,13 @@ We should have started the preparation earlier.
 **B. 한국어 → 영어 작문**
 
 ```
-1. 이 양식은 다양한 유형의 소득을 처리할 수 있습니다.
+1. 이 앱은 다양한 유형의 파일을 처리할 수 있습니다.
    → _______________________________________________
 
 2. 제출 전에 서류를 검토해야 합니다. (권고)
    → _______________________________________________
 
-3. 서류 전달이 늦어졌을 수도 있습니다.
+3. 택배 배송이 늦어졌을 수도 있습니다.
    → _______________________________________________
 
 4. 그 실수를 어제 고칠 수 있었는데 (안 고쳤다).
@@ -242,9 +242,9 @@ We should have started the preparation earlier.
 **A.** 1-(c) must, 2-(b) could, 3-(b) might, 4-(c) shouldn't
 
 **B.**
-1. This form can handle various types of income.
+1. This app can handle various types of files.
 2. You should review the documents before submission.
-3. The delivery of the documents might have been delayed.
+3. The package delivery might have been delayed.
 4. We could have fixed that mistake yesterday.
 
 **C.** 1-cannot (can't), 2-must, 3-should
@@ -325,8 +325,8 @@ We could move to the new office next quarter.
 Could you check my report?
 (제 보고서를 확인해 주실 수 있을까요?)
 
-Could you explain the tax calculation method?
-(세금 계산 방법을 설명해 주실 수 있을까요?)
+Could you explain the pricing method?
+(가격 책정 방법을 설명해 주실 수 있을까요?)
 ```
 
 비교:
@@ -382,37 +382,37 @@ The answer may be surprising.  (놀라울 수 있다 — 40%)
 The answer might be wrong.     (틀릴지도 모른다 — 20%)
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인 — 공손한 고객 응대**:
+**공손한 요청/응대**:
 
 ```
 직접적 (부자연스러움):
-"Can you send your tax documents?"
+"Can you send the project files?"
 
 공손한 (자연스러움):
-"Could you send your tax documents by next Friday?"
-(금요일까지 세무 서류를 보내주실 수 있을까요?)
+"Could you send the project files by next Friday?"
+(금요일까지 프로젝트 파일을 보내주실 수 있을까요?)
 
 더 공손한:
-"Would you be able to send your tax documents at your earliest convenience?"
-(편하실 때 세무 서류를 보내주실 수 있으시겠습니까?)
+"Would you be able to send the project files at your earliest convenience?"
+(편하실 때 프로젝트 파일을 보내주실 수 있으시겠습니까?)
 ```
 
-**세무 도메인 — 가능성 표현**:
+**가능성 표현**:
 
 ```
-The taxpayer could qualify for a small business deduction.
-(그 납세자는 소기업 공제 자격이 될 수도 있습니다.)
+The new employee could qualify for the mentoring program.
+(그 신입 사원은 멘토링 프로그램 대상이 될 수도 있습니다.)
 
-This income would be taxable if the exemption doesn't apply.
-(면제가 적용되지 않으면 이 소득은 과세 대상이 될 것입니다.)
+This product would sell well if the marketing campaign succeeds.
+(마케팅 캠페인이 성공하면 이 제품이 잘 팔릴 것입니다.)
 
-The penalty might be waived if the taxpayer files an appeal.
-(납세자가 이의를 제기하면 과태료가 면제될 수도 있습니다.)
+The late fee might be waived if the customer contacts support.
+(고객이 고객센터에 연락하면 연체료가 면제될 수도 있습니다.)
 ```
 
-**일반 비즈니스 도메인 — 업무 소통에서의 공손 표현**:
+**업무 소통에서의 공손 표현**:
 
 ```
 "Could you review this report by tomorrow?"
@@ -507,29 +507,29 @@ The penalty might be waived if the taxpayer files an appeal.
 다음 두 문장을 보자:
 
 ```
-I hired an accountant. The accountant knows tax law well.
-(나는 회계사를 고용했다. 그 회계사는 세법을 잘 안다.)
+I hired a tutor. The tutor speaks English fluently.
+(나는 과외 선생님을 고용했다. 그 선생님은 영어를 유창하게 한다.)
 ```
 
-이렇게 두 문장으로 쓰면 **유치하고 반복적**이다. "accountant"가 두 번 나온다. 한국어에서도 마찬가지다:
+이렇게 두 문장으로 쓰면 **유치하고 반복적**이다. "tutor"가 두 번 나온다. 한국어에서도 마찬가지다:
 
 ```
-나는 회계사를 고용했다. 그 회계사는 세법을 잘 안다.
-→ 나는 세법을 잘 아는 회계사를 고용했다.
+나는 과외 선생님을 고용했다. 그 선생님은 영어를 유창하게 한다.
+→ 나는 영어를 유창하게 하는 과외 선생님을 고용했다.
 ```
 
 한국어는 **관형절(~는, ~은, ~하는)**을 명사 앞에 놓아서 결합한다.
 영어는 **관계대명사(who, which, that)**를 사용해서 명사 뒤에 설명을 붙인다.
 
 ```
-I hired an accountant who knows tax law well.
+I hired a tutor who speaks English fluently.
 ```
 
 **핵심 차이**: 한국어는 꾸미는 말이 명사 **앞**에, 영어는 명사 **뒤**에 온다.
 
 ```
-한국어: [세법을 잘 아는] + 회계사       ← 수식어가 앞
-영어:   an accountant + [who knows tax law well]  ← 수식어가 뒤
+한국어: [영어를 유창하게 하는] + 과외 선생님       ← 수식어가 앞
+영어:   a tutor + [who speaks English fluently]  ← 수식어가 뒤
 ```
 
 이 **어순의 차이**가 한국인 영어 학습자가 관계대명사를 어려워하는 가장 큰 이유다.
@@ -541,7 +541,7 @@ I hired an accountant who knows tax law well.
 | 관계대명사 | 선행사 | 역할 | 예문 |
 |-----------|--------|------|------|
 | **who** | 사람 | 주어 | The person **who** prepared this report... |
-| **whom** | 사람 | 목적어 | The accountant **whom** I hired... |
+| **whom** | 사람 | 목적어 | The trainer **whom** I hired... |
 | **which** | 사물 | 주어/목적어 | The error **which** caused the problem... |
 | **that** | 사람/사물 | 주어/목적어 | The document **that** we submitted... |
 | **whose** | 사람/사물 | 소유 | The team **whose** work was excellent... |
@@ -550,14 +550,14 @@ I hired an accountant who knows tax law well.
 
 ```
 Step 1: 두 문장에서 공통 요소를 찾는다.
-  → I met an accountant. + The accountant prepared our tax return.
-  → 공통: "accountant"
+  → I met a designer. + The designer created our company logo.
+  → 공통: "designer"
 
 Step 2: 두 번째 문장의 공통 요소를 관계대명사로 바꾼다.
-  → The accountant → who
+  → The designer → who
 
 Step 3: 관계대명사를 선행사 바로 뒤에 놓는다.
-  → I met an accountant who prepared our tax return.
+  → I met a designer who created our company logo.
 ```
 
 **최소 문장으로 연습:**
@@ -578,9 +578,9 @@ I know a company. + The company's growth has been impressive.
 **Step 1: 기본 — who/which/that**
 
 ```
-The accountant who prepared the return is on our team.
-The document which contains the financial data is ready.
-The form that we use for tax filing is Form 110.
+The colleague who prepared the presentation is on our team.
+The document which contains the project data is ready.
+The template that we use for monthly reports is easy to follow.
 ```
 
 **Step 2: 목적격 관계대명사 (생략 가능)**
@@ -588,9 +588,9 @@ The form that we use for tax filing is Form 110.
 관계대명사가 **목적어** 역할을 할 때는 생략할 수 있다:
 
 ```
-The accountant (whom/that) I hired is talented.
+The trainer (whom/that) I hired is talented.
                 ↑ 생략 가능
-→ The accountant I hired is talented.
+→ The trainer I hired is talented.
 
 The method (which/that) we chose is effective.
                   ↑ 생략 가능
@@ -600,8 +600,8 @@ The method (which/that) we chose is effective.
 **주어 역할일 때는 생략 불가:**
 
 ```
-The accountant who prepared the return... (O)
-The accountant prepared the return...     (X) ← 주어가 둘이 되어 문장이 깨진다
+The colleague who prepared the presentation... (O)
+The colleague prepared the presentation...     (X) ← 주어가 둘이 되어 문장이 깨진다
 ```
 
 **Step 3: whose — 소유 관계 표현**
@@ -630,45 +630,45 @@ She is the manager. + I report to the manager.
 **Step 5: 긴 관계절 — 실무에서 흔한 형태**
 
 ```
-The tax regulation that the government introduced in January 2025,
-which affects all businesses with annual revenue over 500 million won,
-requires additional documentation for overseas transactions.
-(정부가 2025년 1월에 도입한 세금 규정은 — 연매출 5억 원 이상의 모든
-사업체에 영향을 미치는 — 해외 거래에 대한 추가 문서를 요구한다.)
+The policy that the company introduced in January 2025,
+which affects all employees with more than two years of service,
+requires additional training for overseas assignments.
+(회사가 2025년 1월에 도입한 정책은 — 2년 이상 근속한 모든
+직원에게 적용되는 — 해외 파견에 대한 추가 교육을 요구한다.)
 
-The accountant who handles our corporate tax returns and communicates
-with the National Tax Service has been on leave since last week.
-(우리 법인세 신고를 처리하고 국세청과 소통하는 회계사가
+The manager who oversees our customer service department and communicates
+with major clients has been on leave since last week.
+(우리 고객서비스 부서를 관할하고 주요 고객과 소통하는 매니저가
 지난주부터 휴가 중이다.)
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
-
-```
-The taxpayer who filed late will receive a penalty notice.
-(늦게 신고한 납세자는 과태료 통지를 받을 것이다.)
-
-Expenses that exceed 10 million won must be reported separately.
-(1,000만 원을 초과하는 비용은 별도로 신고해야 한다.)
-
-The deduction whose eligibility criteria changed in 2025 affects
-small business owners.
-(2025년에 자격 기준이 변경된 공제는 소상공인에게 영향을 미친다.)
-
-The tax return that we submitted last week is under review.
-(지난주에 제출한 세금 신고서가 검토 중이다.)
-
-The accountant whom the client requested is currently unavailable.
-(고객이 요청한 회계사는 현재 부재 중이다.)
-```
-
-**일반 비즈니스 도메인:**
+**직장/일상생활:**
 
 ```
-The manager who oversees the finance department retired last month.
-(재무부를 총괄하는 매니저가 지난달 퇴직했다.)
+The student who submitted late will receive a lower grade.
+(늦게 제출한 학생은 낮은 점수를 받을 것이다.)
+
+Orders that exceed 100,000 won qualify for free shipping.
+(10만 원을 초과하는 주문은 무료 배송 대상이다.)
+
+The scholarship whose eligibility criteria changed in 2025 affects
+many university students.
+(2025년에 자격 기준이 변경된 장학금은 많은 대학생에게 영향을 미친다.)
+
+The application that we submitted last week is under review.
+(지난주에 제출한 신청서가 검토 중이다.)
+
+The doctor whom the patient requested is currently unavailable.
+(환자가 요청한 의사는 현재 부재 중이다.)
+```
+
+**프로젝트/고객 소통:**
+
+```
+The manager who oversees the marketing department retired last month.
+(마케팅부를 총괄하는 매니저가 지난달 퇴직했다.)
 
 The contract which we signed last year expires in December.
 (작년에 서명한 계약이 12월에 만료된다.)
@@ -689,16 +689,16 @@ requires mandatory training every quarter.
 **A. 두 문장을 관계대명사로 합치시오**
 
 ```
-1. I interviewed a candidate. + The candidate has 5 years of accounting experience.
+1. I interviewed a candidate. + The candidate has 5 years of marketing experience.
    → __________________________________________________
 
-2. We use a method. + The method simplifies tax calculations.
+2. We use a method. + The method simplifies data analysis.
    → __________________________________________________
 
 3. I work with a team lead. + The team lead's experience spans 15 years.
    → __________________________________________________
 
-4. She found an error. + The error affected the final tax amount.
+4. She found an error. + The error affected the final total.
    → __________________________________________________
 ```
 
@@ -708,17 +708,17 @@ requires mandatory training every quarter.
 1. The report that we prepared last month is now approved.
    → __________________________________________________
 
-2. The accountant who handles this client is on vacation.
+2. The manager who handles this project is on vacation.
    → __________________________________________________
 
-3. The form that I mentioned in the meeting is Form 110.
+3. The template that I mentioned in the meeting is on the shared drive.
    → __________________________________________________
 ```
 
 **C. 한국어 → 영어 작문**
 
 ```
-1. 세금 신고를 처리하는 담당자가 매일 고객을 만난다.
+1. 고객 문의를 처리하는 담당자가 매일 회의에 참석한다.
    → __________________________________________________
 
 2. 내가 어제 검토한 서류에 실수가 있었다.
@@ -732,18 +732,18 @@ requires mandatory training every quarter.
 <summary>정답 확인</summary>
 
 **A.**
-1. I interviewed a candidate who has 5 years of accounting experience.
-2. We use a method that simplifies tax calculations.
+1. I interviewed a candidate who has 5 years of marketing experience.
+2. We use a method that simplifies data analysis.
 3. I work with a team lead whose experience spans 15 years.
-4. She found an error that affected the final tax amount.
+4. She found an error that affected the final total.
 
 **B.**
 1. The report we prepared last month is now approved. (생략 가능 — 목적격)
-2. The accountant who handles this client is on vacation. (생략 불가 — 주격)
-3. The form I mentioned in the meeting is Form 110. (생략 가능 — 목적격)
+2. The manager who handles this project is on vacation. (생략 불가 — 주격)
+3. The template I mentioned in the meeting is on the shared drive. (생략 가능 — 목적격)
 
 **C.**
-1. The person who handles tax filing meets clients every day.
+1. The person who handles customer inquiries attends meetings every day.
 2. The document (that) I reviewed yesterday had a mistake.
 3. We should select a team whose performance is excellent.
 
@@ -755,7 +755,7 @@ requires mandatory training every quarter.
 
 #### 1. WHY — 관계부사는 왜 따로 존재하는가?
 
-관계대명사는 **명사**를 대체한다 (who = the accountant, which = the error).
+관계대명사는 **명사**를 대체한다 (who = the colleague, which = the error).
 하지만 때로는 **장소, 시간, 이유** 같은 부사적 정보를 연결해야 할 때가 있다.
 
 ```
@@ -865,34 +865,34 @@ which is likely in the calculation step.
 (실수가 발생한 정확한 지점을 찾아야 하는데,
 그것은 계산 단계에 있을 가능성이 높다.)
 
-The quarter when we adopted the new tax system was Q3 2025,
-and that was also when we hired three new accountants.
-(새 세금 시스템을 도입한 분기는 2025년 3분기였고,
-그때 회계사 세 명을 채용하기도 했다.)
+The quarter when we adopted the new project management tool was Q3 2025,
+and that was also when we hired three new team members.
+(새 프로젝트 관리 도구를 도입한 분기는 2025년 3분기였고,
+그때 팀원 세 명을 채용하기도 했다.)
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
+**직장/일상생활:**
 
 ```
-The fiscal year when the new tax law takes effect is 2026.
-(새 세법이 시행되는 회계연도는 2026년이다.)
+The semester when the new curriculum takes effect is Fall 2026.
+(새 교육과정이 시행되는 학기는 2026년 가을이다.)
 
-This is the form where you report your overseas income.
-(이것이 해외 소득을 신고하는 양식이다.)
+This is the website where you register for the conference.
+(이것이 컨퍼런스에 등록하는 웹사이트이다.)
 
-The reason why the deduction was denied is insufficient documentation.
-(공제가 거부된 이유는 불충분한 서류 때문이다.)
+The reason why the application was denied is insufficient documentation.
+(신청이 거부된 이유는 불충분한 서류 때문이다.)
 
-Can you explain how the withholding tax is calculated?
-(원천징수세가 어떻게 계산되는지 설명해 주시겠습니까?)
+Can you explain how the scoring system works?
+(점수 체계가 어떻게 작동하는지 설명해 주시겠습니까?)
 
-The office where taxpayers submit their returns is on the second floor.
-(납세자가 신고서를 제출하는 사무실은 2층에 있다.)
+The counter where customers pick up their orders is on the first floor.
+(고객이 주문을 수령하는 카운터는 1층에 있다.)
 ```
 
-**일반 비즈니스 도메인:**
+**프로젝트/고객 소통:**
 
 ```
 The conference room where we hold weekly meetings is being renovated.
@@ -904,8 +904,8 @@ The period when we receive the most client inquiries is March to May.
 This is why we revised our workflow last year.
 (이것이 우리가 작년에 업무 흐름을 개선한 이유다.)
 
-Let me show you how the new filing system works.
-(새로운 서류 정리 시스템이 어떻게 작동하는지 보여드리겠습니다.)
+Let me show you how the new scheduling system works.
+(새로운 일정 관리 시스템이 어떻게 작동하는지 보여드리겠습니다.)
 ```
 
 #### 5. PRACTICE — 직접 문장 만들기 연습
@@ -913,23 +913,23 @@ Let me show you how the new filing system works.
 **A. where, when, why, how 중 적절한 것을 고르시오**
 
 ```
-1. This is the office _______ we keep all the tax records.
+1. This is the office _______ we keep all the archived files.
    → where / when / why / how
 
 2. I don't know _______ the deadline was extended.
    → where / when / why / how
 
-3. The time _______ the filing period begins is January 1st.
+3. The time _______ the registration period begins is January 1st.
    → where / when / why / how
 
-4. Show me _______ you organized the client files.
+4. Show me _______ you organized the project files.
    → where / when / why / how
 ```
 
 **B. 관계부사 vs 관계대명사 — 적절한 것을 고르시오**
 
 ```
-1. The office _______ handles our tax returns is downtown.
+1. The office _______ handles our shipping orders is downtown.
    → where / which
 
 2. The office _______ the meeting was held is downtown.
@@ -948,7 +948,7 @@ Let me show you how the new filing system works.
 1. 이것이 우리가 이 절차를 선택한 이유다.
    → __________________________________________________
 
-2. 세금 신고서를 제출하는 웹사이트가 점검 중이다.
+2. 온라인 수강 신청을 하는 웹사이트가 점검 중이다.
    → __________________________________________________
 
 3. 문제가 발생한 시간은 새벽 3시였다.
@@ -964,7 +964,7 @@ Let me show you how the new filing system works.
 
 **C.**
 1. This is why we chose this procedure.
-2. The website where you submit tax returns is under maintenance.
+2. The website where you register for courses is under maintenance.
 3. The time when the problem occurred was 3 AM.
 
 </details>
@@ -1020,11 +1020,11 @@ Our team leader, who has 20 years of experience, approved the plan.
 
 ```
 제한적: that 또는 which 사용 가능 (미국식은 that 선호)
-  → The document that/which contains the tax data...
+  → The document that/which contains the project data...
 
 계속적: which만 사용 가능 (that 불가)
-  → Our main document, which contains the tax data, ...
-  → Our main document, that contains the tax data, ... (X) ← 틀림!
+  → Our main document, which contains the project data, ...
+  → Our main document, that contains the project data, ... (X) ← 틀림!
 ```
 
 #### 3. EXPAND — 짧은 문장에서 복잡한 문장으로
@@ -1064,43 +1064,42 @@ Pattern 3: 절 전체를 받는 which
 **제한적 용법으로 정교하게 대상 특정하기:**
 
 ```
-The tax returns that were filed after the deadline will incur penalties.
-(마감일 이후에 제출된 세금 신고서는 과태료가 부과될 것이다.)
+The assignments that were submitted after the deadline will receive lower grades.
+(마감일 이후에 제출된 과제는 낮은 점수를 받을 것이다.)
 → "마감일 이후에 제출된 것만" — 나머지는 해당 없음
 
-The invoices that lack proper documentation need immediate attention.
-(적절한 증빙이 없는 청구서들은 즉시 주의가 필요하다.)
-→ "증빙이 없는 청구서만" — 나머지는 해당 없음
+The packages that lack proper labeling need immediate attention.
+(적절한 라벨이 없는 택배들은 즉시 주의가 필요하다.)
+→ "라벨이 없는 택배만" — 나머지는 해당 없음
 
-The clients that require bilingual service are listed in this file.
+The customers that require bilingual service are listed in this file.
 (이중 언어 서비스가 필요한 고객들이 이 파일에 나열되어 있다.)
 → "이중 언어 서비스가 필요한 고객만" — 나머지는 제외
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
+**직장/일상생활:**
 
 ```
 제한적:
-Taxpayers who earn more than 50 million won must file a comprehensive
-income tax return.
-(5,000만 원 이상을 버는 납세자는 종합소득세 신고를 해야 한다.)
-→ "5,000만 원 이상 버는" 납세자만 해당
+Employees who work more than 40 hours a week are eligible for overtime pay.
+(주 40시간 이상 근무하는 직원은 초과 근무 수당 대상이다.)
+→ "40시간 이상 근무하는" 직원만 해당
 
 계속적:
-The National Tax Service, which oversees all tax collection in Korea,
-announced new guidelines for digital asset taxation.
-(국세청은 — 한국의 모든 세금 징수를 관할하는 — 디지털 자산 과세에 대한
+The World Health Organization, which monitors global health issues,
+announced new guidelines for pandemic preparedness.
+(세계보건기구는 — 전 세계 보건 문제를 모니터링하는 — 팬데믹 대비에 대한
 새로운 지침을 발표했다.)
-→ 국세청은 하나. 관계절은 부가 설명.
+→ 세계보건기구는 하나. 관계절은 부가 설명.
 
 절 전체를 받는 which:
-The client missed the filing deadline, which resulted in a 20% penalty.
-(고객이 신고 기한을 놓쳤고, 그 결과 20% 과태료가 부과되었다.)
+The restaurant forgot our reservation, which ruined our anniversary dinner.
+(식당이 우리 예약을 잊어버렸고, 그 결과 기념일 저녁이 망했다.)
 ```
 
-**일반 비즈니스 도메인:**
+**프로젝트/고객 소통:**
 
 ```
 제한적:
@@ -1124,30 +1123,30 @@ a significant amount of money.
 **A. 제한적 vs 계속적 — 콤마가 필요한 곳에 콤마를 추가하시오**
 
 ```
-1. The National Tax Service which is the main tax authority in Korea
+1. The Ministry of Education which oversees all schools in Korea
    announced new regulations.
    → __________________________________________________
 
 2. The documents that require signatures are on your desk.
    → __________________________________________________
 
-3. Our team lead who has a tax accounting background designed
+3. Our team lead who has a data analysis background designed
    the new workflow.
    → __________________________________________________
 
-4. The clients that have annual income above 100 million won
-   need extra attention.
+4. The customers that have placed orders above 1 million won
+   need priority handling.
    → __________________________________________________
 ```
 
 **B. that vs which — 적절한 것을 고르시오**
 
 ```
-1. The form _______ we use for income reporting is Form 110.
+1. The template _______ we use for monthly reporting is Template A.
    → that / which (둘 다 가능)
 
-2. Form 110, _______ was revised last year, now includes
-   a section for overseas income.
+2. Template A, _______ was revised last year, now includes
+   a section for customer feedback.
    → that / which
 
 3. The error _______ caused the wrong calculation has been corrected.
@@ -1175,10 +1174,10 @@ a significant amount of money.
 <summary>정답 확인</summary>
 
 **A.**
-1. The National Tax Service, which is the main tax authority in Korea, announced new regulations. (계속적 — 국세청은 고유명사)
+1. The Ministry of Education, which oversees all schools in Korea, announced new regulations. (계속적 — 교육부는 고유명사)
 2. (그대로) The documents that require signatures are on your desk. (제한적 — 서명이 필요한 것만)
-3. Our team lead, who has a tax accounting background, designed the new workflow. (계속적 — 팀 리드는 한 명)
-4. (그대로) The clients that have annual income above 100 million won need extra attention. (제한적 — 해당 소득 이상 고객만)
+3. Our team lead, who has a data analysis background, designed the new workflow. (계속적 — 팀 리드는 한 명)
+4. (그대로) The customers that have placed orders above 1 million won need priority handling. (제한적 — 해당 금액 이상 고객만)
 
 **B.** 1-that/which, 2-which (계속적은 which만), 3-that/which, 4-which (계속적은 which만)
 
@@ -1286,9 +1285,9 @@ Level 4: 연속 동작 (순서)
   → I gathered the data, organized the spreadsheet, and sent the email.
 
 Level 5: 복합 문장
-  → The accounting team reviewed the financial statements and
-    prepared the tax returns, and the legal team checked the
-    contracts and updated the compliance records.
+  → The marketing team reviewed the campaign results and
+    prepared the quarterly summary, and the sales team checked the
+    leads and updated the customer database.
 ```
 
 **or의 확장:**
@@ -1346,37 +1345,36 @@ The client's request was urgent, so we prioritized it immediately.
 (고객의 요청이 급했기 때문에 즉시 우선순위로 처리했다.)
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
+**직장/일상생활:**
 
 ```
 and (나열):
-The taxpayer must report all domestic and overseas income.
-(납세자는 모든 국내 및 해외 소득을 신고해야 한다.)
+Pack your passport and your boarding pass before leaving.
+(출발 전에 여권과 탑승권을 챙겨라.)
 
-Prepare the income statement, calculate the tax liability,
-and submit the return before the deadline.
-(손익계산서를 준비하고, 세금 부채를 계산하고, 마감일 전에 신고서를 제출하라.)
+Gather the ingredients, follow the recipe step by step,
+and serve the dish while it's hot.
+(재료를 모으고, 레시피를 단계별로 따르고, 뜨거울 때 음식을 내놓아라.)
 
 or (선택/경고):
-File your return on time, or you will face penalties.
-(제때 신고하시오, 그렇지 않으면 과태료에 직면할 것입니다.)
+Return the item within 30 days, or you will not get a refund.
+(30일 이내에 제품을 반품하시오, 그렇지 않으면 환불을 받을 수 없습니다.)
 
-You can claim the standard deduction or itemize your deductions.
-(표준 공제를 신청하거나 항목별 공제를 할 수 있습니다.)
+You can pay in full or choose the installment plan.
+(일시불로 결제하거나 할부를 선택할 수 있습니다.)
 
 but (대조):
-The client earned significant income this year, but most of it
-qualifies for tax exemptions.
-(고객이 올해 상당한 소득을 올렸지만, 대부분 세금 면제 대상이다.)
+The hotel had a great location, but the rooms were too small.
+(호텔 위치는 좋았지만, 객실이 너무 작았다.)
 
 so (결과):
-The tax law changed in 2025, so we need to update our procedures.
-(2025년에 세법이 바뀌었으므로 절차를 업데이트해야 한다.)
+The traffic regulation changed in 2025, so we need to update our route.
+(2025년에 교통 규정이 바뀌었으므로 경로를 업데이트해야 한다.)
 ```
 
-**일반 비즈니스 도메인:**
+**프로젝트/고객 소통:**
 
 ```
 and:
@@ -1439,7 +1437,7 @@ We followed all the guidelines, yet the application was still rejected.
 **C. 한국어 → 영어 작문**
 
 ```
-1. 세금 신고서를 수정하거나 추가 서류를 제출하세요.
+1. 신청서를 수정하거나 추가 서류를 제출하세요.
    → __________________________________________________
 
 2. 서비스는 빠르고, 정확하고, 가격도 합리적이다.
@@ -1460,7 +1458,7 @@ We followed all the guidelines, yet the application was still rejected.
 3. We reorganized the filing system and updated the client database.
 
 **C.**
-1. Amend your tax return, or submit additional documents.
+1. Revise your application, or submit additional documents.
 2. The service is fast, accurate, and reasonably priced.
 3. All preparations are complete, so we can start the presentation.
 
@@ -1525,11 +1523,11 @@ We followed all the guidelines, yet the application was still rejected.
 
 ```
 Level 1: If it's wrong, fix it.
-Level 2: If the client sends the documents late, the filing will be delayed.
-Level 3: If the tax return contains errors, correct them immediately
-         and notify the client.
-Level 4: If the annual income exceeds 80 million won and the client
-         has overseas assets, additional reporting is required.
+Level 2: If the customer sends the documents late, the order will be delayed.
+Level 3: If the report contains errors, correct them immediately
+         and notify the manager.
+Level 4: If the project budget exceeds 80 million won and the scope
+         includes overseas partners, additional approval is required.
 ```
 
 **unless — 부정 조건 (if not):**
@@ -1551,8 +1549,8 @@ Don't finalize the report unless the manager has approved it.
 When the client arrives, offer them a drink.
 (고객이 도착하면 음료를 제공하라.)
 
-When the fiscal year ends, all accounts must be reconciled.
-(회계연도가 끝나면 모든 계정을 정산해야 한다.)
+When the school year ends, all grades must be finalized.
+(학년이 끝나면 모든 성적이 확정되어야 한다.)
 
 Notify the team when the report is complete.
 (보고서가 완료되면 팀에 알려라.)
@@ -1601,12 +1599,12 @@ Check the numbers before signing the contract.
 **while — 동시성:**
 
 ```
-While the auditor reviews the books, don't make any changes to the records.
-(감사관이 장부를 검토하는 동안 기록을 변경하지 마라.)
+While the inspector reviews the facility, don't make any changes to the setup.
+(검사관이 시설을 검토하는 동안 설정을 변경하지 마라.)
 
-While the sales team works on new clients, the accounting team will
-process the invoices.
-(영업팀이 신규 고객 작업을 하는 동안, 회계팀이 청구서를 처리할 것이다.)
+While the sales team works on new clients, the operations team will
+process the orders.
+(영업팀이 신규 고객 작업을 하는 동안, 운영팀이 주문을 처리할 것이다.)
 ```
 
 **so that — 목적:**
@@ -1615,48 +1613,48 @@ process the invoices.
 We organized the files so that anyone can find them easily.
 (누구나 쉽게 찾을 수 있도록 파일을 정리했다.)
 
-Keep detailed records so that we can prepare for the audit.
-(감사에 대비할 수 있도록 상세한 기록을 유지하라.)
+Keep detailed records so that we can track our progress.
+(진행 상황을 추적할 수 있도록 상세한 기록을 유지하라.)
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
+**직장/일상생활:**
 
 ```
 if:
-If the taxpayer's annual income exceeds 80 million won,
-the highest tax bracket applies.
-(납세자의 연간 소득이 8,000만 원을 초과하면 최고 세율이 적용된다.)
+If the customer's order exceeds 100,000 won,
+free shipping applies automatically.
+(고객의 주문이 10만 원을 초과하면 무료 배송이 자동 적용된다.)
 
 unless:
-The penalty cannot be waived unless the taxpayer provides valid
-documentation for the delay.
-(납세자가 지연에 대한 유효한 서류를 제출하지 않으면 과태료를 면제받을 수 없다.)
+The late fee cannot be waived unless the customer provides valid
+proof of the delivery issue.
+(고객이 배송 문제에 대한 유효한 증거를 제출하지 않으면 연체료를 면제받을 수 없다.)
 
 because:
-The deduction was rejected because the supporting documents
-were incomplete.
-(증빙 서류가 불완전했기 때문에 공제가 거부되었다.)
+The refund was rejected because the supporting photos
+were unclear.
+(증빙 사진이 불분명했기 때문에 환불이 거부되었다.)
 
 although:
-Although the client filed on time, the return was flagged for
-additional review due to unusually high deductions.
-(고객이 제때 신고했음에도, 비정상적으로 높은 공제액으로 인해
+Although the student submitted on time, the paper was flagged for
+additional review due to formatting errors.
+(학생이 제때 제출했음에도, 서식 오류로 인해
 추가 검토 대상으로 지정되었다.)
 
 before:
-Before submitting the tax return, verify all income sources
-and applicable deductions.
-(세금 신고서를 제출하기 전에, 모든 소득원과 적용 가능한 공제를 확인하라.)
+Before starting the renovation, verify all permits
+and safety requirements.
+(리모델링을 시작하기 전에, 모든 허가와 안전 요구사항을 확인하라.)
 
 so that:
-We automated the withholding tax calculation so that accountants
-can focus on complex cases.
-(회계사가 복잡한 사례에 집중할 수 있도록 원천징수세 계산을 자동화했다.)
+We automated the scheduling process so that managers
+can focus on strategic planning.
+(관리자가 전략 기획에 집중할 수 있도록 일정 관리 프로세스를 자동화했다.)
 ```
 
-**일반 비즈니스 도메인:**
+**프로젝트/고객 소통:**
 
 ```
 if:
@@ -1688,14 +1686,14 @@ prepares the quarterly budget.
 
 ```
 1. _______ the client sends all the required documents, we can begin
-   the tax review.
+   the project review.
    → if / although / because / while
 
 2. _______ accuracy is critical, we always double-check every calculation.
    → unless / because / although / when
 
-3. _______ the audit is in progress, no changes should be made
-   to the financial records.
+3. _______ the inspection is in progress, no changes should be made
+   to the inventory records.
    → if / while / because / unless
 
 4. The company performed well _______ the economy was in a downturn.
@@ -1718,7 +1716,7 @@ prepares the quarterly budget.
 3. The team worked overtime for two weeks. + They couldn't meet the deadline.
    → __________________________________________________
 
-4. We keep detailed records. + We can prepare for audits at any time.
+4. We keep detailed records. + We can track our progress at any time.
    → __________________________________________________
 ```
 
@@ -1747,7 +1745,7 @@ prepares the quarterly budget.
 1. The application was rejected because the form was filled out incorrectly.
 2. Always make a backup copy before you send important documents.
 3. Although the team worked overtime for two weeks, they couldn't meet the deadline.
-4. We keep detailed records so that we can prepare for audits at any time.
+4. We keep detailed records so that we can track our progress at any time.
 
 **C.**
 1. When the contract expires, it is automatically renewed.
@@ -1917,37 +1915,37 @@ We didn't realize that the mistake had been in the report for two weeks.
 (우리는 그 실수가 2주간 보고서에 있었다는 것을 깨닫지 못했다.)
 ```
 
-#### 4. DOMAIN — 세무 도메인 실제 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
+**직장/일상생활:**
 
 ```
-The tax authority confirmed that the refund would be processed
-within 30 business days.
-(세무 당국이 환급이 30 영업일 이내에 처리될 것이라고 확인했다.)
+The customer service team confirmed that the replacement would be shipped
+within 5 business days.
+(고객 서비스팀이 교체품이 5 영업일 이내에 발송될 것이라고 확인했다.)
 
-I believe that this expense qualifies as a business deduction.
-(이 비용이 사업 공제 대상이 된다고 생각합니다.)
+I believe that this recipe works better with fresh ingredients.
+(이 레시피는 신선한 재료를 사용하면 더 잘 된다고 생각합니다.)
 
-It is important that all income sources be reported accurately.
-(모든 소득원이 정확하게 신고되는 것이 중요하다.)
+It is important that all passengers arrive at the gate 30 minutes early.
+(모든 승객이 30분 일찍 탑승구에 도착하는 것이 중요하다.)
 
-The accountant noticed that the withholding tax had been
-calculated incorrectly.
-(회계사가 원천징수세가 잘못 계산되었다는 것을 알아차렸다.)
+The coach noticed that the player's form had been declining
+over the past few games.
+(코치는 선수의 기량이 최근 몇 경기 동안 떨어지고 있다는 것을 알아차렸다.)
 
-We assumed that the client had already filed last year's return,
-but it turned out that they hadn't.
-(우리는 고객이 이미 작년 신고를 했을 것으로 가정했지만,
-하지 않았던 것으로 밝혀졌다.)
+We assumed that the package had already been delivered,
+but it turned out that it hadn't.
+(우리는 택배가 이미 배달되었을 것으로 가정했지만,
+아직 배달되지 않았던 것으로 밝혀졌다.)
 
-The regulation states that all businesses with annual revenue
-exceeding 500 million won must submit quarterly VAT returns.
-(규정에 따르면 연매출 5억 원 이상의 모든 사업체는 분기별
-부가가치세 신고서를 제출해야 한다.)
+The school policy states that all students with more than
+five absences must submit a formal explanation.
+(학교 규정에 따르면 결석이 5회 이상인 모든 학생은
+공식 사유서를 제출해야 한다.)
 ```
 
-**일반 비즈니스 도메인:**
+**프로젝트/고객 소통:**
 
 ```
 I think that we should discuss this matter with the director.
@@ -2017,7 +2015,7 @@ to prevent similar mistakes in the future.
 4. 우리는 서류가 분실된 것을 깨닫지 못했다.
    → __________________________________________________
 
-5. 감사 결과, 3건의 세금 신고서에 오류가 있었다는 것이 밝혀졌다.
+5. 조사 결과, 3건의 주문서에 오류가 있었다는 것이 밝혀졌다.
    → __________________________________________________
 ```
 
@@ -2057,7 +2055,7 @@ Best regards,
 2. The person in charge reported that the problem had been resolved.
 3. It is important that all departments be able to manage their budgets independently.
 4. We didn't realize that the documents had been lost.
-5. The audit revealed that three tax returns contained errors.
+5. The investigation revealed that three purchase orders contained errors.
 
 **D.** 예시 답안:
 ```

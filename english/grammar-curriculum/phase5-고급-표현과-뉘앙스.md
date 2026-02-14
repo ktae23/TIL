@@ -119,16 +119,16 @@ and reduce the overtime that has been accumulating for months.
 **기획/전략에서:**
 ```
 기본: If we had more time, we could prepare better.
-확장: If we had more time before the filing deadline,
-      we could prepare a comprehensive review
-      that covers all the edge cases in the tax calculation.
+확장: If we had more time before the product launch,
+      we could prepare a comprehensive test plan
+      that covers all the edge cases in the user workflow.
 ```
 
 **문제 대응에서:**
 ```
 기본: If the process were smoother, we would finish on time.
-확장: If our filing process were more streamlined,
-      we would finish all client returns on time
+확장: If our review process were more streamlined,
+      we would finish all deliverables on time
       without the last-minute rush every quarter.
 ```
 
@@ -142,46 +142,46 @@ and reduce the overtime that has been accumulating for months.
 
 ---
 
-#### 4. DOMAIN — 세무 도메인 실전 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
-
-```
-If this income were classified as business income instead of employment income,
-the taxpayer would be subject to a significantly higher tax rate.
-(이 소득이 근로소득이 아니라 사업소득으로 분류된다면, 납세자는 훨씬 높은 세율을 적용받을 것이다.)
-
-If the taxpayer were eligible for the small business tax deduction,
-the total tax liability would decrease by approximately 30%.
-(납세자가 소기업 세액공제 대상이라면, 총 납세액이 약 30% 감소할 것이다.)
-
-If we were to apply the amended tax law retroactively,
-many previously filed returns would need to be corrected.
-(개정된 세법을 소급 적용한다면, 이전에 제출된 많은 신고서가 수정되어야 할 것이다.)
-
-If the tax filing deadline were extended by one month,
-our team could handle the workload more evenly.
-(세금 신고 기한이 한 달 연장된다면, 우리 팀이 업무량을 더 균등하게 처리할 수 있을 것이다.)
-```
-
-**일반 업무 도메인:**
+**직장/프로젝트:**
 
 ```
-If our office were located closer to the city center,
-more clients would visit us in person.
-(사무실이 도심에 더 가까이 있다면, 더 많은 고객이 직접 방문할 것이다.)
+If our team were allowed to work remotely twice a week,
+productivity would increase significantly.
+(우리 팀이 주 2회 원격 근무가 허용된다면, 생산성이 크게 높아질 것이다.)
 
-If we were using a more organized filing system,
-we could find client documents much faster.
-(더 체계적인 서류 정리 시스템을 사용하고 있다면, 고객 서류를 훨씬 빠르게 찾을 수 있을 것이다.)
+If the company were willing to invest in better equipment,
+employees would complete their tasks much faster.
+(회사가 더 좋은 장비에 투자할 의향이 있다면, 직원들이 업무를 훨씬 빠르게 완료할 것이다.)
 
-If every department followed the same reporting format,
-communication between teams would be much smoother.
-(모든 부서가 같은 보고 양식을 따른다면, 팀 간 소통이 훨씬 원활해질 것이다.)
+If we were to adopt a four-day workweek,
+employee satisfaction would improve dramatically.
+(주 4일제를 도입한다면, 직원 만족도가 극적으로 향상될 것이다.)
 
-If each branch had its own accounting specialist,
-client satisfaction would improve, but costs would increase.
-(각 지점에 자체 회계 전문가가 있다면, 고객 만족도는 높아지겠지만 비용은 증가할 것이다.)
+If the project deadline were extended by two weeks,
+our team could deliver a much higher-quality product.
+(프로젝트 마감이 2주 연장된다면, 우리 팀이 훨씬 더 높은 품질의 결과물을 제공할 수 있을 것이다.)
+```
+
+**일상생활:**
+
+```
+If our apartment were closer to the subway station,
+my daily commute would be much shorter.
+(아파트가 지하철역에 더 가까이 있다면, 일일 통근 시간이 훨씬 짧아질 것이다.)
+
+If I were better at cooking,
+I could save a lot of money by eating at home.
+(요리를 더 잘한다면, 집에서 먹어서 돈을 많이 절약할 수 있을 것이다.)
+
+If every student followed the same study schedule,
+exam preparation would be much more organized.
+(모든 학생이 같은 학습 일정을 따른다면, 시험 준비가 훨씬 체계적일 것이다.)
+
+If the gym were open 24 hours,
+more people would exercise after work.
+(체육관이 24시간 운영된다면, 더 많은 사람들이 퇴근 후에 운동할 것이다.)
 ```
 
 ---
@@ -192,30 +192,30 @@ client satisfaction would improve, but costs would increase.
 
 > 현실을 읽고, 가정법 문장을 완성하세요.
 
-1. 현실: I don't have the client's financial records.
-   가정법: If I _______ the client's financial records, I _______ complete the tax return.
+1. 현실: I don't have a car.
+   가정법: If I _______ a car, I _______ drive to work instead of taking the bus.
 
 2. 현실: Our office is not big enough.
    가정법: If our office _______ big enough, we _______ hire more staff.
 
-3. 현실: The tax guidelines are incomplete.
-   가정법: If the tax guidelines _______ complete, we _______ process returns much faster.
+3. 현실: The instructions are incomplete.
+   가정법: If the instructions _______ complete, we _______ finish the project much faster.
 
 4. 현실: I am not fluent in English.
    가정법: If I _______ fluent in English, I _______ participate more actively in global meetings.
 
-5. 현실: We don't have a dedicated accounting team.
-   가정법: If we _______ a dedicated accounting team, we _______ handle more clients.
+5. 현실: We don't have a dedicated design team.
+   가정법: If we _______ a dedicated design team, we _______ create better marketing materials.
 
 **B. 작문 연습 — 다음 상황을 가정법 과거로 표현하기**
 
 6. 당신은 신입 직원입니다. "내가 팀장이라면 업무 프로세스를 개선할 텐데"를 영어로:
    → _____________________________________________
 
-7. 현재 팀에 세무사가 없습니다. "세무사가 있다면 세무 상담을 더 빨리 처리할 수 있을 텐데"를 영어로:
+7. 현재 팀에 디자이너가 없습니다. "디자이너가 있다면 프레젠테이션을 더 빨리 완성할 수 있을 텐데"를 영어로:
    → _____________________________________________
 
-8. 환급 처리 시간이 느립니다. "처리 시간이 빠르다면 고객 만족도가 훨씬 좋을 텐데"를 영어로:
+8. 배송 처리 시간이 느립니다. "배송이 빠르다면 고객 만족도가 훨씬 좋을 텐데"를 영어로:
    → _____________________________________________
 
 **C. 오류 교정 — 가정법 실수 찾기**
@@ -235,8 +235,8 @@ client satisfaction would improve, but costs would increase.
 4. were / would (또는 could)
 5. had / could (또는 would)
 6. If I were the team leader, I would improve the work process.
-7. If we had a tax accountant, we could handle tax consultations faster.
-8. If the processing time were faster, customer satisfaction would be much better.
+7. If we had a designer, we could complete the presentation faster.
+8. If the delivery were faster, customer satisfaction would be much better.
 9. If I **were** you, I **would** use a different approach.
 10. If the deadline **were** longer, we would prepare better.
 
@@ -269,8 +269,8 @@ client satisfaction would improve, but costs would increase.
 
 | 구분 | 시점 | 공식 | 예문 |
 |---|---|---|---|
-| 가정법 과거 | 현재 반대 | If + 과거형, would + 동사원형 | If I **knew** accounting, I **would** apply. |
-| 가정법 과거완료 | 과거 반대 | If + had p.p., would have + p.p. | If I **had known** accounting, I **would have applied**. |
+| 가정법 과거 | 현재 반대 | If + 과거형, would + 동사원형 | If I **knew** the answer, I **would** tell you. |
+| 가정법 과거완료 | 과거 반대 | If + had p.p., would have + p.p. | If I **had known** the answer, I **would have told** you. |
 
 ---
 
@@ -321,7 +321,7 @@ and caused a formal complaint.
 If I had checked the numbers before submitting the report,
 the mistake wouldn't have reached the client
 and caused a formal complaint
-that damaged our firm's reputation during the busiest filing season.
+that damaged our team's reputation during the busiest quarter.
 ```
 
 **Step 5: 교훈 도출**
@@ -329,7 +329,7 @@ that damaged our firm's reputation during the busiest filing season.
 If I had checked the numbers before submitting the report,
 the mistake wouldn't have reached the client
 and caused a formal complaint
-that damaged our firm's reputation during the busiest filing season.
+that damaged our team's reputation during the busiest quarter.
 That experience taught me to never skip the review step again.
 ```
 
@@ -341,19 +341,19 @@ That experience taught me to never skip the review step again.
 
 | 시점 | 구조 | 예문 |
 |---|---|---|
-| 현재 소망 | I wish + 과거형 | I wish I **knew** more about tax law. |
-| 과거 후회 | I wish + had p.p. | I wish I **had studied** accounting earlier. |
+| 현재 소망 | I wish + 과거형 | I wish I **knew** more about data analysis. |
+| 과거 후회 | I wish + had p.p. | I wish I **had studied** programming earlier. |
 | 미래 소망 | I wish + would | I wish the client **would** stop changing the requirements. |
 
 ```
-I wish I had prepared the documents more thoroughly from the beginning.
-(처음부터 서류를 더 꼼꼼히 준비했더라면 좋았을 텐데.)
+I wish I had prepared the presentation more thoroughly from the beginning.
+(처음부터 발표 자료를 더 꼼꼼히 준비했더라면 좋았을 텐데.)
 
 I wish we had hired more staff before the busy season.
 (바쁜 시즌 전에 직원을 더 고용했더라면 좋았을 텐데.)
 
-I wish I understood the tax code better.
-(세법을 더 잘 이해하면 좋을 텐데.) — 현재 소망
+I wish I understood the company policy better.
+(회사 정책을 더 잘 이해하면 좋을 텐데.) — 현재 소망
 ```
 
 **as if / as though + 가정법 — "마치 ~인 것처럼":**
@@ -362,18 +362,18 @@ I wish I understood the tax code better.
 He talks as if he were the CEO.
 (그는 마치 CEO인 것처럼 말한다.) — 실제로는 CEO가 아님
 
-The office operates as if it had never been renovated.
-(사무실이 마치 리모델링된 적이 없는 것처럼 운영된다.)
+The building looks as if it had never been renovated.
+(그 건물은 마치 리모델링된 적이 없는 것처럼 보인다.)
 
-She works as though she had been in accounting for decades.
-(그녀는 마치 수십 년간 회계 일을 한 것처럼 일한다.)
+She cooks as though she had been a professional chef for decades.
+(그녀는 마치 수십 년간 전문 셰프였던 것처럼 요리한다.)
 ```
 
 **It's time + 가정법 — "~할 때가 되었다":**
 
 ```
-It's time we updated our filing procedures.
-(신고 절차를 업데이트할 때가 되었다.)
+It's time we updated our work procedures.
+(업무 절차를 업데이트할 때가 되었다.)
 
 It's time the company invested in better training programs.
 (회사가 더 나은 교육 프로그램에 투자할 때가 되었다.)
@@ -386,68 +386,68 @@ It's (high/about) time we moved to a larger office.
 
 ---
 
-#### 4. DOMAIN — 세무 도메인 실전 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인 — 과거 사실의 반대:**
-
-```
-If the taxpayer had filed the return on time,
-they wouldn't have incurred the late filing penalty.
-(납세자가 신고를 제때 했더라면, 가산세가 부과되지 않았을 것이다.)
-
-If we had applied the tax treaty provisions correctly,
-the withholding tax would have been much lower.
-(조세조약 조항을 정확히 적용했더라면, 원천징수세가 훨씬 낮았을 것이다.)
-
-If the tax office had processed the refund earlier,
-the taxpayer's cash flow wouldn't have been affected so severely.
-(세무서가 환급을 더 일찍 처리했더라면,
-납세자의 현금 흐름이 그렇게 심하게 영향받지 않았을 것이다.)
-
-I wish the client had reported all their freelance income.
-Now we need to file an amended return.
-(고객이 모든 프리랜서 소득을 보고했더라면 좋았을 텐데.
-이제 수정 신고를 해야 한다.)
-```
-
-**일반 업무 도메인 — 과거 실수 회고에서:**
+**직장/프로젝트 — 과거 사실의 반대:**
 
 ```
-If we had prepared for the busy season earlier,
-we would have handled the workload without any problems.
-(바쁜 시즌을 더 일찍 준비했더라면,
-업무량을 아무 문제 없이 처리했을 것이다.)
+If the team had submitted the report on time,
+they wouldn't have received a warning from the manager.
+(팀이 보고서를 제때 제출했더라면, 매니저로부터 경고를 받지 않았을 것이다.)
 
-If the new employee had received proper training,
-the filing error wouldn't have occurred.
-(신입 직원이 적절한 교육을 받았더라면,
-신고 오류가 발생하지 않았을 것이다.)
+If we had tested the product more thoroughly before launch,
+the number of customer complaints would have been much lower.
+(출시 전에 제품을 더 철저히 테스트했더라면, 고객 불만 건수가 훨씬 적었을 것이다.)
 
-If we had communicated the deadline clearly to all clients,
-fewer returns would have been filed late.
-(모든 고객에게 마감일을 명확하게 안내했더라면,
-늦게 제출되는 신고서가 더 적었을 것이다.)
+If the supplier had delivered the materials earlier,
+our production schedule wouldn't have been affected so severely.
+(공급업체가 자재를 더 일찍 배송했더라면,
+우리 생산 일정이 그렇게 심하게 영향받지 않았을 것이다.)
 
-I wish we had reviewed the client's records more carefully.
-The tax office found several discrepancies.
-(고객의 기록을 더 주의 깊게 검토했더라면 좋았을 텐데.
-세무서에서 여러 불일치를 발견했다.)
+I wish the client had provided all the requirements upfront.
+Now we need to redesign the entire layout.
+(고객이 모든 요구사항을 처음부터 제공했더라면 좋았을 텐데.
+이제 전체 레이아웃을 다시 디자인해야 한다.)
+```
+
+**일상생활 — 과거 실수 회고에서:**
+
+```
+If we had booked the hotel earlier,
+we would have gotten a much better room without any problems.
+(호텔을 더 일찍 예약했더라면,
+아무 문제 없이 훨씬 좋은 방을 잡았을 것이다.)
+
+If the student had attended the review sessions,
+the exam mistakes wouldn't have occurred.
+(학생이 복습 세션에 참석했더라면,
+시험 실수가 발생하지 않았을 것이다.)
+
+If we had checked the weather forecast before the trip,
+we wouldn't have been caught in the heavy rain.
+(여행 전에 일기예보를 확인했더라면,
+폭우에 걸리지 않았을 것이다.)
+
+I wish we had compared prices more carefully.
+We ended up paying twice as much for the same product.
+(가격을 더 주의 깊게 비교했더라면 좋았을 텐데.
+결국 같은 제품에 두 배를 지불하게 되었다.)
 ```
 
 **업무 회고 보고서 예문 (full paragraph):**
 
 ```
-Looking back at the incident, if we had double-checked the income figures
-on the client's tax return, the incorrect filing would not have caused
-the penalty notice from the National Tax Service. Furthermore, if our
+Looking back at the incident, if we had double-checked the data
+in the quarterly report, the incorrect figures would not have caused
+the embarrassing correction notice to all stakeholders. Furthermore, if our
 review process had included a second-person verification step,
-we could have identified the error before submission.
+we could have identified the error before distribution.
 We wish we had prioritized these improvements during the last quarter.
 
-(사건을 되돌아보면, 고객의 세금 신고서에 있는 소득 수치를
-재확인했더라면, 잘못된 신고가 국세청으로부터의 가산세 통보를
-초래하지 않았을 것이다. 또한 검토 과정에 이중 확인 단계가
-포함되어 있었더라면, 제출 전에 오류를 파악할 수 있었을 것이다.
+(사건을 되돌아보면, 분기 보고서에 있는 데이터를
+재확인했더라면, 잘못된 수치가 모든 이해관계자에게의 당혹스러운
+정정 통보를 초래하지 않았을 것이다. 또한 검토 과정에 이중 확인 단계가
+포함되어 있었더라면, 배포 전에 오류를 파악할 수 있었을 것이다.
 지난 분기에 이런 개선 사항을 우선시했더라면 좋았을 텐데.)
 ```
 
@@ -462,24 +462,24 @@ We wish we had prioritized these improvements during the last quarter.
 1. 과거 사실: We didn't double-check the report. The error went to the client.
    가정법: If we _______ _______ the report, the error _______ _______ _______ to the client.
 
-2. 과거 사실: The accountant didn't save a backup of the file. We lost critical data.
-   가정법: If the accountant _______ _______ a backup, we _______ _______ _______ critical data.
+2. 과거 사실: The team didn't save a backup of the file. We lost critical data.
+   가정법: If the team _______ _______ a backup, we _______ _______ _______ critical data.
 
-3. 과거 사실: I didn't study tax law. I couldn't answer the client's question.
-   가정법: If I _______ _______ tax law, I _______ _______ _______ the client's question.
+3. 과거 사실: I didn't study the manual. I couldn't answer the customer's question.
+   가정법: If I _______ _______ the manual, I _______ _______ _______ the customer's question.
 
-4. 과거 사실: The client didn't declare all income. They received a penalty.
-   가정법: If the client _______ _______ all income, they _______ _______ _______ a penalty.
+4. 과거 사실: The traveler didn't check the visa requirements. They were denied boarding.
+   가정법: If the traveler _______ _______ the visa requirements, they _______ _______ _______ denied boarding.
 
 **B. I wish / as if / It's time 연습**
 
-5. 후회: "회계를 더 일찍 배웠더라면 좋았을 텐데."
+5. 후회: "영어를 더 일찍 배웠더라면 좋았을 텐데."
    → I wish I _____________________________________________
 
-6. 현재 소망: "우리 팀에 경험 많은 세무사가 있으면 좋을 텐데."
+6. 현재 소망: "우리 팀에 경험 많은 디자이너가 있으면 좋을 텐데."
    → I wish we _____________________________________________
 
-7. "그는 마치 모든 세법을 아는 것처럼 말한다." (실제로는 모르는데)
+7. "그는 마치 모든 것을 아는 것처럼 말한다." (실제로는 모르는데)
    → He talks as if he _____________________________________________
 
 8. "사무실 인테리어를 새로 할 때가 되었다."
@@ -487,7 +487,7 @@ We wish we had prioritized these improvements during the last quarter.
 
 **C. 업무 회고 작문 — 다음 상황을 가정법으로 서술하시오**
 
-9. 상황: 세금 신고 마감일에 서류가 제대로 정리되지 않아 3건의 신고가 늦게 제출되었다. 고객 안내가 미흡했고, 확인 전화도 하지 않았다.
+9. 상황: 프로젝트 마감일에 자료가 제대로 정리되지 않아 3건의 보고서가 늦게 제출되었다. 팀 안내가 미흡했고, 확인 연락도 하지 않았다.
    → 가정법 과거완료 3문장으로 회고를 작성하세요.
 
 <details>
@@ -496,15 +496,15 @@ We wish we had prioritized these improvements during the last quarter.
 1. had double-checked / wouldn't have gone
 2. had saved / wouldn't have lost
 3. had studied / could have answered
-4. had declared / wouldn't have received
-5. had learned accounting earlier.
-6. had an experienced tax accountant on our team.
-7. knew all the tax laws. (현재 반대이므로 가정법 과거)
+4. had checked / wouldn't have been
+5. had learned English earlier.
+6. had an experienced designer on our team.
+7. knew everything. (현재 반대이므로 가정법 과거)
 8. renovated the office.
 9. (예시 답안)
-   If we had organized the documents properly before the deadline, the three returns would not have been filed late.
-   If we had provided clearer instructions to the clients, they would have submitted their documents on time.
-   If we had made confirmation calls a week before the deadline, we could have avoided this entire situation.
+   If we had organized the materials properly before the deadline, the three reports would not have been submitted late.
+   If we had provided clearer instructions to the team members, they would have prepared their sections on time.
+   If we had sent reminder messages a week before the deadline, we could have avoided this entire situation.
 
 </details>
 
@@ -570,7 +570,7 @@ This is the most efficient approach.
 
 ```
 This service is as reliable as the old one.
-Our branch is as busy as the headquarters during filing season.
+Our branch is as busy as the headquarters during the holiday season.
 ```
 
 **패턴 4: 열등 비교 — A is not as ~ as B / A is less ~ than B**
@@ -584,8 +584,8 @@ This method is less accurate than the standard procedure.
 
 | # | 비교 유형 | 문장 |
 |---|---|---|
-| 1 | 비교급 | Electronic filing is **more reliable** than paper filing **for** complex returns. |
-| 2 | 최상급 | This is **the fastest** method for processing refunds. |
+| 1 | 비교급 | Online shopping is **more convenient** than in-store shopping **for** busy people. |
+| 2 | 최상급 | This is **the fastest** route to the airport. |
 | 3 | 동등 | The new process is **as accurate as** the previous one. |
 | 4 | 열등 | The old system is **not as efficient as** the new one. |
 | 5 | 불규칙 | The revised procedure works **better than** the original. |
@@ -597,13 +597,13 @@ This method is less accurate than the standard procedure.
 **비교급 확장:**
 
 ```
-Step 1: Electronic filing is faster than paper filing.
-Step 2: Electronic filing is significantly faster than paper filing for individual returns.
-Step 3: Electronic filing is significantly faster than paper filing for individual returns,
-        especially when it comes to processing and confirmation.
-Step 4: In our experience, electronic filing proved to be significantly faster than paper filing
-        for individual returns, especially when it comes to processing and confirmation,
-        reducing the average turnaround time by approximately 60%.
+Step 1: Online ordering is faster than in-store shopping.
+Step 2: Online ordering is significantly faster than in-store shopping for everyday items.
+Step 3: Online ordering is significantly faster than in-store shopping for everyday items,
+        especially when it comes to comparing prices and reading reviews.
+Step 4: In our experience, online ordering proved to be significantly faster than in-store shopping
+        for everyday items, especially when it comes to comparing prices and reading reviews,
+        reducing the average shopping time by approximately 60%.
 ```
 
 **최상급 확장:**
@@ -616,7 +616,7 @@ Step 3: This is the most efficient method we have tried so far
 Step 4: Among all the approaches we evaluated during our quarterly review,
         this is the most efficient method we have tried so far
         in terms of both accuracy and processing speed,
-        making it the ideal choice for handling returns during the peak filing season.
+        making it the ideal choice for handling orders during the peak holiday season.
 ```
 
 **비교 표현의 다양한 강조/완화 표현:**
@@ -662,48 +662,48 @@ The regulations are becoming more and more complex.
 
 ---
 
-#### 4. DOMAIN — 세무 도메인 실전 예문
+#### 4. APPLY — 실전 예문
 
-**세무 도메인:**
-
-```
-The corporate tax rate is lower than the individual income tax rate
-for high-income brackets.
-(법인세율은 고소득 구간의 개인 소득세율보다 낮다.)
-
-The more deductions a taxpayer claims,
-the lower their effective tax rate becomes.
-(납세자가 공제를 많이 신청할수록, 실효 세율이 낮아진다.)
-
-Among all the tax filing methods,
-electronic filing is the fastest and most accurate.
-(모든 세금 신고 방법 중에서, 전자 신고가 가장 빠르고 정확하다.)
-
-The penalty for late filing is not as severe as
-the penalty for tax evasion.
-(지연 신고 가산세는 탈세에 대한 벌금만큼 심하지 않다.)
-```
-
-**일반 업무 도메인:**
+**쇼핑/소비:**
 
 ```
-The new automated process handles returns
-three times faster than the manual review process,
+The express delivery option is faster than standard shipping,
+but it costs almost twice as much.
+(빠른 배송 옵션이 일반 배송보다 빠르지만, 비용이 거의 두 배이다.)
+
+The more coupons you collect,
+the lower your total bill becomes.
+(쿠폰을 많이 모을수록, 총 청구 금액이 낮아진다.)
+
+Among all the streaming services available today,
+this one offers the best value for money.
+(오늘날 이용 가능한 모든 스트리밍 서비스 중에서, 이것이 가성비가 가장 좋다.)
+
+The fine for returning a library book late is not as severe as
+the fee for losing it completely.
+(도서관 책 연체료는 책을 완전히 분실했을 때의 비용만큼 심하지 않다.)
+```
+
+**직장/프로젝트:**
+
+```
+The new automated system processes orders
+three times faster than the manual workflow,
 while maintaining the same level of accuracy.
-(새로운 자동 처리 방식은 수동 검토 프로세스보다
-3배 빠르게 신고서를 처리하면서도 동일한 수준의 정확도를 유지한다.)
+(새로운 자동 시스템은 수동 작업 프로세스보다
+3배 빠르게 주문을 처리하면서도 동일한 수준의 정확도를 유지한다.)
 
-The more complex the tax scenario becomes,
+The more complex the project becomes,
 the more important it is to have experienced staff on the team.
-(세무 시나리오가 복잡해질수록,
+(프로젝트가 복잡해질수록,
 팀에 경험 많은 직원을 갖추는 것이 더 중요해진다.)
 
 Option A is simpler than Option B, but Option B is more thorough.
 (옵션 A가 옵션 B보다 단순하지만, 옵션 B가 더 철저하다.)
 
-Our firm's client satisfaction rating is the highest
-among all accounting firms in the region.
-(우리 법인의 고객 만족도 평점은 지역 내 모든 회계 법인 중 가장 높다.)
+Our store's customer satisfaction rating is the highest
+among all branches in the region.
+(우리 매장의 고객 만족도 평점은 지역 내 모든 지점 중 가장 높다.)
 ```
 
 ---
@@ -712,21 +712,21 @@ among all accounting firms in the region.
 
 **A. 빈칸 채우기**
 
-1. Electronic filing is _______ (reliable) _______ paper filing for complex returns.
+1. Online shopping is _______ (convenient) _______ in-store shopping for busy people.
 2. This is the _______ (efficient) method we have tested.
-3. The new process is 5 times _______ (fast) _______ the old one.
-4. The _______ (early) we prepare, the _______ (smooth) the filing season goes.
+3. The new system is 5 times _______ (fast) _______ the old one.
+4. The _______ (early) we prepare, the _______ (smooth) the event goes.
 5. This method is _______ _______ _______ (not / accurate / as) the standard procedure.
 
 **B. 비교 작문 — 다음을 영어로 표현하세요**
 
-6. "전자 신고는 서면 신고보다 기업 환경에서 더 널리 사용된다."
+6. "온라인 학습은 교실 수업보다 직장인에게 더 널리 활용된다."
    → _____________________________________________
 
 7. "이 방법이 우리가 테스트한 것 중 가장 빠르다."
    → _____________________________________________
 
-8. "새 서식의 처리 시간은 이전 버전만큼 빠르다."
+8. "새 앱의 응답 시간은 이전 버전만큼 빠르다."
    → _____________________________________________
 
 9. "업무가 복잡해질수록 실수가 많아진다."
@@ -734,26 +734,26 @@ among all accounting firms in the region.
 
 **C. 비교 표현을 사용한 제안서 작성**
 
-10. 당신은 현재의 수기 세금 계산 방식을 자동화된 방식으로 전환하자고 제안합니다. 비교급, 최상급, 동등 비교를 각각 1개 이상 사용하여 3-5문장의 제안서를 영어로 작성하세요.
+10. 당신은 현재의 수작업 재고 관리 방식을 자동화된 방식으로 전환하자고 제안합니다. 비교급, 최상급, 동등 비교를 각각 1개 이상 사용하여 3-5문장의 제안서를 영어로 작성하세요.
 
 <details>
 <summary>정답 보기</summary>
 
-1. more reliable than
+1. more convenient than
 2. most efficient
 3. faster than
 4. earlier / smoother
 5. not as accurate as
-6. Electronic filing is more widely used than paper filing in corporate environments.
+6. Online learning is more widely used than classroom instruction among working professionals.
 7. This is the fastest method we have tested.
-8. The new form's processing time is as fast as the previous version.
+8. The new app's response time is as fast as the previous version.
 9. The more complex the work becomes, the more mistakes are made.
 10. (예시 답안)
-    I propose switching our tax calculation process from manual to automated.
-    The automated method is significantly more accurate than manual calculation.
-    It handles large volumes of data better than our current approach, which is crucial during the busy filing season.
-    In our trial run, the automated process performed as well as manual review for simple cases
-    but was far superior for complex returns involving multiple income sources.
+    I propose switching our inventory management from manual to automated.
+    The automated method is significantly more accurate than manual tracking.
+    It handles large volumes of data better than our current approach, which is crucial during the busy holiday season.
+    In our trial run, the automated process performed as well as manual counting for small inventories
+    but was far superior for warehouses with thousands of items.
     Among all the options we evaluated,
     the automated system offers the best balance of speed, accuracy, and cost.
 
@@ -825,12 +825,12 @@ figure + out = 알아내다 (understand/solve)
 | 2 | **figure out** | 알아내다, 해결하다 | determine, solve | We need to **figure out** why the numbers don't match. |
 | 3 | **look into** | 조사하다 | investigate | I'll **look into** the discrepancy in the report. |
 | 4 | **come up with** | 생각해내다 | devise, conceive | She **came up with** a brilliant solution. |
-| 5 | **run into** | 우연히 만나다/부딪히다 | encounter | I **ran into** a problem with the filing. |
+| 5 | **run into** | 우연히 만나다/부딪히다 | encounter | I **ran into** a problem with the schedule. |
 | 6 | **turn out** | ~로 판명되다 | prove to be | It **turned out** to be a simple mistake. |
 | 7 | **break down** | 고장나다/분류하다 | malfunction, categorize | Can you **break down** the expenses by category? |
 | 8 | **roll out** | 시행하다, 출시하다 | implement, launch | We'll **roll out** the new process next month. |
 | 9 | **go back** | 되돌아가다 | return, revert | We had to **go back** to the old procedure. |
-| 10 | **start up** | 시작하다/설립하다 | launch, initiate | He **started up** his own accounting firm. |
+| 10 | **start up** | 시작하다/설립하다 | launch, initiate | He **started up** his own consulting business. |
 | 11 | **shut down** | 종료하다, 폐쇄하다 | close, terminate | The branch was **shut down** last year. |
 | 12 | **sign in / sign out** | 출근/퇴근 기록하다 | register arrival/departure | Please **sign in** at the front desk. |
 | 13 | **back up** | 백업하다, 뒷받침하다 | support, substantiate | Always **back up** important documents. / The data **backs up** our claim. |
@@ -839,15 +839,15 @@ figure + out = 알아내다 (understand/solve)
 | 16 | **slow down** | 느리게 하다, 속도를 줄이다 | decelerate | The heavy workload is **slowing down** the team. |
 | 17 | **point out** | 지적하다 | indicate, highlight | She **pointed out** a critical error in the report. |
 | 18 | **carry out** | 수행하다 | execute, perform | We need to **carry out** the audit carefully. |
-| 19 | **opt in / opt out** | 참여/탈퇴하다 | subscribe / unsubscribe | Clients can **opt out** of the automatic filing service. |
+| 19 | **opt in / opt out** | 참여/탈퇴하다 | subscribe / unsubscribe | Members can **opt out** of the newsletter service. |
 | 20 | **fill in** | 기입하다 | complete (a form) | Please **fill in** all the required fields. |
-| 21 | **check out** | 확인하다/살펴보다 | examine, review | **Check out** this new tax regulation. |
+| 21 | **check out** | 확인하다/살펴보다 | examine, review | **Check out** this new feature update. |
 | 22 | **come across** | 우연히 발견하다 | discover | I **came across** a useful guideline. |
 | 23 | **end up** | 결국 ~하게 되다 | eventually result in | We **ended up** redoing the entire report. |
 | 24 | **keep up with** | ~를 따라가다 | maintain pace with | It's hard to **keep up with** all the regulation changes. |
 | 25 | **cut down on** | 줄이다 | reduce | We need to **cut down on** unnecessary expenses. |
 | 26 | **go through** | 검토하다/겪다 | review, experience | Let me **go through** the client's records. |
-| 27 | **put off** | 미루다 | postpone, defer | Don't **put off** filing the returns. |
+| 27 | **put off** | 미루다 | postpone, defer | Don't **put off** submitting the report. |
 | 28 | **take on** | 맡다/떠맡다 | assume, undertake | She **took on** the most challenging client case. |
 | 29 | **bring up** | 꺼내다/언급하다 | mention, raise | He **brought up** an important concern. |
 | 30 | **wrap up** | 마무리하다 | conclude, finalize | Let's **wrap up** the meeting. |
@@ -860,34 +860,34 @@ figure + out = 알아내다 (understand/solve)
 
 ```
 기본: Set up a meeting.
-확장: Could you set up a meeting with the client
-      to discuss the amended tax return?
-고급: Before we can begin processing the new client's filings,
-      we need to set up a consultation
-      that covers their complete financial situation as thoroughly as possible.
+확장: Could you set up a meeting with the team
+      to discuss the project timeline?
+고급: Before we can begin onboarding the new hire,
+      we need to set up a training session
+      that covers the company's workflow and tools as thoroughly as possible.
 ```
 
 **figure out:**
 
 ```
 기본: I'll figure it out.
-확장: I'm trying to figure out why the tax calculation
-      shows a different amount than expected.
-고급: After spending three hours reviewing the documents,
+확장: I'm trying to figure out why the sales report
+      shows a different total than expected.
+고급: After spending three hours reviewing the data,
       we finally figured out that the root cause was
-      a misclassification of income
-      that only appeared in cases with multiple sources of revenue.
+      a duplicate entry in the spreadsheet
+      that only appeared in cases with multiple product categories.
 ```
 
 **run into:**
 
 ```
 기본: I ran into a problem.
-확장: I ran into an unexpected discrepancy
-      in the client's financial statements.
-고급: While reviewing the quarterly tax filings,
-      we ran into a complicated issue with foreign income reporting
-      that required us to consult with an international tax specialist.
+확장: I ran into an unexpected error
+      while updating the customer database.
+고급: While preparing the quarterly sales report,
+      we ran into a complicated issue with data formatting
+      that required us to consult with the IT support team.
 ```
 
 **come up with:**
@@ -895,10 +895,10 @@ figure + out = 알아내다 (understand/solve)
 ```
 기본: We came up with a solution.
 확장: The team came up with a practical solution
-      to the filing backlog problem.
+      to the scheduling conflict problem.
 고급: During the staff meeting,
-      our senior accountant came up with an innovative scheduling strategy
-      that reduced the average processing time for tax returns
+      our senior manager came up with an innovative scheduling strategy
+      that reduced the average delivery time for orders
       from 5 business days to just 2.
 ```
 
@@ -906,10 +906,10 @@ figure + out = 알아내다 (understand/solve)
 
 ```
 기본: We rolled out the new process. / We went back to the old one.
-확장: We rolled out the new filing procedure last Tuesday,
+확장: We rolled out the new scheduling system last Tuesday,
       but had to go back to the old one within two days
-      due to confusion among the staff about the new forms.
-고급: After carefully rolling out the new client intake process
+      due to confusion among the staff about the new interface.
+고급: After carefully rolling out the new customer intake process
       to our downtown branch first as a trial,
       we observed a 15% increase in processing errors
       and made the decision to go back to the previous procedure
@@ -944,25 +944,25 @@ figure + out = 알아내다 (understand/solve)
 
 ---
 
-#### 4. DOMAIN — 세무 도메인 실전 예문
+#### 4. APPLY — 실전 예문
 
 **이메일/대화에서 흔히 쓰는 구동사:**
 
 ```
-"Can you look into why the tax calculation is returning wrong numbers?"
-(세금 계산이 왜 잘못된 숫자를 보여주는지 조사해줄 수 있어?)
+"Can you look into why the website keeps crashing during peak hours?"
+(웹사이트가 피크 시간대에 왜 자꾸 다운되는지 조사해줄 수 있어?)
 
-"I ran into a weird issue while reviewing the VAT report."
-(부가세 보고서를 검토하는 중에 이상한 문제를 만났어.)
+"I ran into a weird issue while updating the customer database."
+(고객 데이터베이스를 업데이트하는 중에 이상한 문제를 만났어.)
 
-"Let me figure out what's causing the discrepancy."
-(불일치의 원인이 뭔지 알아볼게.)
+"Let me figure out what's causing the scheduling conflict."
+(일정 충돌의 원인이 뭔지 알아볼게.)
 
-"We need to set up a meeting with the client about their amended return."
-(수정 신고에 대해 고객과 미팅을 잡아야 해.)
+"We need to set up a meeting with the client about the revised proposal."
+(수정된 제안서에 대해 고객과 미팅을 잡아야 해.)
 
-"I came across a potential error in the deduction calculations."
-(공제 계산에서 잠재적 오류를 발견했어.)
+"I came across a potential error in the monthly sales report."
+(월간 매출 보고서에서 잠재적 오류를 발견했어.)
 
 "The new process didn't work well, so we had to go back to the old one."
 (새 프로세스가 잘 안 돼서 이전 방식으로 돌아가야 했어.)
@@ -977,37 +977,37 @@ figure + out = 알아내다 (understand/solve)
 "I'd like to bring up a concern about the deadline."
 (마감일에 대한 우려 사항을 말씀드리고 싶습니다.)
 
-"We ended up redoing the entire tax calculation from scratch."
-(결국 세금 계산을 처음부터 다시 하게 되었습니다.)
+"We ended up redoing the entire presentation from scratch."
+(결국 프레젠테이션을 처음부터 다시 하게 되었습니다.)
 
-"It turned out that the error was caused by incorrect income classification."
-(그 오류는 소득 분류 실수에 의해 발생한 것으로 판명되었습니다.)
+"It turned out that the delay was caused by a miscommunication between teams."
+(그 지연은 팀 간 의사소통 실수에 의해 발생한 것으로 판명되었습니다.)
 
 "She came up with an innovative approach to handle the busy season workload."
 (그녀가 바쁜 시즌 업무량을 처리하기 위한 혁신적인 접근법을 생각해냈습니다.)
 
-"Don't put off filing the returns. It'll be harder to do later."
-(신고서 제출을 미루지 마세요. 나중에 하면 더 어렵습니다.)
+"Don't put off submitting the report. It'll be harder to do later."
+(보고서 제출을 미루지 마세요. 나중에 하면 더 어렵습니다.)
 ```
 
-**세무 도메인 특화:**
+**다양한 상황에서:**
 
 ```
-"The tax authority will look into the discrepancy in the filed returns."
-(세무 당국이 제출된 신고서의 불일치를 조사할 것입니다.)
+"The manager will look into the discrepancy in the inventory records."
+(매니저가 재고 기록의 불일치를 조사할 것입니다.)
 
-"We need to figure out whether this income falls under
-the business category or the employment category."
-(이 소득이 사업소득에 해당하는지 근로소득에 해당하는지 파악해야 합니다.)
+"We need to figure out whether this expense falls under
+the marketing budget or the operations budget."
+(이 비용이 마케팅 예산에 해당하는지 운영 예산에 해당하는지 파악해야 합니다.)
 
-"The client opted out of the automatic filing service."
-(고객이 자동 신고 서비스에서 탈퇴했습니다.)
+"Several members opted out of the company's fitness program."
+(몇몇 직원이 회사 피트니스 프로그램에서 탈퇴했습니다.)
 
-"We should speed up the refund processing to improve customer satisfaction."
-(고객 만족도를 높이기 위해 환급 처리 속도를 높여야 합니다.)
+"We should speed up the delivery process to improve customer satisfaction."
+(고객 만족도를 높이기 위해 배송 과정의 속도를 높여야 합니다.)
 
-"The amended tax law cut down on the number of eligible deductions."
-(개정된 세법이 적격 공제 항목 수를 줄였습니다.)
+"The new policy cut down on the number of unnecessary meetings."
+(새 정책이 불필요한 회의 횟수를 줄였습니다.)
 ```
 
 ---
@@ -1037,9 +1037,9 @@ the business category or the employment category."
 
 **C. 구동사를 사용한 이메일/메시지 작성**
 
-14. 상황: 고객의 세금 신고서에서 오류를 발견했고, 원인을 조사 중이며, 필요하면 수정 신고를 하겠다는 메시지를 작성하세요. 최소 3개의 구동사를 사용하세요.
+14. 상황: 고객의 주문 내역에서 오류를 발견했고, 원인을 조사 중이며, 필요하면 수정 주문을 처리하겠다는 메시지를 작성하세요. 최소 3개의 구동사를 사용하세요.
 
-15. 상황: 환급 처리 과정에서 지연 문제를 발견했고, 원인을 파악했으며, 해결책을 생각해냈다는 내용의 업데이트 메시지를 쓰세요. 최소 3개의 구동사를 사용하세요.
+15. 상황: 배송 처리 과정에서 지연 문제를 발견했고, 원인을 파악했으며, 해결책을 생각해냈다는 내용의 업데이트 메시지를 쓰세요. 최소 3개의 구동사를 사용하세요.
 
 <details>
 <summary>정답 보기</summary>
@@ -1063,16 +1063,16 @@ the business category or the employment category."
 
 **C.**
 14. (예시)
-"Hi team, I ran into an error in the client's tax return
+"Hi team, I ran into an error in the customer's order
 while going through the final review.
 I'm looking into the root cause right now.
 If I can't figure it out by tomorrow,
-we'll need to file an amended return. Will keep you posted."
+we'll need to process a corrected order. Will keep you posted."
 
 15. (예시)
-"Quick update on the refund processing delay:
+"Quick update on the shipping delay:
 I went through the records and figured out that
-the bottleneck was in the income verification step.
+the bottleneck was in the warehouse packaging step.
 I came up with a new workflow that should speed up
 the processing by at least 50%. Setting up a trial run now."
 
@@ -1090,8 +1090,8 @@ the processing by at least 50%. Setting up a trial run now."
 한국어는 주어를 생략해도 자연스럽다:
 
 ```
-한국어: "정확한 신고서를 작성하는 것이 중요하다."  (주어 생략 가능)
-한국어: "중요하다, 정확한 신고서를 작성하는 것."   (도치도 자연스러움)
+한국어: "정확한 보고서를 작성하는 것이 중요하다."  (주어 생략 가능)
+한국어: "중요하다, 정확한 보고서를 작성하는 것."   (도치도 자연스러움)
 ```
 
 하지만 영어는 **주어 자리가 반드시 채워져야 하는 언어** 다. 영어 문장의 기본 구조는 `S + V + O`이며, 주어 자리가 비어 있으면 문법적으로 불완전하다.
@@ -1101,16 +1101,16 @@ the processing by at least 50%. Setting up a trial run now."
 **왜 placeholder가 필요한가?**
 
 ```
-❌ 어색: To file an accurate tax return is important.
-   → 주어(To file an accurate tax return)가 너무 길어서 동사(is)까지 오래 걸림
+❌ 어색: To maintain a healthy work-life balance is important.
+   → 주어(To maintain a healthy work-life balance)가 너무 길어서 동사(is)까지 오래 걸림
    → 듣는 사람이 "도대체 주어가 언제 끝나지?" 하고 혼란
 
-✅ 자연: It is important to file an accurate tax return.
+✅ 자연: It is important to maintain a healthy work-life balance.
    → it이 주어 자리를 예약해 놓고, 듣는 사람은 바로 "is important"를 들음
-   → 뒤에 to file an accurate tax return이 와서 무엇이 중요한지 보충
+   → 뒤에 to maintain a healthy work-life balance가 와서 무엇이 중요한지 보충
 ```
 
-이것은 마치 **레스토랑 예약** 과 같다. 먼저 자리를 잡아놓고(it), 나중에 진짜 손님(to file an accurate tax return)이 도착하는 것이다.
+이것은 마치 **레스토랑 예약** 과 같다. 먼저 자리를 잡아놓고(it), 나중에 진짜 손님(to maintain a healthy work-life balance)이 도착하는 것이다.
 
 ---
 
@@ -1120,8 +1120,8 @@ the processing by at least 50%. Setting up a trial run now."
 
 ```
 It is + 형용사 + to 부정사
-It is important to file your taxes on time.
-It is difficult to understand the new regulations.
+It is important to submit your assignment on time.
+It is difficult to learn a new language as an adult.
 It is necessary to verify all the figures.
 ```
 
@@ -1140,8 +1140,8 @@ There is an error in the report.
 There is a meeting at 3 PM.
 
 There are + 복수 명사
-There are several issues with the filing.
-There are many ways to reduce your tax liability.
+There are several issues with the schedule.
+There are many ways to improve your productivity.
 ```
 
 **두 패턴의 차이:**
@@ -1166,14 +1166,14 @@ There is a critical error in the report.     (보고서에 치명적인 오류�
 Step 1: It is important to review.
 Step 2: It is important to review the documents before submitting.
 Step 3: It is critically important to review all the documents thoroughly
-        before submitting them to the tax office.
+        before submitting them to the manager.
 Step 4: It is critically important to review all the documents thoroughly
-        before submitting them to the tax office,
-        especially when the filing involves complex deductions.
+        before submitting them to the manager,
+        especially when the project involves multiple stakeholders.
 Step 5: It is critically important to review all the documents thoroughly
-        before submitting them to the tax office,
-        especially when the filing involves complex deductions
-        that apply to clients with multiple sources of income.
+        before submitting them to the manager,
+        especially when the project involves multiple stakeholders
+        who have different expectations and priorities.
 ```
 
 **가주어 It의 다양한 패턴:**
@@ -1182,64 +1182,64 @@ Step 5: It is critically important to review all the documents thoroughly
 It is + 형용사 + to V:
 It is easy to make a mistake. It is hard to fix it later.
 It is impossible to predict every situation.
-It is crucial to meet the filing deadline.
+It is crucial to meet the project deadline.
 
 It is + 형용사 + that S + V:
 It is clear that we need more staff during the busy season.
 It is surprising that no one noticed the error.
-It is well-known that tax law changes frequently.
+It is well-known that technology changes rapidly.
 
 It is + 형용사 + for + 사람 + to V:
-It is difficult for new employees to understand the tax code.
+It is difficult for new employees to understand all the company policies.
 It is important for the team to follow the review procedures.
-It is essential for every accountant to stay updated on regulations.
+It is essential for every professional to stay updated on industry trends.
 
 It + takes + 시간 + to V:
-It takes about two hours to complete a full tax return review.
+It takes about two hours to complete a full document review.
 It took us three days to find the source of the discrepancy.
-It will take approximately one week to finish the audit.
+It will take approximately one week to finish the inspection.
 
 It + seems/appears + that S + V:
-It seems that the client forgot to include some income.
+It seems that the applicant forgot to include some documents.
 It appears that the error was caused by incorrect data entry.
-It turned out that the filing date was wrong.
+It turned out that the submission date was wrong.
 
 It + is said/believed/reported + that S + V:
-It is said that the new tax reform will simplify the process.
-It is believed that the new tax law will reduce filing complexity.
-It is reported that 70% of taxpayers now use electronic filing.
+It is said that the new policy will simplify the approval process.
+It is believed that remote work will become the new normal.
+It is reported that 70% of consumers now prefer online shopping.
 ```
 
 **There is/are 확장:**
 
 ```
 Step 1: There is an error.
-Step 2: There is an error in the tax return.
-Step 3: There is a critical error in the tax return
-        that causes incorrect deduction calculations.
-Step 4: There is a critical error in the tax return
-        that causes incorrect deduction calculations
-        for clients who have multiple income sources.
-Step 5: There is a critical error in the tax return
-        that causes incorrect deduction calculations
-        for clients who have multiple income sources
-        and claim deductions for home office expenses.
+Step 2: There is an error in the monthly report.
+Step 3: There is a critical error in the monthly report
+        that causes incorrect budget calculations.
+Step 4: There is a critical error in the monthly report
+        that causes incorrect budget calculations
+        for departments that have multiple ongoing projects.
+Step 5: There is a critical error in the monthly report
+        that causes incorrect budget calculations
+        for departments that have multiple ongoing projects
+        and receive funding from different sources.
 ```
 
 **There is/are의 다양한 시제:**
 
 ```
 현재: There is a problem with the report.
-과거: There was an error in last month's filing.
+과거: There was an error in last month's shipment.
 미래: There will be a training session this weekend.
-현재완료: There have been several complaints about the processing time.
-진행형: There are currently three accountants working on the case.
+현재완료: There have been several complaints about the service quality.
+진행형: There are currently three team members working on the case.
 
 부정: There is no way to recover the lost documents.
       There aren't any available meeting rooms this afternoon.
 
 의문: Is there a backup copy of the file?
-      Are there any known issues with the new tax form?
+      Are there any known issues with the new registration form?
 ```
 
 ---
@@ -1251,101 +1251,103 @@ Step 5: There is a critical error in the tax return
 ```
 구조: S + V + it + 형용사/명사 + to V / that절
 
-The new software makes it easy to calculate taxes.
-(새 소프트웨어는 세금을 계산하는 것을 쉽게 만든다.)
+The new app makes it easy to track daily expenses.
+(새 앱은 일일 지출을 추적하는 것을 쉽게 만든다.)
 
-I find it difficult to work with incomplete records.
-(불완전한 기록으로 작업하는 것이 어렵다고 생각한다.)
+I find it difficult to work with incomplete information.
+(불완전한 정보로 작업하는 것이 어렵다고 생각한다.)
 
 The team considers it essential to conduct thorough reviews.
 (팀은 철저한 검토를 수행하는 것이 필수적이라고 여긴다.)
 
-The new form makes it possible to claim additional deductions.
-(새 서식은 추가 공제를 신청하는 것을 가능하게 한다.)
+The new system makes it possible to process orders from anywhere.
+(새 시스템은 어디서든 주문을 처리하는 것을 가능하게 한다.)
 ```
 
-> **가목적어가 필요한 이유**: "The new software makes to calculate taxes easy."는 목적어(to calculate...)와 보어(easy)의 관계가 불분명하다. it을 넣으면 구조가 명확해진다.
+> **가목적어가 필요한 이유**: "The new app makes to track daily expenses easy."는 목적어(to track...)와 보어(easy)의 관계가 불분명하다. it을 넣으면 구조가 명확해진다.
 
 ---
 
-#### 4. DOMAIN — 세무 도메인 실전 예문
+#### 4. APPLY — 실전 예문
 
 **업무 문서에서 가주어 It:**
 
 ```
-It is essential to verify all income sources
-before processing tax returns.
-(세금 신고서를 처리하기 전에 모든 소득 원천을 확인하는 것이 필수적이다.)
+It is essential to check all the data
+before submitting the quarterly report.
+(분기 보고서를 제출하기 전에 모든 데이터를 확인하는 것이 필수적이다.)
 
 It is recommended to keep all receipts organized by category
-to make the deduction process smoother.
-(공제 과정을 원활하게 하기 위해 모든 영수증을 항목별로 정리하는 것이 권장된다.)
+to make the expense tracking process smoother.
+(경비 추적 과정을 원활하게 하기 위해 모든 영수증을 항목별로 정리하는 것이 권장된다.)
 
-It takes approximately 30 minutes to complete a standard tax return
-through our review process.
-(우리 검토 과정을 통해 표준 세금 신고서 하나를 처리하는 데 약 30분이 걸린다.)
+It takes approximately 30 minutes to complete a standard performance review
+through our evaluation process.
+(우리 평가 과정을 통해 표준 성과 검토 하나를 완료하는 데 약 30분이 걸린다.)
 
-It is well-documented that the current filing process
-has significant delays during the peak period.
-(현재 신고 과정이 최대 기간에 심각한 지연이 있다는 것은
+It is well-documented that the current ordering process
+has significant delays during the holiday period.
+(현재 주문 과정이 연말 기간에 심각한 지연이 있다는 것은
 잘 알려져 있다.)
 
-It appears that the discrepancy in the tax calculation
+It appears that the discrepancy in the monthly report
 is caused by a rounding error in the decimal handling.
-(세금 계산의 불일치는 소수점 처리의 반올림 오류에 의해 발생한 것으로 보인다.)
+(월간 보고서의 불일치는 소수점 처리의 반올림 오류에 의해 발생한 것으로 보인다.)
 ```
 
 **업무 문서에서 There is/are:**
 
 ```
 There is a known issue with the date formatting
-in the tax filing report.
-(세금 신고 보고서의 날짜 포맷에 알려진 이슈가 있습니다.)
+in the sales tracking report.
+(매출 추적 보고서의 날짜 포맷에 알려진 이슈가 있습니다.)
 
-There are currently 15 pending cases
-related to the amended returns.
-(수정 신고와 관련하여 현재 15개의 미결 건이 있습니다.)
+There are currently 15 pending orders
+that need to be reviewed before shipping.
+(출하 전에 검토해야 할 미결 주문이 현재 15건 있습니다.)
 
 There will be a staff training session
 this Saturday from 2 PM to 5 PM.
 (이번 토요일 오후 2시부터 5시까지 직원 교육 세션이 있습니다.)
 
-There have been multiple client complaints
-about the slow refund processing.
-(느린 환급 처리에 대한 고객 불만이 여러 건 있었습니다.)
+There have been multiple customer complaints
+about the slow delivery times.
+(느린 배송 시간에 대한 고객 불만이 여러 건 있었습니다.)
 
 Is there a contingency plan in case the deadline is moved up?
 (마감일이 앞당겨질 경우 비상 계획이 있습니까?)
 ```
 
-**세무 도메인에서:**
+**여행/건강/학교 등 다양한 상황에서:**
 
 ```
-It is the taxpayer's responsibility to report all sources of income.
-(모든 소득 원천을 보고하는 것은 납세자의 책임이다.)
+It is the traveler's responsibility to check visa requirements
+before booking international flights.
+(국제선 항공편을 예약하기 전에 비자 요건을 확인하는 것은 여행자의 책임이다.)
 
-It is important for businesses to keep accurate financial records
-for at least five years.
-(기업이 최소 5년간 정확한 재무 기록을 보관하는 것이 중요하다.)
+It is important for students to develop good study habits
+from an early age.
+(학생들이 어릴 때부터 좋은 학습 습관을 기르는 것이 중요하다.)
 
-There is a significant difference between tax avoidance and tax evasion.
-(절세와 탈세 사이에는 중요한 차이가 있다.)
+There is a significant difference between exercising regularly
+and exercising intensely once a week.
+(규칙적으로 운동하는 것과 일주일에 한 번 강하게 운동하는 것 사이에는 큰 차이가 있다.)
 
-There are various deductions available
-for taxpayers who work from home.
-(재택근무를 하는 납세자에게 이용 가능한 다양한 공제가 있다.)
+There are various scholarships available
+for students who maintain a high GPA.
+(높은 학점을 유지하는 학생에게 이용 가능한 다양한 장학금이 있다.)
 
-It is estimated that approximately 25% of taxpayers
-file their returns in the last week before the deadline.
-(약 25%의 납세자가 마감일 직전 마지막 주에 신고서를 제출하는 것으로 추정된다.)
+It is estimated that approximately 60% of adults
+do not get enough sleep on weeknights.
+(약 60%의 성인이 평일 밤에 충분한 수면을 취하지 못하는 것으로 추정된다.)
 ```
 
 **이메일/보고서에서 자주 쓰이는 패턴:**
 
 ```
-It has come to my attention that several client files
+It has come to my attention that several project folders
 are missing important documents.
-(여러 고객 파일에 중요한 서류가 누락되어 있다는 것이 제 주의를 끌었습니다.)
+(여러 프로젝트 폴더에 중요한 서류가 누락되어 있다는 것이 제 주의를 끌었습니다.)
 
 It would be appreciated if you could review the report by end of day.
 (오늘 안으로 보고서를 검토해주시면 감사하겠습니다.)
@@ -1375,10 +1377,10 @@ It goes without saying that accuracy should be our top priority.
 2. That the office was closed during peak season is unfortunate.
    → It is _____________________________________________
 
-3. To learn a new accounting system takes time and practice.
+3. To learn a new project management tool takes time and practice.
    → It _____________________________________________
 
-4. For a new employee to understand the full tax code is challenging.
+4. For a new employee to understand all the company procedures is challenging.
    → It is _____________________________________________
 
 **B. There is/are로 문장 만들기**
@@ -1394,22 +1396,22 @@ It goes without saying that accuracy should be our top priority.
 7. 마감이 앞당겨질 경우를 대비한 비상 계획이 있나요?
    → _____________________________________________
 
-8. 지난 달에 환급 처리 지연에 대한 다수의 불만이 있었다.
+8. 지난 달에 배송 지연에 대한 다수의 불만이 있었다.
    → _____________________________________________
 
 **C. 가목적어 It 연습**
 
-9. 새 소프트웨어는 복잡한 세금 계산을 처리하는 것을 가능하게 한다.
-   → The new software makes _____________________________________________
+9. 새 앱은 복잡한 일정을 관리하는 것을 가능하게 한다.
+   → The new app makes _____________________________________________
 
-10. 나는 불완전한 기록으로 세금 신고서를 작성하는 것이 어렵다고 생각한다.
+10. 나는 불완전한 정보로 보고서를 작성하는 것이 어렵다고 생각한다.
     → I find _____________________________________________
 
 **D. 종합 작문**
 
 11. 다음 상황을 영어로 작성하세요. 가주어 It과 There is/are를 각각 2회 이상 사용하세요.
 
-    상황: 당신은 팀 리더입니다. 다가오는 세금 신고 시즌을 앞두고 팀 준비 상태에 대한 이메일을 작성합니다. 현재 확인이 필요한 미결 건이 3개 있고, 서류 검토 절차를 지키는 것이 중요하며, 마감일까지 2주 남았습니다.
+    상황: 당신은 팀 리더입니다. 다가오는 연말 프로젝트 마감을 앞두고 팀 준비 상태에 대한 이메일을 작성합니다. 현재 확인이 필요한 미결 건이 3개 있고, 서류 검토 절차를 지키는 것이 중요하며, 마감일까지 2주 남았습니다.
 
 <details>
 <summary>정답 보기</summary>
@@ -1417,29 +1419,29 @@ It goes without saying that accuracy should be our top priority.
 **A.**
 1. It is dangerous to submit reports without reviewing them.
 2. It is unfortunate that the office was closed during peak season.
-3. It takes time and practice to learn a new accounting system.
-4. It is challenging for a new employee to understand the full tax code.
+3. It takes time and practice to learn a new project management tool.
+4. It is challenging for a new employee to understand all the company procedures.
 
 **B.**
 5. There is a critical calculation error in the report.
 6. There are currently three staff members working on this case.
 7. Is there a contingency plan in case the deadline is moved up?
-8. There were multiple complaints about refund processing delays last month. (또는: There have been multiple complaints...)
+8. There were multiple complaints about delivery delays last month. (또는: There have been multiple complaints...)
 
 **C.**
-9. The new software makes it possible to handle complex tax calculations.
-10. I find it difficult to prepare tax returns with incomplete records.
+9. The new app makes it possible to manage complex schedules.
+10. I find it difficult to prepare reports with incomplete information.
 
 **D.**
 11. (예시 답안)
 
 Hi team,
 
-As we approach the upcoming tax filing season, I'd like to share a quick update on our readiness.
+As we approach the year-end project deadline, I'd like to share a quick update on our readiness.
 
-There are currently three pending cases that we need to review before the filing period begins. First, there is a discrepancy in a corporate client's income report that needs verification. Second, there is a question about the correct deduction category for a new client. Third, there are some incomplete documents from several individual taxpayers.
+There are currently three pending tasks that we need to complete before the final submission. First, there is a discrepancy in the budget report that needs verification. Second, there is a question about the correct format for the new client proposal. Third, there are some incomplete documents from several team members.
 
-It is critically important that we complete our document review process by the end of next week. It takes approximately two hours to go through each client's full file, so please plan accordingly. It is also essential for every team member to review the updated filing guidelines before the season starts.
+It is critically important that we complete our document review process by the end of next week. It takes approximately two hours to go through each section's full file, so please plan accordingly. It is also essential for every team member to review the updated guidelines before the deadline.
 
 There are only two weeks remaining until the deadline. It would be appreciated if each team member could provide a status update by Friday.
 

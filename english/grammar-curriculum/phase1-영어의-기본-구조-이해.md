@@ -133,29 +133,27 @@ I carefully read the book at the library yesterday because the exam was coming.
 
 ---
 
-### 4. DOMAIN — 세무 도메인 예문
+### 4. APPLY — 실전 예문
 
-실제 세무 업무에서 쓸 법한 문장으로 "위치 = 역할" 원리를 확인하자.
+일상과 업무에서 쓸 법한 문장으로 "위치 = 역할" 원리를 확인하자.
 
 | 문장 | S (주어) | V (동사) | O (목적어) |
 |------|---------|---------|-----------|
-| The taxpayer filed the return. | The taxpayer | filed | the return |
-| The NTS reviewed the documents. | The NTS | reviewed | the documents |
-| The accountant calculated the deduction. | The accountant | calculated | the deduction |
-| A penalty exceeded the original tax. | A penalty | exceeded | the original tax |
+| The student submitted the assignment. | The student | submitted | the assignment |
+| The manager reviewed the proposal. | The manager | reviewed | the proposal |
+| The chef prepared the ingredients. | The chef | prepared | the ingredients |
+| The total cost exceeded the budget. | The total cost | exceeded | the budget |
 
-> **NTS** = National Tax Service (국세청)
-
-#### 세무 실무 문장
+#### 실전 업무 문장
 
 ```
-The tax office validated the income data before calculating withholding amounts.
-[S: The tax office] [V: validated] [O: the income data] [부가: before calculating withholding amounts]
+The team leader validated the project data before scheduling the next meeting.
+[S: The team leader] [V: validated] [O: the project data] [부가: before scheduling the next meeting]
 ```
 
 ```
-The company automatically generates tax reports for registered businesses every quarter.
-[S: The company] [V: generates] [O: tax reports] [부가: for registered businesses every quarter]
+The company automatically generates sales reports for all departments every quarter.
+[S: The company] [V: generates] [O: sales reports] [부가: for all departments every quarter]
 ```
 
 ---
@@ -166,42 +164,42 @@ The company automatically generates tax reports for registered businesses every 
 
 다음 문장에서 S, V, O를 찾아 표시하시오.
 
-1. `The company processed 10,000 tax returns last month.`
-2. `Our team submitted the new tax report last Friday.`
-3. `The client reported a discrepancy in the withholding tax amount.`
-4. `The accountant completed the year-end settlement successfully.`
-5. `The tax authority imposed a late filing penalty on the corporation.`
+1. `The company processed 10,000 orders last month.`
+2. `Our team submitted the new project report last Friday.`
+3. `The customer reported a discrepancy in the delivery schedule.`
+4. `The intern completed the data entry successfully.`
+5. `The university imposed a late registration fee on the students.`
 
 #### 연습 B: 어순 배열
 
 주어진 단어들을 올바른 영어 어순으로 배열하시오.
 
-1. `[the return / submitted / the taxpayer / electronically]`
-2. `[every month / pays / the company / taxes / automatically]`
-3. `[the tax rate / for small businesses / reduced / the government]`
-4. `[the accountant / carefully / reviewed / the financial statements]`
+1. `[the application / submitted / the student / online]`
+2. `[every month / pays / the company / employees / automatically]`
+3. `[the price / for students / reduced / the airline]`
+4. `[the editor / carefully / reviewed / the manuscript]`
 
 #### 연습 C: 위치 바꾸기 — 의미 변화 확인
 
 아래 문장의 주어와 목적어를 바꿔 새 문장을 만들고, 의미가 어떻게 달라지는지 서술하시오.
 
-1. `The auditor questioned the taxpayer.`
-   → `The taxpayer questioned the auditor.` (의미: ____________)
+1. `The interviewer questioned the candidate.`
+   → `The candidate questioned the interviewer.` (의미: ____________)
 
 2. `The manager called the client.`
    → `The client called the manager.` (의미: ____________)
 
-3. `The penalty exceeded the profit.`
-   → `The profit exceeded the penalty.` (의미: ____________)
+3. `The expenses exceeded the profit.`
+   → `The profit exceeded the expenses.` (의미: ____________)
 
 #### 연습 D: 한국어 → 영어 전환
 
 한국어를 영어 어순(S-V-O)으로 변환하시오. (핵심 골격만 먼저, 그 다음 부가정보)
 
-1. "국세청이 세무조사를 실시했다."
+1. "본사가 정기 점검을 실시했다."
 2. "우리 팀이 어제 보고서를 수정했다."
-3. "그 납세자는 매달 부가가치세를 신고한다."
-4. "그 회계사는 원천징수세를 정확하게 계산했다."
+3. "그 학생은 매달 독서 감상문을 제출한다."
+4. "그 디자이너는 로고를 정확하게 수정했다."
 
 ---
 
@@ -214,10 +212,10 @@ The company automatically generates tax reports for registered businesses every 
 영어의 말하는 순서는 이렇다:
 
 ```
-1단계: 누가? (Subject)    → "The accountant"
+1단계: 누가? (Subject)    → "The student"
 2단계: 뭘 했다? (Verb)    → "submitted"
-3단계: 뭘? (Object)       → "the tax return"
-4단계: 부가정보            → "to the NTS before the deadline"
+3단계: 뭘? (Object)       → "the assignment"
+4단계: 부가정보            → "to the professor before the deadline"
 ```
 
 **가장 중요한 정보부터 먼저 말한다.** 이것이 영어의 근본 철학이다.
@@ -225,9 +223,9 @@ The company automatically generates tax reports for registered businesses every 
 반면 한국어는:
 
 ```
-1단계: 배경/맥락          → "마감일 전에 국세청에"
-2단계: 뭘? (Object)       → "세금 신고서를"
-3단계: 누가? (Subject)    → "회계사가"
+1단계: 배경/맥락          → "마감일 전에 교수님에게"
+2단계: 뭘? (Object)       → "과제를"
+3단계: 누가? (Subject)    → "학생이"
 4단계: 뭘 했다? (Verb)    → "제출했다"
 ```
 
@@ -241,11 +239,11 @@ The company automatically generates tax reports for registered businesses every 
 
 ```
 영어식 (결론 먼저):
-"The government raised the tax rate from 20% to 22% starting next year."
+"The company raised the starting salary from $50,000 to $55,000 starting next year."
 → 핵심(누가 + 뭘 했다)이 먼저, 세부사항은 뒤에
 
 한국어식 (배경 먼저):
-"내년부터 적용되는 것으로, 세율을 20%에서 22%로, 정부가 인상했다."
+"내년부터 적용되는 것으로, 초봉을 5만 달러에서 5만5천 달러로, 회사가 인상했다."
 → 배경이 먼저, 결론이 마지막에
 ```
 
@@ -295,9 +293,9 @@ SVO 골격에 정보를 하나씩 추가하는 확장 연습이다.
 ```
 We submit reports.
 We submit reports every month.
-We submit reports every month to the tax office.
-We submit reports every month to the tax office before the deadline.
-We submit detailed tax reports every month to the tax office before the filing deadline.
+We submit reports every month to the head office.
+We submit reports every month to the head office before the deadline.
+We submit detailed progress reports every month to the head office before the review deadline.
 ```
 
 골격 `[We] [submit] [reports]`는 변하지 않고, 뒤에 정보가 계속 추가된다.
@@ -305,13 +303,13 @@ We submit detailed tax reports every month to the tax office before the filing d
 #### 확장 패턴 2: 주어를 구체화하기
 
 ```
-The accountant reviewed the documents.
-The senior accountant reviewed the documents.
-The senior accountant at our company reviewed the documents.
-The senior accountant at our company who handles corporate taxes reviewed the documents.
+The manager reviewed the documents.
+The senior manager reviewed the documents.
+The senior manager at our company reviewed the documents.
+The senior manager at our company who handles international projects reviewed the documents.
 ```
 
-주어 `The accountant`가 점점 구체적으로 변한다. 하지만 **동사 `reviewed`는 항상 주어 바로 다음에 온다**는 원칙은 동일하다.
+주어 `The manager`가 점점 구체적으로 변한다. 하지만 **동사 `reviewed`는 항상 주어 바로 다음에 온다**는 원칙은 동일하다.
 
 > 이것이 영어를 읽을 때 중요한 포인트다. 주어가 아무리 길어도, **동사를 찾으면 그 앞이 전부 주어**라는 뜻이다.
 
@@ -319,35 +317,35 @@ The senior accountant at our company who handles corporate taxes reviewed the do
 
 ```
 I reviewed the report.
-I reviewed the report that the client submitted.
-I reviewed the report that the client submitted for the quarterly tax filing.
-I reviewed the report that the client submitted for the quarterly tax filing last week.
+I reviewed the report that the team submitted.
+I reviewed the report that the team submitted for the quarterly performance review.
+I reviewed the report that the team submitted for the quarterly performance review last week.
 ```
 
 ---
 
-### 4. DOMAIN — 세무 도메인 예문
+### 4. APPLY — 실전 예문
 
 #### SVO 구조 분석
 
 ```
-The National Tax Service audited the company's financial records.
-[S: The NTS]  [V: audited]  [O: the company's financial records]
+The hiring committee reviewed the candidate's qualifications.
+[S: The hiring committee]  [V: reviewed]  [O: the candidate's qualifications]
 ```
 
 ```
-The taxpayer claimed an excessive deduction on the income tax return.
-[S: The taxpayer]  [V: claimed]  [O: an excessive deduction]  [부가: on the income tax return]
+The customer requested a full refund on the defective product.
+[S: The customer]  [V: requested]  [O: a full refund]  [부가: on the defective product]
 ```
 
 ```
-The revised tax law reduced the corporate tax rate from 25% to 22%.
-[S: The revised tax law]  [V: reduced]  [O: the corporate tax rate]  [부가: from 25% to 22%]
+The new company policy reduced the maximum overtime hours from 20 to 15.
+[S: The new company policy]  [V: reduced]  [O: the maximum overtime hours]  [부가: from 20 to 15]
 ```
 
 ```
-The company paid the withholding tax to the NTS before the deadline.
-[S: The company]  [V: paid]  [O: the withholding tax]  [부가: to the NTS before the deadline]
+The team completed the project proposal before the deadline.
+[S: The team]  [V: completed]  [O: the project proposal]  [부가: before the deadline]
 ```
 
 ---
@@ -358,34 +356,34 @@ The company paid the withholding tax to the NTS before the deadline.
 
 다음 긴 문장에서 S-V-O 골격만 추출하시오.
 
-1. `Our newly hired accountant efficiently handles complex tax calculations for individual taxpayers across all regions.`
-2. `The experienced tax auditor carefully reviewed the quarterly VAT returns submitted by the client last week.`
-3. `The tax office discovered three critical errors in the income tax calculation before the filing deadline.`
+1. `Our newly hired assistant efficiently handles complex scheduling tasks for all departments across the company.`
+2. `The experienced project manager carefully reviewed the quarterly performance reports submitted by each team last week.`
+3. `The quality control team discovered three critical errors in the product design before the launch deadline.`
 
 #### 연습 B: 확장 연습
 
 주어진 최소 문장을 5단계로 확장하시오 (한 단계마다 정보 하나씩 추가).
 
-1. 시작: `The company pays tax.`
+1. 시작: `The company ships products.`
 2. 시작: `We submitted the report.`
-3. 시작: `The accountant checks the data.`
+3. 시작: `The analyst checks the data.`
 
 #### 연습 C: 한국어 → 영어 (SVO 전환)
 
 다음 한국어를 "핵심 먼저" 원칙으로 영어 SVO 문장으로 전환하시오.
 
-1. "지난 분기에 우리 팀이 세금 계산 방식을 전면 수정했다."
-2. "국세청이 작년에 대기업 300곳에 대해 세무조사를 실시했다."
-3. "매달 회계사가 원천징수 금액을 확인한다."
-4. "이 회사는 사업자 등록 정보를 정기적으로 갱신한다."
+1. "지난 분기에 우리 팀이 업무 프로세스를 전면 수정했다."
+2. "본사가 작년에 전국 지점 300곳에 대해 점검을 실시했다."
+3. "매달 담당자가 재고 수량을 확인한다."
+4. "이 회사는 고객 정보를 정기적으로 갱신한다."
 
 #### 연습 D: 영어식 사고 전환
 
 다음 상황을 "결론 먼저" 영어식으로 한 문장으로 말하시오.
 
-1. 상황: 어제, 사무실에서, 서류 누락 때문에, 신고가, 지연되었다.
-2. 상황: 이번 주, 새로운 세율 적용 방식을, 우리 팀이, 확인해서, 수정했다.
-3. 상황: 분기마다, 종합소득세 신고 자료를, 우리 회사가, 국세청에, 전송한다.
+1. 상황: 어제, 사무실에서, 서류 누락 때문에, 배송이, 지연되었다.
+2. 상황: 이번 주, 새로운 가격 정책을, 우리 팀이, 확인해서, 수정했다.
+3. 상황: 분기마다, 실적 보고 자료를, 우리 회사가, 본사에, 전송한다.
 
 ---
 
@@ -495,116 +493,116 @@ They called the plan perfect. 그들이 그 계획을 완벽하다고 불렀다.
 
 ```
 The deadline passed.
-The filing deadline passed.
-The filing deadline passed last week.
-The quarterly VAT filing deadline passed last week without any notice.
+The registration deadline passed.
+The registration deadline passed last week.
+The course registration deadline passed last week without any notice.
 ```
 
 #### 2형식 확장
 
 ```
 The issue is serious.
-The tax issue is serious.
-The tax issue in our report is serious.
-The tax issue in our quarterly report is serious enough to require an amendment.
+The safety issue is serious.
+The safety issue in our building is serious.
+The safety issue in our office building is serious enough to require immediate repairs.
 ```
 
 #### 3형식 확장
 
 ```
 I reviewed the documents.
-I reviewed the tax documents.
-I reviewed the tax documents with the team.
-I reviewed the tax documents with the team during the morning meeting.
-I thoroughly reviewed the client's tax documents with the accounting team during this morning's meeting.
+I reviewed the project documents.
+I reviewed the project documents with the team.
+I reviewed the project documents with the team during the morning meeting.
+I thoroughly reviewed the client's project documents with the marketing team during this morning's meeting.
 ```
 
 #### 4형식 확장
 
 ```
 I sent him the report.
-I sent the team lead the tax report.
-I sent the team lead the quarterly tax report.
-I sent the team lead the quarterly tax report via email.
-I sent the team lead the comprehensive quarterly tax report via email right after the review.
+I sent the team lead the progress report.
+I sent the team lead the quarterly progress report.
+I sent the team lead the quarterly progress report via email.
+I sent the team lead the comprehensive quarterly progress report via email right after the review.
 ```
 
 #### 5형식 확장
 
 ```
 We found the calculation wrong.
-We found the tax calculation wrong.
-We found the withholding tax calculation completely wrong.
-We found the withholding tax calculation for this quarter completely wrong and in need of revision.
+We found the budget calculation wrong.
+We found the project budget calculation completely wrong.
+We found the project budget calculation for this quarter completely wrong and in need of revision.
 ```
 
 ---
 
-### 4. DOMAIN — 세무 도메인 예문
+### 4. APPLY — 실전 예문
 
 #### 1형식 (S + V)
 
 ```
-Tax regulations change frequently.
-[세금 규정은 자주 바뀐다.]
+Technology changes rapidly.
+[기술은 빠르게 변한다.]
 
-The filing deadline passed.
-[신고 기한이 지났다.]
+The registration deadline passed.
+[등록 기한이 지났다.]
 
-The penalty increased significantly.
-[가산세가 크게 증가했다.]
+Living expenses increased significantly.
+[생활비가 크게 증가했다.]
 ```
 
 #### 2형식 (S + V + C)
 
 ```
-The new tax rate is 22%.
-[새 세율은 22%다.]
+The new membership fee is $50.
+[새 회원비는 50달러다.]
 
-The calculation looks incorrect.
-[계산이 잘못된 것 같다.]
+The schedule looks incorrect.
+[일정이 잘못된 것 같다.]
 
-The taxpayer remains eligible for the deduction.
-[납세자는 여전히 공제 대상이다.]
+The applicant remains eligible for the scholarship.
+[지원자는 여전히 장학금 대상이다.]
 ```
 
 #### 3형식 (S + V + O)
 
 ```
-The auditor examined the financial statements.
-[감사인이 재무제표를 검토했다.]
+The inspector examined the building's safety records.
+[점검관이 건물의 안전 기록을 검토했다.]
 
-The company handles over 1,000 tax returns annually.
-[그 회사는 연간 1,000건 이상의 세금 신고를 처리한다.]
+The hospital handles over 1,000 patients annually.
+[그 병원은 연간 1,000명 이상의 환자를 처리한다.]
 
-The accountant corrected the entire income tax calculation.
-[회계사가 소득세 계산 전체를 수정했다.]
+The editor corrected the entire manuscript.
+[편집자가 원고 전체를 수정했다.]
 ```
 
 #### 4형식 (S + V + IO + DO)
 
 ```
-The NTS sent the taxpayer a penalty notice.
-[국세청이 납세자에게 과태료 통지서를 보냈다.]
+The school sent the parents a progress report.
+[학교가 학부모에게 성적 보고서를 보냈다.]
 
-The accountant showed the client the tax calculation result.
-[회계사가 고객에게 세금 계산 결과를 보여주었다.]
+The trainer showed the athletes the new exercise routine.
+[트레이너가 선수들에게 새 운동 루틴을 보여주었다.]
 
-The government granted small businesses a tax exemption.
-[정부가 소기업에게 세금 면제를 부여했다.]
+The company granted employees a flexible work schedule.
+[회사가 직원들에게 유연 근무제를 부여했다.]
 ```
 
 #### 5형식 (S + V + O + OC)
 
 ```
-The audit found the company non-compliant.
-[감사가 그 회사를 비준수 상태로 판정했다.]
+The review found the restaurant unsanitary.
+[점검 결과 그 식당이 비위생적인 것으로 판정되었다.]
 
-The new regulation made the filing process more complex.
-[새 규정이 신고 절차를 더 복잡하게 만들었다.]
+The new rule made the application process more complex.
+[새 규칙이 지원 절차를 더 복잡하게 만들었다.]
 
-We consider the new tax law fair.
-[우리는 새 세법이 공정하다고 판단한다.]
+We consider the new policy fair.
+[우리는 새 정책이 공정하다고 판단한다.]
 ```
 
 ---
@@ -616,13 +614,13 @@ We consider the new tax law fair.
 다음 문장의 형식(1~5)을 판별하시오.
 
 1. `The meeting ended on time.`
-2. `The tax rate became lower.`
-3. `The government reduced the corporate tax rate.`
+2. `The weather became warmer.`
+3. `The government reduced the speed limit.`
 4. `The manager gave the team the deadline.`
 5. `The new policy made remote work possible.`
-6. `The company pays taxes quarterly.`
+6. `The company ships products worldwide.`
 7. `The result looks promising.`
-8. `She taught the new employee the tax filing process.`
+8. `She taught the new employee the safety procedures.`
 9. `The economy recovered slowly.`
 10. `We consider the proposal reasonable.`
 
@@ -632,7 +630,7 @@ We consider the new tax law fair.
 
 | 주어 | 동사 후보 |
 |------|----------|
-| The company | `grows`, `is`, `pays`, `sends`, `makes` |
+| The company | `grows`, `is`, `produces`, `sends`, `makes` |
 
 - 1형식 (S + V): The company _______________
 - 2형식 (S + V + C): The company _______________
@@ -648,15 +646,15 @@ We consider the new tax law fair.
 2. 4형식 → 3형식: `She gave me the answer.` → `She gave the answer ___ me.`
 3. 어떤 전치사가 들어갔는가? 이 변환의 규칙은 무엇인가?
 
-#### 연습 D: 도메인 문장 작성
+#### 연습 D: 실전 문장 작성
 
 다음 상황을 지정된 형식으로 영어 문장을 만드시오.
 
 1. **(1형식)** 마감 기한이 지났다.
-2. **(2형식)** 이 신고서는 정확하다.
-3. **(3형식)** 우리 팀이 세금 계산 방식을 수정했다.
-4. **(4형식)** 회계사가 고객에게 세금 명세서를 보냈다.
-5. **(5형식)** 새 규정이 신고 절차를 더 간단하게 만들었다.
+2. **(2형식)** 이 보고서는 정확하다.
+3. **(3형식)** 우리 팀이 업무 프로세스를 수정했다.
+4. **(4형식)** 담당자가 고객에게 견적서를 보냈다.
+5. **(5형식)** 새 규정이 지원 절차를 더 간단하게 만들었다.
 
 ---
 
@@ -746,22 +744,22 @@ The   experienced  accountant  carefully  reviewed  the  financial  statements  
 
 같은 뿌리(root)에서 파생되는 다양한 품사를 활용해 문장을 확장해보자.
 
-#### "tax" 파생 품사 활용
+#### "manage" 파생 품사 활용
 
 | 품사 | 단어 | 역할 |
 |------|------|------|
-| 명사 | tax | 대상 (세금) |
-| 동사 | tax | 행위 (과세하다) |
-| 형용사 | taxable | 속성 (과세 대상인) |
-| 명사 | taxation | 행위/제도 (과세) |
-| 명사 | taxpayer | 행위자 (납세자) |
+| 동사 | manage | 행위 (관리하다) |
+| 명사 | management | 행위/조직 (경영, 관리) |
+| 명사 | manager | 행위자 (관리자) |
+| 형용사 | manageable | 속성 (관리 가능한) |
+| 형용사 | managerial | 속성 (~경영의) |
 
 ```
-The tax is 10%.                           (명사로 사용)
-The government taxes the income.          (동사로 사용)
-This income is taxable.                   (형용사로 사용)
-The taxation policy changed.              (명사로 사용)
-The taxpayer filed the return.            (명사로 사용)
+She manages the team.                     (동사로 사용)
+The management approved the plan.         (명사로 사용)
+He is a good manager.                     (명사로 사용)
+The workload is manageable.               (형용사로 사용)
+She has managerial experience.            (형용사로 사용)
 ```
 
 #### "calculate" 파생 품사 활용
@@ -774,7 +772,7 @@ The taxpayer filed the return.            (명사로 사용)
 | 형용사 | calculated | 속성 (계산된, 계획적인) |
 
 ```
-We calculate the tax every month.         (동사로 사용)
+We calculate the cost every month.        (동사로 사용)
 The calculation was incorrect.            (명사로 사용)
 Use a calculator to check the numbers.    (명사로 사용)
 It was a calculated decision.             (형용사로 사용)
@@ -789,63 +787,63 @@ It was a calculated decision.             (형용사로 사용)
 명사 중심:  The completion of the project was successful.
 형용사 중심: The project completion was successful.
 
-동사 중심:  The NTS audited the company.
-명사 중심:  The NTS conducted an audit of the company.
-형용사 중심: The NTS audit was thorough.
+동사 중심:  The committee inspected the facility.
+명사 중심:  The committee conducted an inspection of the facility.
+형용사 중심: The committee inspection was thorough.
 ```
 
 영어에서 품사 전환(word form change)을 자유롭게 구사하면 표현력이 급상승한다.
 
 ---
 
-### 4. DOMAIN — 세무 도메인 예문
+### 4. APPLY — 실전 예문
 
-각 품사별로 세무 도메인의 핵심 단어를 정리하고 예문을 만들어보자.
+각 품사별로 일상과 업무에서 자주 쓰이는 핵심 단어를 정리하고 예문을 만들어보자.
 
 #### 핵심 명사 (Nouns)
 
 | 영어 | 한국어 | 영어 | 한국어 |
 |------|--------|------|--------|
-| tax | 세금 | return | 신고서 |
-| deduction | 공제 | withholding | 원천징수 |
-| penalty | 가산세 | taxpayer | 납세자 |
-| audit | 세무조사 | filing | 신고 |
-| income | 소득 | exemption | 면제 |
-| invoice | 세금계산서 | revenue | 수입/세수 |
+| schedule | 일정 | report | 보고서 |
+| budget | 예산 | deadline | 마감 기한 |
+| invoice | 청구서 | customer | 고객 |
+| review | 검토 | proposal | 제안서 |
+| revenue | 수익 | expense | 비용 |
+| meeting | 회의 | department | 부서 |
 
 #### 핵심 동사 (Verbs)
 
 | 영어 | 한국어 | 영어 | 한국어 |
 |------|--------|------|--------|
-| file | 신고하다 | deduct | 공제하다 |
-| withhold | 원천징수하다 | audit | 감사하다 |
-| calculate | 계산하다 | impose | 부과하다 |
-| comply | 준수하다 | exempt | 면제하다 |
-| submit | 제출하다 | amend | 수정하다 |
+| submit | 제출하다 | review | 검토하다 |
+| approve | 승인하다 | calculate | 계산하다 |
+| schedule | 일정을 잡다 | manage | 관리하다 |
+| organize | 정리하다 | negotiate | 협상하다 |
+| deliver | 전달하다 | update | 갱신하다 |
 
 #### 핵심 형용사 (Adjectives)
 
 | 영어 | 한국어 | 영어 | 한국어 |
 |------|--------|------|--------|
-| taxable | 과세 대상인 | deductible | 공제 가능한 |
-| exempt | 면세인 | overdue | 연체된 |
-| compliant | 준수하는 | quarterly | 분기별의 |
-| annual | 연간의 | fiscal | 회계의 |
+| efficient | 효율적인 | reliable | 신뢰할 수 있는 |
+| urgent | 긴급한 | overdue | 기한이 지난 |
+| annual | 연간의 | quarterly | 분기별의 |
+| accurate | 정확한 | comprehensive | 포괄적인 |
 
-#### 도메인 예문
+#### 실전 예문
 
 ```
-The taxable income exceeded the threshold.
-(형용사 taxable이 명사 income을 꾸밈)
+The estimated cost exceeded the budget.
+(형용사 estimated가 명사 cost를 꾸밈)
 
-The accountant accurately calculated the withholding tax.
+The analyst accurately calculated the quarterly revenue.
 (부사 accurately가 동사 calculated를 꾸밈)
 
-The overdue penalty for late filing accumulated significantly.
-(형용사 overdue가 명사 penalty를 꾸밈, 전치사 for가 관계 표시)
+The overdue payment for the office lease accumulated significantly.
+(형용사 overdue가 명사 payment를 꾸밈, 전치사 for가 관계 표시)
 
-The quarterly tax report includes detailed financial statements.
-(형용사 quarterly가 명사 tax report를 꾸밈)
+The quarterly sales report includes detailed performance data.
+(형용사 quarterly가 명사 sales report를 꾸밈)
 ```
 
 ---
@@ -856,10 +854,10 @@ The quarterly tax report includes detailed financial statements.
 
 다음 문장에서 굵게 표시된 단어의 품사를 판별하시오.
 
-1. The **efficient** accountant processed the tax **return** **quickly**.
-2. We need to **verify** the **taxable** amount before **submission**.
+1. The **efficient** assistant processed the travel **request** **quickly**.
+2. We need to **verify** the **estimated** amount before **submission**.
 3. The **newly** hired staff **handles** requests **reliably**.
-4. An **experienced** auditor **conducted** the **annual** review.
+4. An **experienced** inspector **conducted** the **annual** review.
 5. The **quarterly** report **arrived** **unexpectedly** during the **busy** season.
 
 #### 연습 B: 품사 변환
@@ -869,7 +867,7 @@ The quarterly tax report includes detailed financial statements.
 | 기본 형태 | 동사 | 명사 | 형용사 | 부사 |
 |-----------|------|------|--------|------|
 | calculate | ? | ? | ? | - |
-| comply | ? | ? | ? | - |
+| manage | ? | ? | ? | - |
 | accurate | - | ? | ? | ? |
 
 #### 연습 C: 품사 오류 찾기
@@ -878,16 +876,16 @@ The quarterly tax report includes detailed financial statements.
 
 1. `The company process the data efficient.`
 2. `We need a reliably solution for this problem.`
-3. `The account team complete the tax report successful.`
-4. `The annually audit reveal several compliance issue.`
+3. `The marketing team complete the sales report successful.`
+4. `The annually inspection reveal several safety issue.`
 
 #### 연습 D: 문장 조립
 
 다음 단어들의 품사를 파악하고 올바른 문장을 조립하시오.
 
-1. `[calculated / the / accountant / automatically / deductions / the]`
-2. `[new / compliant / is / the / fully / company / with / regulations / tax]`
-3. `[accurately / our / processes / team / returns / tax / thousands of / annually]`
+1. `[calculated / the / analyst / automatically / expenses / the]`
+2. `[new / compliant / is / the / fully / company / with / regulations / safety]`
+3. `[accurately / our / processes / team / orders / customer / thousands of / annually]`
 
 ---
 
@@ -941,7 +939,7 @@ be동사는 **주어와 보어를 등호(=)로 연결하는 것**이 본질이�
 ```
 I am a student.            나는 학생이다.
 She is the team lead.      그녀는 팀장이다.
-This is a tax return.      이것은 세금 신고서다.
+This is a monthly report.   이것은 월간 보고서다.
 ```
 
 **기능 2: 상태 서술 (A의 상태 = B)**
@@ -978,20 +976,20 @@ The office is on the 5th floor. 사무실은 5층에 있다.
 #### 정체 선언 확장
 
 ```
-I am an accountant.
-I am a tax accountant.
-I am a tax accountant at a company in Seoul.
-I am a senior tax accountant at a leading company in Seoul, Korea.
+I am a designer.
+I am a graphic designer.
+I am a graphic designer at a company in Seoul.
+I am a senior graphic designer at a leading company in Seoul, Korea.
 ```
 
 #### 상태 서술 확장
 
 ```
 The report is wrong.
-The tax report is wrong.
-The quarterly tax report is wrong.
-The quarterly tax report is wrong due to a calculation error.
-The quarterly tax report for this client is wrong due to a critical calculation error in the withholding section.
+The project report is wrong.
+The quarterly project report is wrong.
+The quarterly project report is wrong due to a calculation error.
+The quarterly project report for this client is wrong due to a critical calculation error in the budget section.
 ```
 
 #### 부정문과 의문문
@@ -1016,45 +1014,45 @@ be동사 부정:    The report is not accurate.            (not만 추가)
 
 ---
 
-### 4. DOMAIN — 세무 도메인 예문
+### 4. APPLY — 실전 예문
 
 #### 정체 선언
 
 ```
-The NTS is the national tax authority of South Korea.
-(국세청은 대한민국의 국세 행정 기관이다.)
+NASA is the national space agency of the United States.
+(NASA는 미국의 국가 우주 기관이다.)
 
-VAT is a consumption tax imposed on goods and services.
-(부가가치세는 재화와 용역에 부과되는 소비세다.)
+A resume is a document that summarizes a person's qualifications and experience.
+(이력서는 한 사람의 자격과 경험을 요약하는 서류다.)
 
-A tax return is a document that reports income and tax liability.
-(세금 신고서는 소득과 세금 부담을 보고하는 서류다.)
+A warranty is a guarantee that a product will function properly.
+(보증서는 제품이 제대로 작동할 것이라는 보장이다.)
 ```
 
 #### 상태 서술
 
 ```
-The tax return is overdue.
-(세금 신고가 연체되었다.)
+The project report is overdue.
+(프로젝트 보고서가 기한이 지났다.)
 
-The deduction amount is incorrect.
-(공제 금액이 잘못되었다.)
+The estimated amount is incorrect.
+(추정 금액이 잘못되었다.)
 
-The company is compliant with all tax regulations.
-(그 회사는 모든 세금 규정을 준수하고 있다.)
+The company is compliant with all safety regulations.
+(그 회사는 모든 안전 규정을 준수하고 있다.)
 
-The new tax rate is effective from January.
-(새 세율은 1월부터 적용된다.)
+The new pricing plan is effective from January.
+(새 요금제는 1월부터 적용된다.)
 ```
 
 #### 위치/존재
 
 ```
-The error is in the withholding tax calculation.
-(오류가 원천징수세 계산에 있다.)
+The error is in the budget calculation.
+(오류가 예산 계산에 있다.)
 
-The tax office is on the third floor of the government building.
-(세무서는 관공서 3층에 있다.)
+The customer service center is on the third floor of the main building.
+(고객 서비스 센터는 본관 3층에 있다.)
 ```
 
 ---
@@ -1065,14 +1063,14 @@ The tax office is on the third floor of the government building.
 
 빈칸에 알맞은 be동사(am/is/are/was/were/will be)를 넣으시오.
 
-1. I ___ a tax accountant specializing in corporate taxes.
+1. I ___ a project manager specializing in mobile apps.
 2. The offices ___ closed for maintenance last night.
-3. The new tax rate ___ effective from next January.
+3. The new pricing plan ___ effective from next January.
 4. The quarterly reports ___ all ready now.
-5. The amended return ___ submitted to the NTS yesterday.
-6. These documents ___ required for the audit.
+5. The revised proposal ___ submitted to the client yesterday.
+6. These documents ___ required for the review.
 7. The project ___ completed by Friday.
-8. I ___ responsible for the year-end settlement report.
+8. I ___ responsible for the annual performance report.
 
 #### 연습 B: be동사 vs 일반동사 구별
 
@@ -1082,7 +1080,7 @@ The tax office is on the third floor of the government building.
    - be동사: _______________
    - 일반동사: _______________
 
-2. 이 신고서가 정확하다
+2. 이 보고서가 정확하다
    - be동사: _______________
    - 일반동사: _______________
 
@@ -1094,27 +1092,27 @@ The tax office is on the third floor of the government building.
 
 다음 긍정문을 부정문과 의문문으로 바꾸시오.
 
-1. `The tax calculation is accurate.`
+1. `The budget calculation is accurate.`
    - 부정문: _______________
    - 의문문: _______________
 
-2. `The staff were ready for the audit.`
+2. `The staff were ready for the presentation.`
    - 부정문: _______________
    - 의문문: _______________
 
-3. `This income is taxable.`
+3. `This product is refundable.`
    - 부정문: _______________
    - 의문문: _______________
 
-#### 연습 D: 도메인 문장 작성
+#### 연습 D: 실전 문장 작성
 
 be동사를 사용하여 다음을 영어로 작성하시오.
 
-1. "부가가치세는 소비세의 한 종류다." (정체)
-2. "현재 고객의 신고 상태가 연체 중이다." (상태)
+1. "이 앱은 건강 관리 서비스의 한 종류다." (정체)
+2. "현재 고객의 주문 상태가 지연 중이다." (상태)
 3. "관련 서류가 3번 캐비닛에 있다." (위치)
-4. "이 소득은 비과세다." (상태)
-5. "우리 팀은 세무 기장 서비스를 담당하고 있다." (역할)
+4. "이 쿠폰은 환불 불가다." (상태)
+5. "우리 팀은 고객 지원 서비스를 담당하고 있다." (역할)
 
 ---
 
@@ -1158,7 +1156,7 @@ I will read a book.        (미래: will + read)
 I go to work every day.                  나는 매일 출근한다. (반복)
 She drinks coffee every morning.         그녀는 매일 아침 커피를 마신다. (습관)
 Water boils at 100°C.                    물은 100도에서 끓는다. (사실)
-The company pays taxes quarterly.        그 회사는 분기마다 세금을 낸다. (반복)
+The company releases updates quarterly.  그 회사는 분기마다 업데이트를 출시한다. (반복)
 ```
 
 **주의**: 3인칭 단수 현재형에는 `-s`를 붙인다!
@@ -1168,7 +1166,7 @@ I work at the office.       (1인칭: work)
 You work at the office.     (2인칭: work)
 He works at the office.     (3인칭 단수: works ← -s 추가!)
 She studies hard.            (3인칭 단수: studies)
-The company pays taxes.      (3인칭 단수: pays)
+The company ships orders.    (3인칭 단수: ships)
 They work at the office.    (3인칭 복수: work)
 ```
 
@@ -1182,7 +1180,7 @@ They work at the office.    (3인칭 복수: work)
 I finished the report yesterday.         어제 보고서를 끝냈다.
 She called the client this morning.      오늘 아침에 고객에게 전화했다.
 The company moved to a new office last month. 지난 달에 회사가 새 사무실로 이전했다.
-We submitted the tax return last week.   지난 주에 세금 신고서를 제출했다.
+We submitted the final proposal last week. 지난 주에 최종 제안서를 제출했다.
 ```
 
 **과거형 만드는 법**:
@@ -1221,14 +1219,14 @@ We submitted the tax return last week.   지난 주에 세금 신고서를 제�
 I will finish the report tomorrow.
 (내일 보고서를 끝낼 것이다.)
 
-We will submit the tax return next week.
-(다음 주에 세금 신고서를 제출할 것이다.)
+We will submit the final report next week.
+(다음 주에 최종 보고서를 제출할 것이다.)
 
-The new tax law will take effect in January.
-(새 세법이 1월에 시행될 것이다.)
+The new company policy will take effect in January.
+(새 회사 정책이 1월에 시행될 것이다.)
 
-The company is going to hire more accountants next quarter.
-(회사가 다음 분기에 회계사를 더 채용할 예정이다.)
+The company is going to hire more designers next quarter.
+(회사가 다음 분기에 디자이너를 더 채용할 예정이다.)
 ```
 
 > **will vs be going to**:
@@ -1251,94 +1249,94 @@ The company is going to hire more accountants next quarter.
 
 **현재 시제 확장**:
 ```
-The company pays taxes.
-The company pays corporate taxes.
-The company pays corporate taxes to the NTS.
-The company pays corporate taxes to the NTS every quarter.
-The company accurately pays corporate taxes to the NTS every quarter before the deadline.
+The company ships products.
+The company ships electronic products.
+The company ships electronic products to customers.
+The company ships electronic products to customers every week.
+The company reliably ships electronic products to customers every week before the weekend.
 ```
 
 **과거 시제 확장**:
 ```
 We submitted the report.
-We submitted the tax report.
-We submitted the tax report to the NTS.
-We submitted the tax report to the NTS last Friday.
-We successfully submitted the amended quarterly tax report to the NTS last Friday afternoon.
+We submitted the project report.
+We submitted the project report to the client.
+We submitted the project report to the client last Friday.
+We successfully submitted the revised quarterly project report to the client last Friday afternoon.
 ```
 
 **미래 시제 확장**:
 ```
 I will review the documents.
-I will review the tax documents.
-I will review the tax documents tomorrow.
-I will review the client's tax documents tomorrow morning.
-I will carefully review the client's annual tax documents tomorrow morning before the meeting.
+I will review the contract documents.
+I will review the contract documents tomorrow.
+I will review the client's contract documents tomorrow morning.
+I will carefully review the client's annual contract documents tomorrow morning before the meeting.
 ```
 
 #### 하나의 이야기를 3시제로 전환
 
 ```
 현재 (습관/반복):
-Our team reviews tax returns every month.
+Our team reviews project proposals every month.
 
 과거 (지난 이벤트):
-Our team reviewed the amended tax return yesterday.
+Our team reviewed the revised budget proposal yesterday.
 
 미래 (계획/예정):
-Our team will review the year-end settlement reports next week.
+Our team will review the year-end performance reports next week.
 ```
 
 ---
 
-### 4. DOMAIN — 세무 도메인 예문
+### 4. APPLY — 실전 예문
 
 #### 현재 시제 — 규정/반복 업무 설명
 
 ```
-The NTS requires all businesses to file VAT returns quarterly.
-(국세청은 모든 사업자에게 분기마다 부가가치세 신고를 요구한다.)
+The school requires all students to submit progress reports quarterly.
+(학교는 모든 학생에게 분기마다 진행 보고서 제출을 요구한다.)
 
-The accountant calculates withholding tax based on the latest tax brackets.
-(회계사는 최신 세율 구간에 따라 원천징수세를 계산한다.)
+The analyst calculates monthly expenses based on the latest price data.
+(분석가는 최신 가격 데이터에 따라 월별 비용을 계산한다.)
 
-The company withholds income tax from employee salaries every month.
-(회사는 매달 직원 급여에서 소득세를 원천징수한다.)
+The company deducts insurance premiums from employee salaries every month.
+(회사는 매달 직원 급여에서 보험료를 공제한다.)
 
-Small businesses pay corporate tax at a reduced rate.
-(소기업은 인하된 세율로 법인세를 납부한다.)
+Small businesses pay rent at a discounted rate.
+(소기업은 할인된 요율로 임대료를 납부한다.)
 ```
 
 #### 과거 시제 — 이벤트/이슈 보고
 
 ```
-The NTS conducted a tax audit on the company last month.
-(국세청이 지난 달에 그 회사에 대해 세무조사를 실시했다.)
+The headquarters conducted a safety inspection on the branch office last month.
+(본사가 지난 달에 지점에 대해 안전 점검을 실시했다.)
 
-We discovered a critical error in the year-end tax settlement calculation last week.
-(지난 주에 연말정산 계산에서 치명적인 오류를 발견했다.)
+We discovered a critical error in the annual budget calculation last week.
+(지난 주에 연간 예산 계산에서 치명적인 오류를 발견했다.)
 
-The client submitted an amended tax return through our office yesterday.
-(고객이 어제 우리 사무실을 통해 수정 신고서를 제출했다.)
+The client submitted a revised contract through our office yesterday.
+(고객이 어제 우리 사무실을 통해 수정 계약서를 제출했다.)
 
-The government raised the income tax threshold last year.
-(정부가 작년에 소득세 기준금액을 인상했다.)
+The government raised the minimum wage last year.
+(정부가 작년에 최저임금을 인상했다.)
 ```
 
 #### 미래 시제 — 계획/예정
 
 ```
-The new pension reform rules will affect our calculation method starting from April.
-(새 연금 개혁 규칙이 4월부터 우리 계산 방식에 영향을 미칠 것이다.)
+The new labor regulations will affect our scheduling method starting from April.
+(새 근로 규정이 4월부터 우리 일정 관리 방식에 영향을 미칠 것이다.)
 
-We will complete the year-end settlement by the end of this month.
-(이번 달 말까지 연말정산을 완료할 것이다.)
+We will complete the annual report by the end of this month.
+(이번 달 말까지 연간 보고서를 완료할 것이다.)
 
-The government will raise the corporate tax threshold in the next fiscal year.
-(정부는 다음 회계연도에 법인세 기준금액을 인상할 것이다.)
+The company will raise the starting salary in the next fiscal year.
+(회사는 다음 회계연도에 초봉을 인상할 것이다.)
 
-Our team is going to review all client tax filings before the deadline.
-(우리 팀은 마감 전에 모든 고객 세금 신고를 검토할 예정이다.)
+Our team is going to review all client contracts before the deadline.
+(우리 팀은 마감 전에 모든 고객 계약서를 검토할 예정이다.)
 ```
 
 ---
@@ -1349,51 +1347,51 @@ Our team is going to review all client tax filings before the deadline.
 
 빈칸에 알맞은 시제의 동사를 넣으시오.
 
-1. The company ___ (pay) taxes every quarter. [반복]
+1. The company ___ (ship) products every quarter. [반복]
 2. We ___ (submit) the report last Friday. [과거 이벤트]
-3. The new tax law ___ (take) effect next January. [미래 계획]
-4. The NTS ___ (require) quarterly VAT filings. [규정/사실]
-5. The audit ___ (reveal) three errors yesterday. [과거 이벤트]
-6. I ___ (review) this report tomorrow morning. [미래 의지]
-7. The accountant ___ (calculate) withholding tax every month. [반복]
-8. The team ___ (complete) the tax filing last month. [과거 이벤트]
+3. The new policy ___ (take) effect next January. [미래 계획]
+4. The school ___ (require) quarterly progress reports. [규정/사실]
+5. The inspection ___ (reveal) three errors yesterday. [과거 이벤트]
+6. I ___ (review) this document tomorrow morning. [미래 의지]
+7. The analyst ___ (calculate) monthly expenses every month. [반복]
+8. The team ___ (complete) the project last month. [과거 이벤트]
 
 #### 연습 B: 3인칭 단수 -s 연습
 
 다음 문장에서 동사를 올바른 현재형으로 고치시오.
 
-1. `The company (pay) taxes every quarter.`
-2. `The accountant (verify) the data before filing.`
-3. `The audit (happen) once a year.`
+1. `The company (ship) products every quarter.`
+2. `The manager (verify) the data before publishing.`
+3. `The inspection (happen) once a year.`
 4. `Each department (handle) its own budget.`
-5. `The tax office (process) hundreds of returns daily.`
+5. `The service center (process) hundreds of requests daily.`
 
 #### 연습 C: 시제 전환
 
 다음 문장을 지시된 시제로 바꾸시오.
 
 1. `We submit the report.` → 과거: ___ / 미래: ___
-2. `The NTS audited the company.` → 현재: ___ / 미래: ___
+2. `The inspector audited the building.` → 현재: ___ / 미래: ___
 3. `I will review the documents.` → 현재: ___ / 과거: ___
-4. `The company pays corporate tax.` → 과거: ___ / 미래: ___
+4. `The company ships products weekly.` → 과거: ___ / 미래: ___
 
 #### 연습 D: 상황별 시제 선택 + 문장 작성
 
 다음 상황을 적절한 시제로 영어 문장을 작성하시오.
 
-1. **회사 소개서에 쓸 문장**: "이 회사는 원천징수세를 정확하게 계산한다."
+1. **회사 소개서에 쓸 문장**: "이 회사는 고객 데이터를 정확하게 분석한다."
    → 시제: ___ / 문장: ___
 
-2. **업무 보고서에 쓸 문장**: "어제 고객의 수정 신고서 검토를 완료했다."
+2. **업무 보고서에 쓸 문장**: "어제 고객의 수정 계약서 검토를 완료했다."
    → 시제: ___ / 문장: ___
 
-3. **주간 계획에 쓸 문장**: "다음 주에 분기별 세금 보고서를 제출할 것이다."
+3. **주간 계획에 쓸 문장**: "다음 주에 분기별 실적 보고서를 제출할 것이다."
    → 시제: ___ / 문장: ___
 
-4. **업무 매뉴얼에 쓸 문장**: "이 양식은 납세자 정보를 포함한다."
+4. **업무 매뉴얼에 쓸 문장**: "이 양식은 고객 정보를 포함한다."
    → 시제: ___ / 문장: ___
 
-5. **월간 보고에 쓸 문장**: "우리 팀이 지난 달에 100건의 세금 신고를 처리했다."
+5. **월간 보고에 쓸 문장**: "우리 팀이 지난 달에 100건의 고객 요청을 처리했다."
    → 시제: ___ / 문장: ___
 
 #### 연습 E: 부정문과 의문문 만들기 (일반동사)
@@ -1401,12 +1399,12 @@ Our team is going to review all client tax filings before the deadline.
 일반동사의 부정문과 의문문에는 `do/does/did`가 필요하다. 다음 문장을 부정문과 의문문으로 바꾸시오.
 
 ```
-현재 긍정:  The company pays taxes quarterly.
-현재 부정:  The company does not pay taxes quarterly.
-현재 의문:  Does the company pay taxes quarterly?
+현재 긍정:  The company ships products weekly.
+현재 부정:  The company does not ship products weekly.
+현재 의문:  Does the company ship products weekly?
 ```
 
-1. `The accountant reviews the tax return.`
+1. `The manager reviews the monthly report.`
    - 부정문: _______________
    - 의문문: _______________
 
@@ -1414,16 +1412,16 @@ Our team is going to review all client tax filings before the deadline.
    - 부정문: _______________
    - 의문문: _______________
 
-3. `The audit happens once a year.`
+3. `The inspection happens once a year.`
    - 부정문: _______________
    - 의문문: _______________
 
-4. `The team completed the year-end settlement.`
+4. `The team completed the annual review.`
    - 부정문: _______________
    - 의문문: _______________
 
 > **주의**: 부정문/의문문에서 `does/did`를 쓰면, **본동사는 원형**으로 돌아간다!
-> - `The accountant reviews...` → `Does the accountant review...?` (reviews → review)
+> - `The manager reviews...` → `Does the manager review...?` (reviews → review)
 > - `We submitted...` → `Did we submit...?` (submitted → submit)
 
 ---
@@ -1450,7 +1448,7 @@ Our team is going to review all client tax filings before the deadline.
 - [ ] 현재/과거/미래 시제를 상황에 맞게 선택할 수 있다
 - [ ] 일반동사의 부정문/의문문에 do/does/did가 필요하다는 것을 안다
 - [ ] 3인칭 단수 현재형 -s를 빼먹지 않는다
-- [ ] 세무 도메인의 기본 영어 어휘 30개 이상을 안다
+- [ ] 다양한 분야의 영어 어휘를 활용할 수 있다
 
 ## 다음 Phase 예고
 

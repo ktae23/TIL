@@ -37,9 +37,9 @@
 한국어에서는 수동태가 영어만큼 자주 쓰이지 않는다. 한국어는 주어를 생략하는 것이 자연스럽기 때문이다.
 
 ```
-한국어: "서류 제출했어." (누가? → 생략해도 자연스러움)
-영어:   "Submitted the document." (X) → 비문. 주어가 반드시 필요.
-영어:   "The document was submitted." (O) → 수동태로 주어 문제 해결.
+한국어: "보고서 보냈어." (누가? → 생략해도 자연스러움)
+영어:   "Sent the report." (X) → 비문. 주어가 반드시 필요.
+영어:   "The report was sent." (O) → 수동태로 주어 문제 해결.
 ```
 
 영어는 **주어가 반드시 있어야 하는 언어**다. 그런데 행위자를 모르거나, 행위자가 중요하지 않을 때가 있다. 이때 **대상을 주어 자리에 올리는 것**이 수동태다.
@@ -50,7 +50,7 @@
 |---|------|------|------|
 | 1 | **행위자를 모를 때** | `My wallet was stolen.` | 누가 훔쳤는지 모름 |
 | 2 | **행위자가 중요하지 않을 때** | `The mistake was corrected.` | 누가 고쳤는지보다 고쳐진 사실이 중요 |
-| 3 | **대상/결과를 강조할 때** | `The tax return was filed on time.` | 신고서가 제때 제출된 것이 핵심 |
+| 3 | **대상/결과를 강조할 때** | `The report was submitted on time.` | 보고서가 제때 제출된 것이 핵심 |
 | 4 | **객관적/공식적 톤을 낼 때** | `All receipts must be retained.` | 공식 문서, 법률 문서의 기본 톤 |
 
 > **핵심 원리**: 수동태는 "카메라 앵글"을 바꾸는 것이다.
@@ -79,10 +79,10 @@
 능동태: 주어(행위자) + 동사 + 목적어(대상)
 수동태: 주어(대상) + be + 과거분사(p.p.) + [by 행위자]
 
-The accountant    prepared    the report.
-(행위자)           (동사)      (대상)
-    ↓                ↓           ↓
-The report    was prepared    (by the accountant).
+The manager    approved    the budget.
+(행위자)        (동사)       (대상)
+    ↓              ↓            ↓
+The budget    was approved    (by the manager).
 (대상→주어)    (be+p.p.)      (행위자→생략 가능)
 ```
 
@@ -124,96 +124,96 @@ The document was prepared.
 #### Step 2: by + 행위자 추가
 
 ```
-The document was prepared by the accounting team.
+The document was prepared by the planning team.
 ```
 
 #### Step 3: 시간 부사 추가
 
 ```
-The document was prepared by the accounting team yesterday.
+The document was prepared by the planning team yesterday.
 ```
 
 #### Step 4: 부사절 추가
 
 ```
-The document was prepared by the accounting team yesterday after careful review.
+The document was prepared by the planning team yesterday after careful review.
 ```
 
 #### Step 5: 복합 수동태 문장
 
 ```
-The financial report that had been requested by the manager was finally prepared
-by the accounting team yesterday after careful review,
+The progress report that had been requested by the manager was finally prepared
+by the planning team yesterday after careful review,
 and the summary was sent to all department heads within an hour.
 ```
 
-#### 실전 확장 연습: 세무 도메인
+#### 실전 확장 연습: 일상 주제
 
 ```
-Step 1: The return was filed.
-        (신고서가 제출되었다.)
+Step 1: The order was placed.
+        (주문이 접수되었다.)
 
-Step 2: The tax return was filed by the taxpayer.
-        (세금 신고서가 납세자에 의해 제출되었다.)
+Step 2: The online order was placed by the customer.
+        (온라인 주문이 고객에 의해 접수되었다.)
 
-Step 3: The tax return was filed by the taxpayer on March 15th.
-        (세금 신고서가 3월 15일에 납세자에 의해 제출되었다.)
+Step 3: The online order was placed by the customer on Monday morning.
+        (온라인 주문이 월요일 아침에 고객에 의해 접수되었다.)
 
-Step 4: The tax return was filed by the taxpayer on March 15th
-        through our online platform.
-        (세금 신고서가 3월 15일에 우리 온라인 플랫폼을 통해 납세자에 의해 제출되었다.)
+Step 4: The online order was placed by the customer on Monday morning
+        through our mobile app.
+        (온라인 주문이 월요일 아침에 우리 모바일 앱을 통해 고객에 의해 접수되었다.)
 
-Step 5: The comprehensive income tax return for the fiscal year 2025
-        was filed by the individual taxpayer on March 15th
-        through our automated online platform,
-        and the confirmation receipt was sent to the registered email address
-        within 30 seconds.
-        (2025 회계연도 종합소득세 신고서가 3월 15일에 개인 납세자에 의해
-        자동 온라인 플랫폼을 통해 제출되었으며, 확인 영수증이 등록된 이메일 주소로
-        30초 이내에 발송되었다.)
+Step 5: The bulk order containing 50 items for the annual company event
+        was placed by the purchasing team on Monday morning
+        through our mobile app,
+        and the delivery confirmation was sent to the registered email address
+        within one hour.
+        (연례 회사 행사를 위한 50개 품목의 대량 주문이 월요일 아침에
+        구매팀에 의해 모바일 앱을 통해 접수되었으며,
+        배송 확인이 등록된 이메일 주소로 1시간 이내에 발송되었다.)
 ```
 
 ---
 
-### DOMAIN — 세무 도메인 실전 예문
+### APPLY — 실전 예문
 
-#### 세무 도메인 수동태 필수 표현
+#### 공식 문서/업무 수동태 필수 표현
 
-세무 도메인에서는 수동태가 **표준 표현**이다. 공식 문서는 거의 항상 수동태로 쓴다.
+공식 문서, 안내문, 보고서에서는 수동태가 **표준 표현**이다.
 
 ```
-1. The tax return was filed before the deadline.
-   (세금 신고서가 기한 전에 제출되었다.)
+1. The application was submitted before the deadline.
+   (신청서가 기한 전에 제출되었다.)
 
-2. The deduction was applied to the total income.
-   (공제가 총소득에 적용되었다.)
+2. The discount was applied to the total price.
+   (할인이 총 가격에 적용되었다.)
 
-3. The penalty was imposed for late filing.
-   (과태료가 지연 신고에 대해 부과되었다.)
+3. A late fee was charged for the overdue payment.
+   (연체 수수료가 미납 요금에 대해 부과되었다.)
 
 4. The refund will be issued within 30 days.
-   (환급금이 30일 이내에 지급될 것이다.)
+   (환불이 30일 이내에 처리될 것이다.)
 
-5. The income was reported correctly.
-   (소득이 정확하게 신고되었다.)
+5. The schedule was updated correctly.
+   (일정이 정확하게 업데이트되었다.)
 
-6. The tax rate is determined by the income bracket.
-   (세율은 소득 구간에 의해 결정된다.)
+6. The final score is determined by the total points earned.
+   (최종 점수는 획득한 총 점수에 의해 결정된다.)
 
-7. All receipts must be retained for five years.
-   (모든 영수증은 5년간 보관되어야 한다.)
+7. All important documents must be kept in a safe place.
+   (모든 중요한 서류는 안전한 곳에 보관되어야 한다.)
 
-8. The tax base is calculated by subtracting deductions from gross income.
-   (과세표준은 총소득에서 공제를 뺀 값으로 계산된다.)
+8. The total cost is calculated by adding up all individual expenses.
+   (총 비용은 모든 개별 비용을 합산하여 계산된다.)
 
-9. Withholding tax is deducted at source by the employer.
-   (원천징수세는 고용주에 의해 원천에서 공제된다.)
+9. Membership fees are collected at the beginning of each year.
+   (회비는 매년 초에 징수된다.)
 
-10. The amended return was submitted after the error was discovered.
-    (수정 신고서가 오류 발견 후 제출되었다.)
+10. The corrected version was uploaded after the mistake was found.
+    (수정본이 실수 발견 후 업로드되었다.)
 ```
 
-#### 일반 비즈니스 수동태 필수 표현
+#### 일상생활/비즈니스 수동태 필수 표현
 
 회사 업무, 보고서, 공식 이메일에서 수동태는 자주 쓰인다.
 
@@ -242,8 +242,8 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 8. Complaints should be directed to the customer service department.
    (불만 사항은 고객 서비스 부서로 전달되어야 한다.)
 
-9. The invoice was issued and mailed to the client.
-   (청구서가 발행되어 고객에게 발송되었다.)
+9. The package was shipped and delivered to the customer.
+   (소포가 발송되어 고객에게 배달되었다.)
 
 10. The salary is deposited into the employee's bank account on the 25th.
     (급여는 25일에 직원의 은행 계좌로 입금된다.)
@@ -264,13 +264,13 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 2. The company processes the payment every month.
    → _______________________________________________
 
-3. The NTS reviews the tax return.
+3. The chef prepares the special menu every Friday.
    → _______________________________________________
 
 4. The team will submit the report tonight.
    → _______________________________________________
 
-5. The accountant calculated the deduction.
+5. The coach selected the starting players.
    → _______________________________________________
 ```
 
@@ -280,9 +280,9 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 ```
 1. The budget was approved (by the manager).
 2. The payment is processed (by the company) every month.
-3. The tax return is reviewed (by the NTS).
+3. The special menu is prepared (by the chef) every Friday.
 4. The report will be submitted (by the team) tonight.
-5. The deduction was calculated (by the accountant).
+5. The starting players were selected (by the coach).
 ```
 
 </details>
@@ -293,13 +293,13 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 
 ```
 1. The meeting _______ (schedule) for next Monday.
-2. All tax returns _______ (file) before April 15th.
-3. The error _______ (discover) by the auditor yesterday.
-4. The refund _______ (issue) within two weeks.
+2. All assignments _______ (submit) before Friday.
+3. The error _______ (discover) by the quality team yesterday.
+4. The replacement _______ (ship) within two weeks.
 5. The contract _______ (cancel) after the dispute.
 6. The report _______ (submit) to the head office every quarter.
-7. The invoice _______ (send) before the due date.
-8. A new tax regulation _______ (announce) by the government last week.
+7. The invitation _______ (send) before the event date.
+8. A new school policy _______ (announce) by the principal last week.
 ```
 
 <details>
@@ -307,9 +307,9 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 
 ```
 1. is scheduled
-2. must be filed / should be filed
+2. must be submitted / should be submitted
 3. was discovered
-4. will be issued
+4. will be shipped
 5. was cancelled
 6. is submitted
 7. must be sent / should be sent
@@ -326,16 +326,16 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 1. 이 서류는 팩스로 보낼 수 있다.
    → _______________________________________________
 
-2. 세금 신고서가 어제 제출되었다.
+2. 주문이 어제 취소되었다.
    → _______________________________________________
 
 3. 이 계획은 다음 회의에서 논의될 것이다.
    → _______________________________________________
 
-4. 영수증은 5년간 보관되어야 한다.
+4. 여권은 안전한 곳에 보관되어야 한다.
    → _______________________________________________
 
-5. 모든 거래 내역은 감사를 위해 기록된다.
+5. 모든 고객 리뷰는 품질 개선을 위해 기록된다.
    → _______________________________________________
 ```
 
@@ -344,10 +344,10 @@ Step 5: The comprehensive income tax return for the fiscal year 2025
 
 ```
 1. This document can be sent by fax.
-2. The tax return was filed yesterday.
+2. The order was cancelled yesterday.
 3. This plan will be discussed at the next meeting.
-4. Receipts must be retained for five years.
-5. All transaction records are kept for auditing purposes.
+4. Passports must be kept in a safe place.
+5. All customer reviews are recorded for quality improvement.
 ```
 
 </details>
@@ -416,19 +416,19 @@ Lesson 24에서 기본 수동태를 배웠다. 하지만 현실의 문장은 단
 기본:     The document is being reviewed.
           (서류가 검토되고 있다.)
 
-확장 1:   The document is being reviewed by the senior accountant.
-          (서류가 선임 회계사에 의해 검토되고 있다.)
+확장 1:   The document is being reviewed by the project manager.
+          (서류가 프로젝트 매니저에 의해 검토되고 있다.)
 
-확장 2:   The document is being reviewed by the senior accountant
-          as part of the quarterly audit process.
-          (서류가 분기 감사 절차의 일환으로 선임 회계사에 의해 검토되고 있다.)
+확장 2:   The document is being reviewed by the project manager
+          as part of the annual performance evaluation process.
+          (서류가 연간 성과 평가 절차의 일환으로 프로젝트 매니저에 의해 검토되고 있다.)
 
-확장 3:   The comprehensive income tax return for the fiscal year 2025
-          is currently being reviewed by the senior accountant
-          as part of the quarterly audit process,
+확장 3:   The comprehensive travel expense report for the first quarter
+          is currently being reviewed by the project manager
+          as part of the annual performance evaluation process,
           and it is expected to be approved by end of day.
-          (2025 회계연도 종합소득세 신고서가 현재 분기 감사 절차의 일환으로
-          선임 회계사에 의해 검토되고 있으며, 오늘 중으로 승인될 것으로 예상된다.)
+          (1분기 종합 출장 경비 보고서가 현재 연간 성과 평가 절차의 일환으로
+          프로젝트 매니저에 의해 검토되고 있으며, 오늘 중으로 승인될 것으로 예상된다.)
 ```
 
 #### 완료 수동태 (`has/have been + p.p.`)
@@ -442,11 +442,11 @@ Lesson 24에서 기본 수동태를 배웠다. 하지만 현실의 문장은 단
 확장 1:   The error has been corrected and the report has been resubmitted.
           (오류가 수정되었고 보고서가 다시 제출되었다.)
 
-확장 2:   The calculation error that was causing incorrect tax amounts
-          has been corrected and the amended return has been resubmitted
-          to the NTS for review.
-          (잘못된 세금 금액을 유발하던 계산 오류가 수정되어
-          수정 신고서가 국세청에 검토를 위해 다시 제출되었다.)
+확장 2:   The calculation error that was causing incorrect totals
+          has been corrected and the revised report has been resubmitted
+          to the head office for review.
+          (잘못된 합계를 유발하던 계산 오류가 수정되어
+          수정 보고서가 본사에 검토를 위해 다시 제출되었다.)
 ```
 
 > **`was corrected` vs `has been corrected` 차이**:
@@ -459,68 +459,68 @@ Lesson 24에서 기본 수동태를 배웠다. 하지만 현실의 문장은 단
 기본:     The form should be completed.
           (양식은 작성되어야 한다.)
 
-확장 1:   The tax form should be completed before the filing deadline.
-          (세금 양식은 신고 기한 전에 작성되어야 한다.)
+확장 1:   The registration form should be completed before the event date.
+          (등록 양식은 행사일 전에 작성되어야 한다.)
 
-확장 2:   All required tax forms should be completed accurately
-          before the filing deadline,
-          even if an extension has already been requested.
-          (모든 필수 세금 양식은, 연장이 이미 요청되었더라도,
-          신고 기한 전에 정확하게 작성되어야 한다.)
+확장 2:   All required registration forms should be completed accurately
+          before the event date,
+          even if a deadline extension has already been granted.
+          (모든 필수 등록 양식은, 기한 연장이 이미 허가되었더라도,
+          행사일 전에 정확하게 작성되어야 한다.)
 ```
 
 ---
 
-### DOMAIN — 세무 도메인 고급 예문
+### APPLY — 실전 예문
 
-#### 세무 법률/규정 문서 스타일
+#### 공식 규정/안내 문서 스타일
 
-세무 규정 문서는 수동태가 기본이다. 이 패턴을 익혀두면 영문 세무 자료를 쉽게 읽을 수 있다.
+공식 규정과 안내 문서는 수동태가 기본이다. 이 패턴을 익혀두면 영문 공식 문서를 쉽게 읽을 수 있다.
 
 ```
-1. Income tax shall be levied on the total income of an individual.
-   (소득세는 개인의 총소득에 부과된다.)
+1. A registration fee shall be charged for all participants.
+   (등록비가 모든 참가자에게 부과된다.)
 
-2. The tax base is determined by subtracting allowable deductions
-   from the gross income.
-   (과세표준은 총소득에서 허용된 공제를 차감하여 결정된다.)
+2. The final grade is determined by combining exam scores
+   and assignment results.
+   (최종 성적은 시험 점수와 과제 결과를 합산하여 결정된다.)
 
-3. Withholding tax must be remitted to the NTS by the 10th
+3. Monthly reports must be submitted to the team leader by the 5th
    of the following month.
-   (원천징수세는 다음 달 10일까지 국세청에 납부되어야 한다.)
+   (월간 보고서는 다음 달 5일까지 팀장에게 제출되어야 한다.)
 
-4. A penalty of 20% may be imposed if the return is filed
-   more than one month after the deadline.
-   (신고서가 기한으로부터 1개월 이상 지연 제출될 경우
-   20%의 가산세가 부과될 수 있다.)
+4. A late fee of 10% may be charged if the payment is made
+   more than two weeks after the due date.
+   (납부가 기한으로부터 2주 이상 지연될 경우
+   10%의 연체료가 부과될 수 있다.)
 
-5. Amended returns can be filed within five years
-   from the original filing date.
-   (수정 신고서는 최초 신고일로부터 5년 이내에 제출될 수 있다.)
+5. Complaints can be submitted within 30 days
+   from the date of purchase.
+   (불만 사항은 구매일로부터 30일 이내에 제출될 수 있다.)
 ```
 
 #### 비즈니스 보고서/변경 사항 안내 스타일
 
 ```
-## 2025년 세무 서비스 변경 안내
+## 2025년 서비스 변경 안내
 
 ### 변경 사항
-- The income tax rate brackets have been adjusted for the new fiscal year.
-  (새 회계연도에 맞춰 소득세율 구간이 조정되었다.)
-- Filing deadlines are now being enforced more strictly.
-  (신고 기한이 이제 더 엄격하게 적용되고 있다.)
-- The old paper filing system has been replaced with an online platform.
-  (기존 종이 신고 시스템이 온라인 플랫폼으로 교체되었다.)
+- The pricing structure has been adjusted for the new year.
+  (새해에 맞춰 가격 체계가 조정되었다.)
+- Project deadlines are now being enforced more strictly.
+  (프로젝트 기한이 이제 더 엄격하게 적용되고 있다.)
+- The old paper-based process has been replaced with a digital platform.
+  (기존 종이 기반 프로세스가 디지털 플랫폼으로 교체되었다.)
 
 ### 수정된 사항
-- The rounding error in tax amount calculation has been fixed.
-  (세금 금액 계산의 반올림 오류가 수정되었다.)
-- An issue where duplicate notices were being sent has been resolved.
-  (중복 안내문이 발송되던 문제가 해결되었다.)
+- The rounding error in the billing calculation has been fixed.
+  (청구 금액 계산의 반올림 오류가 수정되었다.)
+- An issue where duplicate notifications were being sent has been resolved.
+  (중복 알림이 발송되던 문제가 해결되었다.)
 
 ### 참고 사항
-- Large-volume filings may be delayed during peak season.
-  (대량 신고 건은 성수기에 지연될 수 있다.)
+- Large orders may be delayed during the holiday season.
+  (대량 주문은 성수기에 지연될 수 있다.)
 - All personal information is handled in compliance with privacy regulations.
   (모든 개인정보는 개인정보 보호 규정에 따라 처리된다.)
 ```
@@ -534,11 +534,11 @@ Lesson 24에서 기본 수동태를 배웠다. 하지만 현실의 문장은 단
 괄호 안에서 올바른 형태를 고르시오.
 
 ```
-1. The audit (is performing / is being performed / has performing) right now.
+1. The inspection (is performing / is being performed / has performing) right now.
 2. The report (has been submitted / has submitted / was being submitted) to the head office.
    You can check it now.
-3. The tax return (was filed / is being filed / has been filing) last March.
-4. The regulation (will be abolish / will be abolished / will abolished) next year.
+3. The application (was processed / is being processed / has been processing) last March.
+4. The old policy (will be abolish / will be abolished / will abolished) next year.
 5. The form (must be complete / must be completed / must completed) before submission.
 6. By the time we noticed, the deadline (has been passed / had been passed / was passing).
 ```
@@ -549,7 +549,7 @@ Lesson 24에서 기본 수동태를 배웠다. 하지만 현실의 문장은 단
 ```
 1. is being performed (지금 수행되고 있는 중 → 현재 진행 수동태)
 2. has been submitted (제출 완료되어 지금 확인 가능 → 현재 완료 수동태)
-3. was filed (지난 3월에 제출됨 → 과거 수동태)
+3. was processed (지난 3월에 처리됨 → 과거 수동태)
 4. will be abolished (내년에 폐지될 것 → 미래 수동태)
 5. must be completed (작성되어야 함 → 조동사 + 수동태)
 6. had been passed (알아차리기 전에 이미 기한이 지남 → 과거 완료 수동태)
@@ -696,7 +696,7 @@ Lesson 24에서 기본 수동태를 배웠다. 하지만 현실의 문장은 단
 | 상황 | 단순 과거 | 현재완료 |
 |------|-----------|----------|
 | 업무 완료 보고 | `I finished the report yesterday.` (어제 끝냈다는 사실) | `I have finished the report.` (끝냈고, 지금 제출 가능) |
-| 신고 상태 | `He filed the return in March.` (3월에 제출한 사실) | `He has filed the return.` (제출 완료, 처리 대기 중) |
+| 예약 상태 | `He booked the hotel in March.` (3월에 예약한 사실) | `He has booked the hotel.` (예약 완료, 확인 가능) |
 | 결제 상태 | `She paid the bill last week.` (지난주 납부한 사실) | `She has paid the bill.` (납부 완료, 영수증 발급 가능) |
 
 ---
@@ -745,8 +745,8 @@ I have just finished reviewing the documents.
 The meeting has ended successfully.
 (회의가 성공적으로 끝났다. → 지금 끝난 상태)
 
-She has already submitted the tax return.
-(그녀는 이미 세금 신고서를 제출했다. → 지금 제출 완료 상태)
+She has already submitted the project proposal.
+(그녀는 이미 프로젝트 제안서를 제출했다. → 지금 제출 완료 상태)
 ```
 
 > **자주 쓰이는 부사**: `just` (방금), `already` (이미), `yet` (아직, 부정/의문문)
@@ -754,14 +754,14 @@ She has already submitted the tax return.
 **2. 경험 (Experience) — "~한 적이 있다"**
 
 ```
-I have handled complex tax cases before.
-(전에 복잡한 세무 건을 처리한 적이 있다. → 지금 그 경험이 있다)
+I have organized large-scale events before.
+(전에 대규모 행사를 기획한 적이 있다. → 지금 그 경험이 있다)
 
-Have you ever worked in the tax industry?
-(세무 업계에서 일해본 적 있나요? → 현재 경험 유무 확인)
+Have you ever traveled abroad for work?
+(업무 때문에 해외에 가본 적 있나요? → 현재 경험 유무 확인)
 
-She has never missed a filing deadline.
-(그녀는 신고 기한을 놓친 적이 없다. → 지금까지 무결한 기록)
+She has never missed a project deadline.
+(그녀는 프로젝트 기한을 놓친 적이 없다. → 지금까지 무결한 기록)
 ```
 
 > **자주 쓰이는 부사**: `ever` (경험 질문), `never` (경험 없음), `before` (이전에)
@@ -775,8 +775,8 @@ I have worked at this company for three years.
 The office has been open since 9 AM.
 (사무실이 오전 9시부터 열려 있다. → 지금도 열려 있다)
 
-We have used this accounting method since 2023.
-(2023년부터 이 회계 방법을 사용해 왔다. → 지금도 사용 중)
+We have used this project management tool since 2023.
+(2023년부터 이 프로젝트 관리 도구를 사용해 왔다. → 지금도 사용 중)
 ```
 
 > **자주 쓰이는 전치사**: `for` (기간), `since` (시작 시점)
@@ -817,15 +817,15 @@ The office has moved to a new building. (Go to the new address.)
     → "When?" 질문이 부자연스러움. 대신 "Great, I'll review it now."
 ```
 
-**상황: 세금 신고서를 제출했다**
+**상황: 여행 예약을 했다**
 
 ```
-(A) The taxpayer filed the return on March 15th.
+(A) She booked the flight on March 15th.
     → 3월 15일이라는 구체적 시점의 과거 사실.
     → 기록 조회, 과거 사실 확인에 적합.
 
-(B) The taxpayer has filed the return.
-    → 제출이 완료된 현재 상태.
+(B) She has booked the flight.
+    → 예약이 완료된 현재 상태.
     → 상태 확인, 다음 단계 논의에 적합.
 ```
 
@@ -862,7 +862,7 @@ B: "I finished it last night."               (과거 — 구체적 시점 답변
 ```
 
 ```
-A: "Has the tax return been submitted?"      (현재완료 수동태 — 상태 확인)
+A: "Has the report been submitted?"          (현재완료 수동태 — 상태 확인)
 B: "Yes, it has."
 A: "Who submitted it?"                       (과거 — 구체적 행위자 질문)
 B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위자)
@@ -870,37 +870,37 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 
 ---
 
-### DOMAIN — 세무 도메인 실전 예문
+### APPLY — 실전 예문
 
-#### 세무 도메인 현재완료
+#### 직장/학교 현재완료
 
 ```
-1. The taxpayer has filed all required returns for the current year.
-   (납세자가 올해 필요한 모든 신고서를 제출했다. → 제출 완료 상태)
+1. The student has submitted all required assignments for this semester.
+   (학생이 이번 학기 필요한 모든 과제를 제출했다. → 제출 완료 상태)
 
-2. We have received the amended return from the client.
-   (고객으로부터 수정 신고서를 받았다. → 지금 수정 신고서가 있다)
+2. We have received the revised proposal from the client.
+   (고객으로부터 수정된 제안서를 받았다. → 지금 수정 제안서가 있다)
 
-3. The NTS has updated the income tax rates for 2026.
-   (국세청이 2026년 소득세율을 업데이트했다. → 새 세율이 적용된 상태)
+3. The school has updated the admission requirements for 2026.
+   (학교가 2026년 입학 요건을 업데이트했다. → 새 요건이 적용된 상태)
 
-4. Have you ever been audited by the tax authority?
-   (세무 당국에 의해 감사를 받은 적이 있나요?)
+4. Have you ever participated in a marathon?
+   (마라톤에 참가한 적이 있나요?)
 
-5. The deduction limit has not been changed since 2020.
-   (공제 한도가 2020년 이후로 변경되지 않았다. → 지금도 같은 한도)
+5. The membership fee has not been changed since 2020.
+   (회비가 2020년 이후로 변경되지 않았다. → 지금도 같은 금액)
 
-6. She has claimed the education expense deduction for three consecutive years.
-   (그녀는 3년 연속으로 교육비 공제를 신청해 왔다. → 올해도 유효)
+6. She has won the employee of the month award for three consecutive months.
+   (그녀는 3개월 연속으로 이달의 직원상을 수상해 왔다. → 올해도 유효)
 
-7. The penalty has already been waived by the NTS.
-   (가산세가 이미 국세청에 의해 면제되었다. → 면제된 상태)
+7. The late fee has already been waived by the manager.
+   (연체료가 이미 매니저에 의해 면제되었다. → 면제된 상태)
 
-8. I have just finished calculating the estimated tax for Q1.
-   (방금 1분기 예상 세금 계산을 끝냈다. → 결과가 나온 상태)
+8. I have just finished preparing the presentation for tomorrow's meeting.
+   (방금 내일 회의를 위한 발표 자료 준비를 끝냈다. → 결과가 나온 상태)
 ```
 
-#### 일반 비즈니스 현재완료
+#### 일상생활 현재완료
 
 ```
 1. We have moved the office to a new location downtown.
@@ -909,20 +909,20 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 2. The company has adopted a new work-from-home policy since last year.
    (회사가 작년부터 재택근무 정책을 채택해 왔다. → 지금도 적용 중)
 
-3. I have never seen this kind of regulation before.
-   (이런 종류의 규정을 전에 본 적이 없다.)
+3. I have never seen this kind of problem before.
+   (이런 종류의 문제를 전에 본 적이 없다.)
 
 4. The project has been delayed three times this quarter.
    (프로젝트가 이번 분기에 3번 지연되었다. → 분기가 아직 안 끝남)
 
-5. Have you sent the invoice to the client yet?
-   (고객에게 청구서를 보냈나요? → 현재 상태 확인)
+5. Have you sent the email to the team yet?
+   (팀에게 이메일을 보냈나요? → 현재 상태 확인)
 
-6. The billing error has been identified and corrected.
-   (청구 오류가 확인되어 수정되었다. → 지금 수정된 상태)
+6. The scheduling conflict has been identified and resolved.
+   (일정 충돌이 확인되어 해결되었다. → 지금 해결된 상태)
 
-7. We have been using this accounting system for two years.
-   (이 회계 시스템을 2년째 사용해 왔다. → 지금도 사용 중)
+7. We have been using this online shopping platform for two years.
+   (이 온라인 쇼핑 플랫폼을 2년째 사용해 왔다. → 지금도 사용 중)
 
 8. Customer satisfaction has improved significantly after the policy change.
    (정책 변경 후 고객 만족도가 크게 개선되었다. → 지금 개선된 상태)
@@ -933,13 +933,13 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 ```
 아침 회의:
 "I have completed the quarterly report."
-"I have started working on the client's tax return."
-"I haven't finished the invoice review yet."
+"I have started working on the new marketing plan."
+"I haven't finished the data analysis yet."
 
 업무 메모/게시판:
 "The document review has been completed."
 "All required signatures have been obtained."
-"The new regulation has been reflected in our guidelines."
+"The new guidelines have been reflected in our handbook."
 
 업무 메시지:
 "I've sent the contract to the client."
@@ -988,13 +988,13 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 
 ```
 1. The team _______ (submit) the final report to the director.
-2. I _______ (never / see) this kind of tax regulation before.
+2. I _______ (never / see) this kind of problem before.
 3. The quarterly review _______ (complete) successfully.
-4. _______ you _______ (send) the invoice to the client yet?
-5. She _______ (work) in the accounting department since January.
+4. _______ you _______ (send) the email to the client yet?
+5. She _______ (work) in the marketing department since January.
 6. We _______ (already / resolve) all outstanding issues.
 7. The client _______ (not / approve) the revised budget yet.
-8. How many tax returns _______ you _______ (process) this month?
+8. How many customer complaints _______ you _______ (handle) this month?
 ```
 
 <details>
@@ -1008,7 +1008,7 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 5. has worked
 6. have already resolved
 7. has not approved (hasn't approved)
-8. have you processed
+8. have you handled
 ```
 
 </details>
@@ -1024,13 +1024,13 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 2. 제주도에 가본 적이 있나요?
    → _______________________________________________
 
-3. 우리는 2022년부터 이 회계 방식을 사용해 왔습니다.
+3. 우리는 2022년부터 이 온라인 도구를 사용해 왔습니다.
    → _______________________________________________
 
 4. 프린터가 고장 났습니다. (지금 사용 불가)
    → _______________________________________________
 
-5. 그는 아직 세금 신고서를 제출하지 않았습니다.
+5. 그는 아직 보고서를 제출하지 않았습니다.
    → _______________________________________________
 
 6. 회사가 새 사무실로 이전을 완료했습니다.
@@ -1043,9 +1043,9 @@ B: "Mr. Kim submitted it at 3 PM."          (과거 — 구체적 시점+행위�
 ```
 1. I have just finished reviewing the documents.
 2. Have you ever visited Jeju Island?
-3. We have used this accounting method since 2022.
+3. We have used this online tool since 2022.
 4. The printer has broken down. / The printer has stopped working.
-5. He has not filed the tax return yet. / He hasn't filed the tax return yet.
+5. He has not submitted the report yet. / He hasn't submitted the report yet.
 6. The company has completed the move to the new office.
 ```
 
@@ -1185,25 +1185,25 @@ They will have completed it.  (완료해놓은 상태일 것이다.)
           the quarterly report had already been submitted by the team.
           (내가 사무실에 도착했을 때, 분기 보고서는 팀에 의해 이미 제출되어 있었다.)
 
-확장 2:   By the time the tax filing deadline arrived on March 31st,
-          over 90% of our clients had already submitted their returns
-          through our online filing service.
-          (3월 31일 세금 신고 기한이 도착했을 때,
-          우리 고객의 90% 이상이 온라인 신고 서비스를 통해
-          이미 신고서를 제출해 놓은 상태였다.)
+확장 2:   By the time the registration deadline arrived on March 31st,
+          over 90% of the participants had already submitted their applications
+          through our online registration system.
+          (3월 31일 등록 기한이 도착했을 때,
+          참가자의 90% 이상이 온라인 등록 시스템을 통해
+          이미 신청서를 제출해 놓은 상태였다.)
 ```
 
 **패턴 2: Before/After + 과거, 주어 + had + p.p.**
 
 ```
-Before I joined the company, they had already established the tax consulting division.
-(내가 회사에 입사하기 전에, 그들은 이미 세무 컨설팅 부서를 설립해 놓았었다.)
+Before I joined the company, they had already established the overseas branch.
+(내가 회사에 입사하기 전에, 그들은 이미 해외 지사를 설립해 놓았었다.)
 
 After the error had been reported, the team immediately started investigating.
 (오류가 보고된 후, 팀은 즉시 조사를 시작했다.)
 
-The accountant realized that she had forgotten to include the medical expense deduction.
-(회계사는 의료비 공제를 포함하는 것을 잊었었다는 것을 깨달았다.)
+The teacher realized that she had forgotten to include the final exam scores.
+(선생님은 기말고사 점수를 포함하는 것을 잊었었다는 것을 깨달았다.)
 ```
 
 **패턴 3: 과거완료 + because/so/when**
@@ -1212,8 +1212,8 @@ The accountant realized that she had forgotten to include the medical expense de
 The project failed because the budget had been exhausted too early.
 (프로젝트가 실패했다, 왜냐하면 예산이 너무 일찍 소진되어 있었기 때문이다.)
 
-The audit went smoothly because the accountant had prepared all the documents in advance.
-(감사가 순조롭게 진행되었다, 왜냐하면 회계사가 사전에 모든 서류를 준비해 놓았기 때문이다.)
+The presentation went smoothly because the team had prepared all the materials in advance.
+(발표가 순조롭게 진행되었다, 왜냐하면 팀이 사전에 모든 자료를 준비해 놓았기 때문이다.)
 
 When I reviewed the records, I found that the payment had been made twice.
 (기록을 검토했을 때, 결제가 두 번 이루어졌었다는 것을 발견했다.)
@@ -1228,14 +1228,14 @@ When I reviewed the records, I found that the payment had been made twice.
           (금요일까지 끝내놓겠다.)
 
 확장 1:   By the end of this month,
-          I will have completed the annual tax report.
-          (이번 달 말까지 연간 세무 보고서를 완성해 놓겠다.)
+          I will have completed the annual performance review.
+          (이번 달 말까지 연간 성과 리뷰를 완성해 놓겠다.)
 
-확장 2:   By the time the tax filing season begins in March,
+확장 2:   By the time the new semester begins in March,
           we will have fully reviewed and organized
-          all client financial records for the year.
-          (3월에 세금 신고 시즌이 시작될 때까지,
-          우리는 모든 고객의 연간 재무 기록을 완전히 검토하고
+          all student records for the year.
+          (3월에 새 학기가 시작될 때까지,
+          우리는 모든 학생의 연간 기록을 완전히 검토하고
           정리해 놓을 것이다.)
 ```
 
@@ -1255,39 +1255,39 @@ Before the deadline, the team will have reviewed all client applications.
 By December, I will have worked here for two years.
 (12월이면 여기서 일한 지 2년이 된다.)
 
-By next month, our office will have handled
-over ten thousand tax returns this year.
-(다음 달이면 우리 사무소가 올해 1만 건 이상의 세금 신고서를 처리한 것이 된다.)
+By next month, our team will have handled
+over five hundred customer inquiries this year.
+(다음 달이면 우리 팀이 올해 500건 이상의 고객 문의를 처리한 것이 된다.)
 ```
 
 ---
 
-### DOMAIN — 세무 도메인 실전 예문
+### APPLY — 실전 예문
 
-#### 과거완료 — 세무 도메인
+#### 과거완료 — 직장/학교/일상
 
 ```
-1. By the time the audit began, the company had already prepared all documents.
-   (감사가 시작되었을 때, 회사는 이미 모든 서류를 준비해 놓은 상태였다.)
+1. By the time the inspection began, the team had already prepared all documents.
+   (점검이 시작되었을 때, 팀은 이미 모든 서류를 준비해 놓은 상태였다.)
 
-2. The taxpayer discovered that he had overpaid taxes for the past three years.
-   (납세자는 지난 3년간 세금을 과다 납부했었다는 것을 발견했다.)
+2. The customer discovered that he had been overcharged for the past three months.
+   (고객은 지난 3개월간 요금이 과다 청구되었었다는 것을 발견했다.)
 
-3. The amended return was filed because the accountant had made
+3. The corrected report was submitted because the analyst had made
    an error in the original calculation.
-   (수정 신고서가 제출된 것은 회계사가 원래 계산에서
+   (수정된 보고서가 제출된 것은 분석가가 원래 계산에서
    오류를 범했었기 때문이다.)
 
-4. Before the new tax law took effect, many businesses had already
-   adjusted their accounting systems.
-   (새 세법이 시행되기 전에, 많은 기업들이 이미
-   회계 시스템을 조정해 놓은 상태였다.)
+4. Before the new policy took effect, many departments had already
+   adjusted their workflows.
+   (새 정책이 시행되기 전에, 많은 부서들이 이미
+   업무 흐름을 조정해 놓은 상태였다.)
 
-5. The NTS imposed a penalty because the return had not been filed on time.
-   (국세청이 과태료를 부과한 것은 신고서가 제때 제출되지 않았었기 때문이다.)
+5. The school imposed a penalty because the assignment had not been submitted on time.
+   (학교가 벌점을 부과한 것은 과제가 제때 제출되지 않았었기 때문이다.)
 ```
 
-#### 과거완료 — 일반 비즈니스 도메인
+#### 과거완료 — 여행/쇼핑/프로젝트
 
 ```
 1. By the time the new manager arrived, the team had already completed
@@ -1295,49 +1295,49 @@ over ten thousand tax returns this year.
    (새 팀장이 부임했을 때, 팀은 이미
    분기 리뷰를 완료해 놓은 상태였다.)
 
-2. The contract fell through because the partner company had withdrawn
+2. The deal fell through because the partner company had withdrawn
    their offer.
-   (계약이 무산된 것은 협력사가 제안을 철회했었기 때문이다.)
+   (거래가 무산된 것은 협력사가 제안을 철회했었기 때문이다.)
 
-3. We realized that the invoice had been sent to the wrong address.
-   (청구서가 잘못된 주소로 발송되었었다는 것을 우리가 깨달았다.)
+3. We realized that the package had been sent to the wrong address.
+   (소포가 잘못된 주소로 발송되었었다는 것을 우리가 깨달았다.)
 
-4. Before we introduced the new accounting method,
+4. Before we adopted the new software,
    the company had been using the old system for over a decade.
-   (새 회계 방법을 도입하기 전에,
+   (새 소프트웨어를 도입하기 전에,
    회사는 10년 넘게 기존 시스템을 사용하고 있었었다.)
 
-5. The team had spent two weeks reviewing the records before they found the discrepancy.
-   (팀은 불일치를 발견하기 전에 2주 동안 기록을 검토했었다.)
+5. The team had spent two weeks reviewing the data before they found the discrepancy.
+   (팀은 불일치를 발견하기 전에 2주 동안 데이터를 검토했었다.)
 ```
 
-#### 미래완료 — 세무 도메인
+#### 미래완료 — 직장/학교/일상
 
 ```
-1. By the end of March, all individual taxpayers will have filed
-   their comprehensive income tax returns.
-   (3월 말까지 모든 개인 납세자가 종합소득세 신고서를 제출해 놓을 것이다.)
+1. By the end of March, all students will have submitted
+   their final research papers.
+   (3월 말까지 모든 학생들이 최종 연구 논문을 제출해 놓을 것이다.)
 
-2. By the time the tax filing season ends,
-   our office will have processed over 500 returns.
-   (세금 신고 시즌이 끝날 때까지,
-   우리 사무소는 500건 이상의 신고서를 처리해 놓을 것이다.)
+2. By the time the holiday season ends,
+   our store will have processed over 5,000 orders.
+   (휴가 시즌이 끝날 때까지,
+   우리 매장은 5,000건 이상의 주문을 처리해 놓을 것이다.)
 
 3. The refund will have been issued by the end of next month.
-   (환급금은 다음 달 말까지 지급되어 있을 것이다.)
+   (환불은 다음 달 말까지 처리되어 있을 것이다.)
 
-4. Before the audit starts in June,
-   we will have organized all financial records.
-   (6월 감사가 시작되기 전에,
-   우리는 모든 재무 기록을 정리해 놓을 것이다.)
+4. Before the conference starts in June,
+   we will have organized all presentation materials.
+   (6월 컨퍼런스가 시작되기 전에,
+   우리는 모든 발표 자료를 정리해 놓을 것이다.)
 ```
 
-#### 미래완료 — 일반 비즈니스 도메인
+#### 미래완료 — 프로젝트/커리어
 
 ```
 1. By the end of this year, we will have trained all staff
-   on the new compliance procedures.
-   (올해 말까지, 모든 직원에게 새 규정 준수 절차에 대한
+   on the new safety procedures.
+   (올해 말까지, 모든 직원에게 새 안전 절차에 대한
    교육을 완료해 놓을 것이다.)
 
 2. By next quarter, the team will have finished
@@ -1404,11 +1404,11 @@ over ten thousand tax returns this year.
 `will have + p.p.` 형태로 빈칸을 채우시오.
 
 ```
-1. By the end of this week, I _______ (complete) the annual tax report.
+1. By the end of this week, I _______ (complete) the annual report.
 2. By the time you read this, the meeting _______ (finish).
-3. Before the next audit, all records _______ (organize).
-4. By March, the office _______ (process) over a thousand returns.
-5. By the time the new regulation takes effect,
+3. Before the next inspection, all records _______ (organize).
+4. By March, the team _______ (process) over a thousand applications.
+5. By the time the new policy takes effect,
    we _______ (update) our internal guidelines.
 6. By next year, I _______ (work) here for three years.
 ```
@@ -1441,7 +1441,7 @@ over ten thousand tax returns this year.
 3. [미래완료] 다음 달 말까지 모든 고객 서류를 정리해 놓겠다.
    → _______________________________________________
 
-4. [미래완료] 세금 신고 시즌이 시작되기 전에, 우리는 모든 준비를 완료해 놓을 것이다.
+4. [미래완료] 새 학기가 시작되기 전에, 우리는 모든 준비를 완료해 놓을 것이다.
    → _______________________________________________
 
 5. [과거완료] 새 규정이 발표되기 전에, 우리 팀은 이미 변경 가능성을 예측하고 있었다.
@@ -1461,7 +1461,7 @@ over ten thousand tax returns this year.
 
 3. By the end of next month, I will have organized all client documents.
 
-4. Before the tax filing season begins, we will have completed
+4. Before the new semester begins, we will have completed
    all preparations.
 
 5. Before the new regulation was announced, our team had already been
@@ -1504,7 +1504,7 @@ we had already moved to the new office."
 
 **연습: 다음 시나리오를 4가지 시제로 작성하시오.**
 
-시나리오: 세금 신고서 제출
+시나리오: 프로젝트 보고서 제출
 
 ```
 단순 과거:    _______________________________________________
@@ -1517,10 +1517,10 @@ we had already moved to the new office."
 <summary>정답 예시</summary>
 
 ```
-단순 과거:    We filed the tax return last Friday.
-현재완료:     We have filed the tax return. (It's now being processed by the NTS.)
-과거완료:     By the time the deadline arrived, we had already filed the tax return.
-미래완료:     By the end of this week, we will have filed the tax return.
+단순 과거:    We submitted the project report last Friday.
+현재완료:     We have submitted the project report. (It's now being reviewed by the director.)
+과거완료:     By the time the deadline arrived, we had already submitted the project report.
+미래완료:     By the end of this week, we will have submitted the project report.
 ```
 
 </details>
@@ -1568,7 +1568,7 @@ we had already moved to the new office."
 - [ ] 현재완료의 4가지 용법을 상황에 맞게 사용할 수 있다
 - [ ] 과거완료로 두 과거 사건의 순서를 표현할 수 있다
 - [ ] 미래완료로 마감/목표 시점 완료를 표현할 수 있다
-- [ ] 세무 도메인에서 수동태와 완료 시제를 자연스럽게 사용할 수 있다
+- [ ] 실전 상황에서 수동태와 완료 시제를 자연스럽게 사용할 수 있다
 
 ---
 

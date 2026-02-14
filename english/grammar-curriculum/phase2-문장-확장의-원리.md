@@ -87,21 +87,21 @@ I want to learn English to communicate with clients,
 and I need a plan to follow.
 ```
 
-**Step 5** — 도메인 확장
+**Step 5** — 실전 확장
 ```
 I want to learn English to communicate with clients,
 and I need a structured plan to follow during the training period.
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | 영어 | 한국어 | to부정사 역할 |
 |------|--------|--------------|
-| `To file a tax return is mandatory.` | 세금 신고를 하는 것은 의무이다 | 명사 (주어) |
-| `The taxpayer needs to submit documents.` | 납세자는 서류를 제출해야 한다 | 명사 (목적어) |
-| `The deadline to file is March 31.` | 신고할 마감일은 3월 31일이다 | 형용사 (deadline 수식) |
-| `We use this form to calculate tax.` | 세금을 계산하기 위해 이 서식을 사용한다 | 부사 (목적) |
-| `I'm glad to announce the tax refund.` | 세금 환급을 알리게 되어 기쁘다 | 부사 (원인) |
+| `To exercise regularly is important.` | 규칙적으로 운동하는 것은 중요하다 | 명사 (주어) |
+| `The student needs to submit the assignment.` | 학생은 과제를 제출해야 한다 | 명사 (목적어) |
+| `The deadline to apply is March 31.` | 지원 마감일은 3월 31일이다 | 형용사 (deadline 수식) |
+| `We use this app to track expenses.` | 지출을 추적하기 위해 이 앱을 사용한다 | 부사 (목적) |
+| `I'm glad to hear the good news.` | 좋은 소식을 듣게 되어 기쁘다 | 부사 (원인) |
 
 #### PRACTICE: 연습 문제
 
@@ -109,19 +109,19 @@ and I need a structured plan to follow during the training period.
 
 다음 문장에서 to부정사가 명사/형용사/부사 중 어떤 역할인지 판별하세요.
 
-1. `To understand the tax code takes time.`
-2. `She wants to join the accounting team.`
-3. `I need a guidebook to study tax law.`
-4. `He went to the office to review the documents.`
+1. `To learn a new language takes time.`
+2. `She wants to join the marketing team.`
+3. `I need a guidebook to study cooking.`
+4. `He went to the library to borrow some books.`
 5. `The best way to learn is to practice.`
 
 <details>
 <summary>정답 보기</summary>
 
-1. 명사 (주어) — "세법을 이해하는 것은"
-2. 명사 (목적어) — "회계팀에 합류하기를"
-3. 형용사 (guidebook 수식) — "세법을 공부할 안내서"
-4. 부사 (목적) — "서류를 검토하러"
+1. 명사 (주어) — "새 언어를 배우는 것은"
+2. 명사 (목적어) — "마케팅팀에 합류하기를"
+3. 형용사 (guidebook 수식) — "요리를 공부할 안내서"
+4. 부사 (목적) — "책을 빌리러"
 5. to learn = 형용사 (way 수식), to practice = 명사 (보어)
 
 </details>
@@ -130,18 +130,18 @@ and I need a structured plan to follow during the training period.
 
 다음 한국어를 to부정사를 사용한 영어로 바꾸세요.
 
-1. 세금 신고를 하는 것은 모든 시민의 의무이다.
-2. 나는 세무 회계를 배우고 싶다.
-3. 우리는 소득을 정확히 계산할 방법이 필요하다.
-4. 그는 서류를 검토하려고 일찍 출근했다.
+1. 규칙적으로 운동하는 것은 건강에 중요하다.
+2. 나는 프로그래밍을 배우고 싶다.
+3. 우리는 예산을 정확히 관리할 방법이 필요하다.
+4. 그는 프레젠테이션을 준비하려고 일찍 출근했다.
 
 <details>
 <summary>예시 답안</summary>
 
-1. `To file a tax return is every citizen's duty.`
-2. `I want to learn tax accounting.`
-3. `We need a way to calculate income accurately.`
-4. `He came to work early to review the documents.`
+1. `To exercise regularly is important for health.`
+2. `I want to learn programming.`
+3. `We need a way to manage the budget accurately.`
+4. `He came to work early to prepare the presentation.`
 
 </details>
 
@@ -214,31 +214,31 @@ I went to the office to check the documents to show them to my manager.
 ```
 I sent an email.
 → I sent an email to the client.
-→ I sent an email to the client to explain the tax deduction.
-→ I sent an email to the client to explain the tax deduction
-   that applies to their corporate income.
+→ I sent an email to the client to explain the schedule change.
+→ I sent an email to the client to explain the schedule change
+   that applies to their upcoming project.
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
-**세무 도메인 — to의 다양한 용법이 한 문단에:**
+**실전 — to의 다양한 용법이 한 문단에:**
 
-> The taxpayer went **to** the tax office **to** submit the return **to** the officer.
-> According **to** the regulation, it is important **to** file on time.
-> Failure **to** comply may lead **to** penalties.
+> The student went **to** the library **to** return the books **to** the librarian.
+> According **to** the rules, it is important **to** submit on time.
+> Failure **to** follow the guidelines may lead **to** problems.
 
 분석:
 | to | 역할 | 의미 |
 |----|------|------|
-| to the tax office | 전치사 (방향) | 세무서로 |
-| to submit | to부정사 (목적) | 제출하기 위해 |
-| to the officer | 전치사 (대상) | 담당자에게 |
+| to the library | 전치사 (방향) | 도서관으로 |
+| to return | to부정사 (목적) | 반납하기 위해 |
+| to the librarian | 전치사 (대상) | 사서에게 |
 | According to | 전치사 (관련) | ~에 따르면 |
-| to file | to부정사 (주어 — 가주어 it) | 신고하는 것 |
-| to comply | to부정사 (형용사) | 준수할 |
-| to penalties | 전치사 (방향) | 벌금으로 |
+| to submit | to부정사 (주어 — 가주어 it) | 제출하는 것 |
+| to follow | to부정사 (형용사) | 따를 |
+| to problems | 전치사 (방향) | 문제로 |
 
-**비즈니스 도메인:**
+**직장/일상 예문:**
 
 ```
 "Please send the proposal to the manager."              (대상)
@@ -253,18 +253,18 @@ I sent an email.
 
 다음 문장에서 각 `to`가 전치사인지 to부정사인지 구분하세요.
 
-1. `I went to the meeting to discuss the new regulation.`
+1. `I went to the meeting to discuss the new project.`
 2. `She talked to the manager to request a deadline extension.`
-3. `We need to prepare the report to submit to the tax office.`
-4. `According to the regulation, we need to add supporting documents to the application.`
+3. `We need to prepare the report to submit to the head office.`
+4. `According to the guideline, we need to add supporting documents to the application.`
 
 <details>
 <summary>정답 보기</summary>
 
 1. `to the meeting` (전치사-방향), `to discuss` (to부정사-목적)
 2. `to the manager` (전치사-대상), `to request` (to부정사-목적)
-3. `to prepare` (to부정사-목적어), `to submit` (to부정사-목적), `to the tax office` (전치사-방향)
-4. `to the regulation` (전치사-관련), `to add` (to부정사-목적어), `to the application` (전치사-대상)
+3. `to prepare` (to부정사-목적어), `to submit` (to부정사-목적), `to the head office` (전치사-방향)
+4. `to the guideline` (전치사-관련), `to add` (to부정사-목적어), `to the application` (전치사-대상)
 
 </details>
 
@@ -276,8 +276,8 @@ I sent an email.
 <summary>예시 답안</summary>
 
 - `I went to the office to send the report to the client.`
-- `She came to Korea to explain the new tax regulation to the team.`
-- `We need to visit the tax office to deliver the documents to the auditor.`
+- `She came to Korea to present the new marketing plan to the team.`
+- `We need to visit the warehouse to deliver the samples to the buyer.`
 
 </details>
 
@@ -315,8 +315,8 @@ to = → (미래 방향)
 | 동사 | 뉘앙스 | 예문 |
 |------|--------|------|
 | want | 원하다 (아직 안 한 것) | `I want to finish by Friday.` |
-| plan | 계획하다 (미래) | `I plan to study accounting next month.` |
-| decide | 결정하다 (앞으로) | `We decided to hire a new accountant.` |
+| plan | 계획하다 (미래) | `I plan to study Spanish next month.` |
+| decide | 결정하다 (앞으로) | `We decided to hire a new designer.` |
 | hope | 희망하다 (미래) | `I hope to pass the exam.` |
 | expect | 기대하다 (미래) | `I expect to receive the refund.` |
 | promise | 약속하다 (미래) | `I promise to submit the report on time.` |
@@ -331,10 +331,10 @@ to = → (미래 방향)
 |------|--------|------|
 | enjoy | 즐기다 (하고 있는 것) | `I enjoy solving difficult problems.` |
 | finish | 끝내다 (하던 것) | `I finished reviewing the documents.` |
-| avoid | 피하다 (하고 있는 것) | `Avoid making errors on the tax form.` |
+| avoid | 피하다 (하고 있는 것) | `Avoid making errors on the report.` |
 | mind | 꺼리다 (하는 것) | `Do you mind checking this report?` |
-| suggest | 제안하다 (하는 것) | `I suggest filing the return early.` |
-| consider | 고려하다 (하는 것) | `Consider claiming the deduction.` |
+| suggest | 제안하다 (하는 것) | `I suggest starting the work early.` |
+| consider | 고려하다 (하는 것) | `Consider taking a different route.` |
 | practice | 연습하다 (하는 것) | `Practice writing clear reports.` |
 | give up | 포기하다 (하던 것) | `Don't give up studying for the exam.` |
 | keep | 계속하다 (하고 있는 것) | `Keep tracking your expenses.` |
@@ -366,20 +366,20 @@ I tried to fix the problem.         = 문제를 고치려고 시도했다 (성�
 I tried calling the office.         = 사무실에 전화를 시도해봤다 (실험적으로 해본 것)
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | 문장 | to/ing | 이유 |
 |------|--------|------|
-| `The client wants to claim a deduction.` | to (미래) | 아직 안 한 공제 신청 |
-| `We plan to submit the tax return next week.` | to (미래) | 다음 주에 할 예정 |
-| `The auditor finished reviewing the documents.` | -ing (완료) | 이미 하던 검토를 끝냄 |
-| `Avoid declaring income incorrectly.` | -ing (경고) | 잘못 신고하는 행위를 피해라 |
-| `Consider using the simplified tax form.` | -ing (제안) | 간편 서식 사용을 고려해라 |
-| `I suggest filing electronically.` | -ing (제안) | 전자 신고를 제안한다 |
-| `We decided to consult a tax advisor.` | to (결정) | 앞으로의 상담 |
-| `She needs to verify the income sources.` | to (필요) | 아직 안 한 확인 |
-| `Keep tracking your business expenses.` | -ing (계속) | 계속 하고 있는 추적 |
-| `I finished calculating the total liability.` | -ing (완료) | 이미 하던 계산을 끝냄 |
+| `The customer wants to exchange the product.` | to (미래) | 아직 안 한 교환 요청 |
+| `We plan to launch the new website next week.` | to (미래) | 다음 주에 할 예정 |
+| `The teacher finished grading the exams.` | -ing (완료) | 이미 하던 채점을 끝냄 |
+| `Avoid eating too much sugar.` | -ing (경고) | 설탕을 많이 먹는 행위를 피해라 |
+| `Consider using a different approach.` | -ing (제안) | 다른 접근법 사용을 고려해라 |
+| `I suggest starting the meeting early.` | -ing (제안) | 회의를 일찍 시작하기를 제안한다 |
+| `We decided to hire a new designer.` | to (결정) | 앞으로의 채용 |
+| `She needs to check the inventory list.` | to (필요) | 아직 안 한 확인 |
+| `Keep practicing your presentation skills.` | -ing (계속) | 계속 하고 있는 연습 |
+| `I finished organizing the storage room.` | -ing (완료) | 이미 하던 정리를 끝냄 |
 
 #### PRACTICE: 연습 문제
 
@@ -387,25 +387,25 @@ I tried calling the office.         = 사무실에 전화를 시도해봤다 (�
 
 괄호 안에서 올바른 형태를 고르세요.
 
-1. `I want (to submit / submitting) the tax return tonight.`
-2. `She enjoys (to analyze / analyzing) financial data.`
-3. `We decided (to use / using) the simplified form.`
-4. `Avoid (to miss / missing) the filing deadline.`
-5. `I finished (to review / reviewing) the receipts.`
+1. `I want (to finish / finishing) the project tonight.`
+2. `She enjoys (to cook / cooking) Italian food.`
+3. `We decided (to use / using) the new software.`
+4. `Avoid (to miss / missing) the registration deadline.`
+5. `I finished (to clean / cleaning) the kitchen.`
 6. `They agreed (to extend / extending) the deadline.`
-7. `Consider (to claim / claiming) the home office deduction.`
-8. `I hope (to complete / completing) the audit by Friday.`
+7. `Consider (to take / taking) the online course.`
+8. `I hope (to complete / completing) the marathon by spring.`
 
 <details>
 <summary>정답 보기</summary>
 
-1. to submit (want = 미래 지향)
-2. analyzing (enjoy = 현재 경험)
+1. to finish (want = 미래 지향)
+2. cooking (enjoy = 현재 경험)
 3. to use (decide = 미래 결정)
 4. missing (avoid = 현재 행위를 피함)
-5. reviewing (finish = 하던 것을 끝냄)
+5. cleaning (finish = 하던 것을 끝냄)
 6. to extend (agree = 미래 동의)
-7. claiming (consider = 현재 고려)
+7. taking (consider = 현재 고려)
 8. to complete (hope = 미래 희망)
 
 </details>
@@ -414,26 +414,26 @@ I tried calling the office.         = 사무실에 전화를 시도해봤다 (�
 
 다음 두 문장의 의미 차이를 한국어로 설명하세요.
 
-1. a) `I stopped to check the documents.`
-   b) `I stopped checking the documents.`
+1. a) `I stopped to check the schedule.`
+   b) `I stopped checking the schedule.`
 
-2. a) `I remembered to send the invoice.`
-   b) `I remembered sending the invoice.`
+2. a) `I remembered to send the email.`
+   b) `I remembered sending the email.`
 
-3. a) `I forgot to file the return.`
-   b) `I forgot filing the return.`
+3. a) `I forgot to lock the door.`
+   b) `I forgot locking the door.`
 
 <details>
 <summary>정답 보기</summary>
 
-1. a) 서류를 확인하기 위해 (하던 일을) 멈췄다 → 서류를 확인했다
-   b) 서류를 확인하는 것을 그만뒀다 → 더 이상 확인 안 함
+1. a) 일정을 확인하기 위해 (하던 일을) 멈췄다 → 일정을 확인했다
+   b) 일정을 확인하는 것을 그만뒀다 → 더 이상 확인 안 함
 
-2. a) 청구서를 보낼 것을 기억했다 → 청구서를 보냈다
-   b) 청구서를 보낸 것을 기억한다 → 과거에 보낸 기억이 있다
+2. a) 이메일을 보낼 것을 기억했다 → 이메일을 보냈다
+   b) 이메일을 보낸 것을 기억한다 → 과거에 보낸 기억이 있다
 
-3. a) 신고하는 것을 잊었다 → 신고를 안 했다
-   b) 신고한 것을 잊었다 → 신고를 했는데 기억을 못 한다
+3. a) 문을 잠그는 것을 잊었다 → 문을 안 잠갔다
+   b) 문을 잠근 것을 잊었다 → 문을 잠갔는데 기억을 못 한다
 
 </details>
 
@@ -478,8 +478,8 @@ Reviewing financial statements requires attention.
 
 **중요: 전치사 뒤에는 반드시 동명사!** (to부정사 X)
 
-- (O) `I'm interested in learning accounting.`
-- (X) `I'm interested in to learn accounting.`
+- (O) `I'm interested in learning photography.`
+- (X) `I'm interested in to learn photography.`
 - (O) `Thank you for helping.`
 - (X) `Thank you for to help.`
 
@@ -504,25 +504,25 @@ Reading financial statements carefully is important.
 
 **Step 4** — 문장 뒤에 부사구 추가
 ```
-Reading financial statements carefully is important for making correct tax decisions.
+Reading financial statements carefully is important for making correct business decisions.
 ```
 
 **Step 5** — 전치사 + 동명사 추가
 ```
-Reading financial statements carefully is important for making correct tax decisions
-without missing any deductions.
+Reading financial statements carefully is important for making correct business decisions
+without missing any important details.
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | 문장 | 동명사 역할 |
 |------|------------|
-| `Filing tax returns is mandatory for all businesses.` | 주어 |
-| `The system supports calculating withholding tax automatically.` | 목적어 |
-| `Her specialty is analyzing corporate tax structures.` | 보어 |
+| `Wearing a seatbelt is mandatory for all passengers.` | 주어 |
+| `The app supports tracking daily expenses automatically.` | 목적어 |
+| `Her specialty is designing mobile applications.` | 보어 |
 | `Thank you for submitting the documents on time.` | 전치사 목적어 |
-| `Before filing, verify all the income sources.` | 전치사 목적어 |
-| `After reviewing the deduction, the agent approved the claim.` | 전치사 목적어 |
+| `Before cooking, wash all the vegetables.` | 전치사 목적어 |
+| `After reviewing the proposal, the manager approved the budget.` | 전치사 목적어 |
 
 #### PRACTICE: 연습 문제
 
@@ -531,8 +531,8 @@ without missing any deductions.
 1. _______ (write) clear reports is an important skill.
 2. She is good at _______ (solve) complex problems.
 3. _______ (check) receipts regularly prevents errors.
-4. Thank you for _______ (review) my tax return.
-5. Instead of _______ (delete) the record, archive it.
+4. Thank you for _______ (help) me with the project.
+5. Instead of _______ (delete) the file, archive it.
 
 <details>
 <summary>정답 보기</summary>
@@ -540,23 +540,23 @@ without missing any deductions.
 1. Writing clear reports is an important skill.
 2. She is good at solving complex problems.
 3. Checking receipts regularly prevents errors.
-4. Thank you for reviewing my tax return.
-5. Instead of deleting the record, archive it.
+4. Thank you for helping me with the project.
+5. Instead of deleting the file, archive it.
 
 </details>
 
-**연습 2: 세무 도메인 문장 만들기**
+**연습 2: 일상/직장 문장 만들기**
 
-다음 동사를 동명사로 바꿔 세무 관련 문장을 만드세요: file, calculate, deduct, audit, report
+다음 동사를 동명사로 바꿔 일상 또는 직장 관련 문장을 만드세요: cook, exercise, travel, organize, communicate
 
 <details>
 <summary>예시 답안</summary>
 
-- `Filing a tax return electronically saves time.`
-- `Calculating the exact tax amount requires accurate data.`
-- `Deducting business expenses can significantly reduce taxable income.`
-- `Auditing financial records is part of the compliance process.`
-- `Reporting income accurately is the taxpayer's legal obligation.`
+- `Cooking at home regularly saves money.`
+- `Exercising in the morning requires strong discipline.`
+- `Traveling abroad can significantly broaden your perspective.`
+- `Organizing your desk is part of being productive.`
+- `Communicating clearly is every team member's responsibility.`
 
 </details>
 
@@ -625,54 +625,54 @@ Step 4: The exciting news about the new project spread quickly.  (완전한 문�
 ```
 Step 1: The employee is frustrated.                        (보어)
 Step 2: the frustrated employee                            (명사 앞 수식)
-Step 3: the frustrated employee in the accounting team      (전치사구 추가)
-Step 4: The frustrated employee in the accounting team finally found the error.
+Step 3: the frustrated employee in the design team           (전치사구 추가)
+Step 4: The frustrated employee in the design team finally found the error.
 ```
 
 **분사가 구(phrase)를 이끌 때 — 뒤에서 수식:**
 
 ```
-The accountant reviewing the records looked tired.
-             ↑ 현재분사구 (뒤에서 accountant 수식)
-= "기록을 검토하고 있는 회계사"
+The engineer reviewing the code looked tired.
+              ↑ 현재분사구 (뒤에서 engineer 수식)
+= "코드를 검토하고 있는 엔지니어"
 
 The report written by the intern needs review.
            ↑ 과거분사구 (뒤에서 report 수식)
 = "인턴이 작성한 보고서"
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | -ing (능동/원인) | -ed (수동/결과) |
 |-----------------|----------------|
-| `the taxing process` (과세 과정) | `the taxed income` (과세된 소득) |
-| `the remaining balance` (남아있는 잔액) | `the submitted return` (제출된 신고서) |
-| `the withholding amount` (원천징수하는 금액) | `the withheld tax` (원천징수된 세금) |
-| `an increasing rate` (증가하는 세율) | `the updated regulation` (업데이트된 규정) |
-| `the auditing team` (감사하는 팀) | `the calculated deduction` (계산된 공제) |
-| `the existing policy` (기존 정책) | `the revised tax code` (개정된 세법) |
-| `the outstanding balance` (미결제 잔액) | `the approved claim` (승인된 청구) |
+| `the growing demand` (성장하는 수요) | `the shipped order` (배송된 주문) |
+| `the remaining balance` (남아있는 잔액) | `the submitted application` (제출된 지원서) |
+| `the leading company` (선도하는 회사) | `the reserved seat` (예약된 좌석) |
+| `an increasing price` (증가하는 가격) | `the updated software` (업데이트된 소프트웨어) |
+| `the hiring team` (채용하는 팀) | `the calculated result` (계산된 결과) |
+| `the existing policy` (기존 정책) | `the revised schedule` (변경된 일정) |
+| `the outstanding performance` (뛰어난 성과) | `the approved budget` (승인된 예산) |
 
 #### PRACTICE: 연습 문제
 
 **연습 1: -ing 또는 -ed 선택**
 
-1. The tax seminar was very _______ (tire).
-2. I'm _______ (confuse) by the new regulation.
-3. This is an _______ (excite) new tax benefit.
-4. The team was _______ (disappoint) with the audit results.
-5. The _______ (remain) documents need to be submitted by Friday.
-6. All _______ (process) claims are stored in the archive.
+1. The three-hour lecture was very _______ (tire).
+2. I'm _______ (confuse) by the new instructions.
+3. This is an _______ (excite) new opportunity.
+4. The team was _______ (disappoint) with the test results.
+5. The _______ (remain) tickets need to be sold by Friday.
+6. All _______ (process) orders are stored in the archive.
 
 <details>
 <summary>정답 보기</summary>
 
-1. tiring (세무 세미나 = 피곤하게 하는 원인)
+1. tiring (3시간 강의 = 피곤하게 하는 원인)
 2. confused (나 = 혼란을 느끼는 주체)
-3. exciting (세제 혜택 = 흥미를 일으키는 원인)
+3. exciting (기회 = 흥미를 일으키는 원인)
 4. disappointed (팀 = 실망을 느끼는 주체)
-5. remaining (서류 = 남아있는 상태, 능동)
-6. processed (청구 = 처리된 상태, 수동)
+5. remaining (티켓 = 남아있는 상태, 능동)
+6. processed (주문 = 처리된 상태, 수동)
 
 </details>
 
@@ -686,8 +686,8 @@ The report written by the intern needs review.
 <details>
 <summary>예시 답안</summary>
 
-1. `The overwhelming amount of tax paperwork stressed the accountant.` / `The overwhelmed accountant asked for help.`
-2. `The updating process for the tax records takes about an hour.` / `The updated regulation took effect in January.`
+1. `The overwhelming amount of homework stressed the student.` / `The overwhelmed student asked for help.`
+2. `The updating process for the app takes about an hour.` / `The updated version runs much faster now.`
 
 </details>
 
@@ -721,7 +721,7 @@ The report written by the intern needs review.
 | 원래 문장 (접속사 + 절) | 분사구문 |
 |------------------------|---------|
 | **While** I was reviewing the report, I found the error. | **Reviewing** the report, I found the error. |
-| **Because** she knew accounting, she joined the team. | **Knowing** accounting, she joined the team. |
+| **Because** she knew programming, she joined the team. | **Knowing** programming, she joined the team. |
 | **After** he finished the task, he went home. | **Having finished** the task, he went home. |
 | **When** it is used correctly, the form saves time. | **Used** correctly, the form saves time. |
 
@@ -739,40 +739,40 @@ The report written by the intern needs review.
 
 ```
 Step 1: Working late, I finished the report.
-Step 2: Working late at the office, I finished the quarterly tax report.
-Step 3: Working late at the office on Friday night, I finished the quarterly tax report
-         that had been due for the compliance review.
+Step 2: Working late at the office, I finished the quarterly sales report.
+Step 3: Working late at the office on Friday night, I finished the quarterly sales report
+         that had been due for the management review.
 ```
 
 **수동 분사구문 (-ed):**
 
 ```
-Step 1: Written in Korean, the form is easy to understand.
-Step 2: Written in both Korean and English, the tax form is easy for foreign residents to understand.
-Step 3: Written in both Korean and English with clear instructions, the simplified tax form
-         is easy for foreign residents to understand and submit on time.
+Step 1: Written in Korean, the manual is easy to understand.
+Step 2: Written in both Korean and English, the user manual is easy for international users to understand.
+Step 3: Written in both Korean and English with clear instructions, the simplified user manual
+         is easy for international users to understand and follow step by step.
 ```
 
 **완료 분사구문 (Having + p.p.):**
 
 ```
-Step 1: Having submitted the return, I felt relieved.
-Step 2: Having submitted the tax return to the NTS, I felt relieved.
-Step 3: Having successfully submitted the annual tax return to the NTS before the deadline,
+Step 1: Having submitted the application, I felt relieved.
+Step 2: Having submitted the job application to the company, I felt relieved.
+Step 3: Having successfully submitted the job application to the company before the deadline,
          I finally felt relieved and went home early.
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | 분사구문 | 원래 문장 |
 |---------|----------|
-| `Reviewing the financial statements, the auditor found discrepancies.` | While the auditor was reviewing... |
-| `Filed electronically, the tax return is processed faster.` | When/If the tax return is filed electronically... |
-| `Having submitted all documents, the taxpayer waited for the refund.` | After the taxpayer had submitted... |
-| `Based on the submitted income data, the tax is calculated automatically.` | Because it is based on... |
-| `Considering the new tax regulation, we need to update our procedures.` | Because we are considering... |
-| `Approved by the NTS, the deduction was applied to the final return.` | After it was approved by the NTS... |
-| `Having completed the audit, the team issued the final report.` | After the team had completed... |
+| `Checking the inventory list, the manager found discrepancies.` | While the manager was checking... |
+| `Ordered online, the product is delivered faster.` | When/If the product is ordered online... |
+| `Having submitted all documents, the applicant waited for the result.` | After the applicant had submitted... |
+| `Based on the collected survey data, the analysis is generated automatically.` | Because it is based on... |
+| `Considering the new company policy, we need to update our procedures.` | Because we are considering... |
+| `Approved by the committee, the budget was allocated to the project.` | After it was approved by the committee... |
+| `Having completed the training, the team started the new project.` | After the team had completed... |
 
 #### PRACTICE: 연습 문제
 
@@ -780,33 +780,33 @@ Step 3: Having successfully submitted the annual tax return to the NTS before th
 
 다음 문장을 분사구문으로 바꾸세요.
 
-1. `Because I didn't know the regulation, I consulted a tax advisor first.`
-2. `After she had reviewed the documents, she approved the claim.`
-3. `When it is submitted electronically, the form is processed within 3 days.`
-4. `While he was reviewing the tax records, he discovered a calculation error.`
+1. `Because I didn't know the procedure, I asked my supervisor first.`
+2. `After she had reviewed the documents, she approved the request.`
+3. `When it is submitted online, the application is processed within 3 days.`
+4. `While he was reviewing the sales records, he discovered a calculation error.`
 
 <details>
 <summary>정답 보기</summary>
 
-1. `Not knowing the regulation, I consulted a tax advisor first.`
-2. `Having reviewed the documents, she approved the claim.`
-3. `Submitted electronically, the form is processed within 3 days.`
-4. `Reviewing the tax records, he discovered a calculation error.`
+1. `Not knowing the procedure, I asked my supervisor first.`
+2. `Having reviewed the documents, she approved the request.`
+3. `Submitted online, the application is processed within 3 days.`
+4. `Reviewing the sales records, he discovered a calculation error.`
 
 </details>
 
 **연습 2: 분사구문을 원래 문장으로 복원**
 
-1. `Working from home, the accountant maintained high productivity.`
-2. `Having finished the annual audit, we submitted the final report.`
-3. `Organized by category, the receipts were much easier to review.`
+1. `Working from home, the designer maintained high productivity.`
+2. `Having finished the annual report, we submitted the final version.`
+3. `Organized by category, the files were much easier to review.`
 
 <details>
 <summary>정답 보기</summary>
 
-1. `While the accountant was working from home, she maintained high productivity.`
-2. `After we had finished the annual audit, we submitted the final report.`
-3. `Because the receipts were organized by category, they were much easier to review.`
+1. `While the designer was working from home, she maintained high productivity.`
+2. `After we had finished the annual report, we submitted the final version.`
+3. `Because the files were organized by category, they were much easier to review.`
 
 </details>
 
@@ -897,24 +897,24 @@ I work at the office on weekdays in the morning.
 I work at the office in Seoul on weekdays in the morning.
 ```
 
-**Step 5** — 도메인 확장
+**Step 5** — 실전 확장
 ```
-I work at the tax accounting office in Seoul on weekdays,
+I work at the marketing agency in Seoul on weekdays,
 usually arriving at 9am in the morning.
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | 전치사 | 예문 | 의미 |
 |--------|------|------|
-| in | `In Korea, the tax year starts in January.` | 한국에서 / 1월에 |
-| on | `The tax return must be filed on March 31.` | 3월 31일에 |
-| at | `At the current tax rate, the liability is...` | 현재 세율에서 |
-| in | `The deduction is listed in the financial statement.` | 재무제표 안에 |
-| on | `Click on the 'Submit' button on the tax portal.` | 세무 포털 위의 |
-| in | `The error was found in the income section.` | 소득 항목 안에 |
-| at | `At this branch office, we handle corporate returns.` | 이 지점에서 |
-| on | `The new regulation takes effect on January 1.` | 1월 1일에 |
+| in | `In Korea, the school year starts in March.` | 한국에서 / 3월에 |
+| on | `The assignment must be submitted on Friday.` | 금요일에 |
+| at | `At the current exchange rate, it costs...` | 현재 환율에서 |
+| in | `The recipe is listed in the cookbook.` | 요리책 안에 |
+| on | `Click on the 'Submit' button on the website.` | 웹사이트 위의 |
+| in | `The error was found in the second paragraph.` | 두 번째 단락 안에 |
+| at | `At this branch, we handle online orders.` | 이 지점에서 |
+| on | `The new policy takes effect on January 1.` | 1월 1일에 |
 
 #### PRACTICE: 연습 문제
 
@@ -923,8 +923,8 @@ usually arriving at 9am in the morning.
 1. The meeting is ___ 2pm ___ Friday.
 2. I live ___ Seoul, ___ the 5th floor.
 3. The deadline is ___ March ___ 2026.
-4. The error is ___ the third page ___ the tax return.
-5. We submit returns ___ Mondays ___ midnight.
+4. The error is ___ the third page ___ the report.
+5. We submit assignments ___ Mondays ___ midnight.
 
 <details>
 <summary>정답 보기</summary>
@@ -932,7 +932,7 @@ usually arriving at 9am in the morning.
 1. at 2pm / on Friday
 2. in Seoul / on the 5th floor
 3. in March / in 2026
-4. on the third page / in the tax return (= 세금 신고서 안의 세 번째 페이지에)
+4. on the third page / in the report (= 보고서 안의 세 번째 페이지에)
 5. on Mondays / at midnight
 
 </details>
@@ -981,7 +981,7 @@ usually arriving at 9am in the morning.
 핵심 이미지: 무언가와 **나란히** 있음
 
 ```
-동반:    I work with the accounting team.    (회계팀과 함께)
+동반:    I work with the marketing team.     (마케팅팀과 함께)
 도구:    I wrote it with a pen.              (펜을 가지고)
 특성:    a report with detailed charts       (상세한 도표를 가진)
 감정:    I'm happy with the result.          (결과에 만족 → 결과와 함께 행복)
@@ -994,7 +994,7 @@ usually arriving at 9am in the morning.
 ```
 위치:    the desk by the window             (창문 옆 책상)
 수단:    sent by email                      (이메일로)
-행위자:  reviewed by the auditor            (감사관에 의해 검토된)
+행위자:  reviewed by the supervisor          (관리자에 의해 검토된)
 기한:    by Friday                          (금요일까지 → 금요일 옆까지)
 정도:    increased by 10%                   (10% 만큼)
 ```
@@ -1004,7 +1004,7 @@ usually arriving at 9am in the morning.
 핵심 이미지: 핵심 주변을 **맴도는** 느낌
 
 ```
-주제:    a book about tax law               (세법에 관한)
+주제:    a book about cooking               (요리에 관한)
 대략:    about 100 pages                    (약 100페이지 → 100 주변)
 관심:    I'm worried about the deadline.    (마감에 대해 걱정)
 ```
@@ -1021,39 +1021,39 @@ usually arriving at 9am in the morning.
 원인:    died of hunger                     (굶주림으로)
 ```
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 | 전치사 | 예문 |
 |--------|------|
-| for | `The deduction is for business expenses.` |
-| with | `File the return with supporting documents.` |
-| by | `The tax must be paid by March 31.` |
-| about | `The regulation about corporate income tax was revised.` |
-| of | `The calculation of taxable income follows specific rules.` |
-| from | `Income from overseas sources is also taxable.` |
-| for | `We prepared the report for the quarterly review.` |
-| with | `The taxpayer filed the return with an electronic signature.` |
-| by | `The audit was conducted by the National Tax Service.` |
-| about | `The client asked about the new deduction rules.` |
+| for | `The discount is for loyal customers.` |
+| with | `Submit the form with supporting documents.` |
+| by | `The payment must be made by March 31.` |
+| about | `The article about climate change was well-written.` |
+| of | `The quality of the product meets high standards.` |
+| from | `Packages from overseas take longer to arrive.` |
+| for | `We prepared the slides for the quarterly meeting.` |
+| with | `The user signed up with an email address.` |
+| by | `The inspection was conducted by the safety team.` |
+| about | `The customer asked about the return policy.` |
 
 #### PRACTICE: 연습 문제
 
 **연습 1: 적절한 전치사 선택**
 
-1. The report was prepared ___ the accountant ___ the client.
-2. I'm concerned ___ the accuracy ___ the tax calculation.
+1. The report was prepared ___ the intern ___ the manager.
+2. I'm concerned ___ the accuracy ___ the data analysis.
 3. The form was completed ___ a blue pen ___ the new employee.
 4. We need to submit the documents ___ the deadline.
-5. This is a list ___ all taxable income sources ___ 2025.
+5. This is a list ___ all available courses ___ 2025.
 
 <details>
 <summary>정답 보기</summary>
 
-1. by the accountant / for the client (회계사에 의해 / 고객을 위해)
-2. about the accuracy / of the tax calculation (정확도에 대해 / 세금 계산의)
+1. by the intern / for the manager (인턴에 의해 / 매니저를 위해)
+2. about the accuracy / of the data analysis (정확도에 대해 / 데이터 분석의)
 3. with a blue pen / by the new employee (파란 펜으로 / 신입 직원에 의해)
 4. by the deadline (마감까지)
-5. of all taxable income sources / from 2025 (과세 소득원의 / 2025년부터의)
+5. of all available courses / from 2025 (수강 가능한 과목의 / 2025년부터의)
 
 </details>
 
@@ -1097,9 +1097,9 @@ usually arriving at 9am in the morning.
 |---------|-------------|------|
 | `the office in Gangnam` | office | 강남에 있는 사무실 |
 | `the meeting on Friday` | meeting | 금요일 회의 |
-| `the form for reporting income` | form | 소득 신고용 서식 |
+| `the form for reporting issues` | form | 문제 보고용 서식 |
 | `the error in the calculation` | error | 계산 안의 오류 |
-| `the accountant with 10 years of experience` | accountant | 10년 경력의 회계사 |
+| `the developer with 10 years of experience` | developer | 10년 경력의 개발자 |
 
 #### EXPAND: 전치사구로 문장 확장하기
 
@@ -1110,8 +1110,8 @@ Step 1: I found an error.
 Step 2: I found an error in the report.                    (+장소)
 Step 3: I found an error in the report on Monday.          (+시간)
 Step 4: I found an error in the report on Monday with help from my colleague. (+방법)
-Step 5: I found an error in the tax calculation report on Monday morning
-        with help from the senior accountant on our team
+Step 5: I found an error in the data analysis report on Monday morning
+        with help from the senior developer on our team
         for the quarterly review.                           (+목적)
 ```
 
@@ -1119,40 +1119,40 @@ Step 5: I found an error in the tax calculation report on Monday morning
 
 핵심: 영어 문장이 아무리 길어도 **S + V + O + 전치사구 + 전치사구 + 전치사구...** 구조다. 기본 골격(SVO)을 찾고, 나머지는 전치사구로 추가된 정보임을 인식하면 된다.
 
-#### DOMAIN: 세무 도메인 예문
+#### APPLY: 실전 예문
 
 **전치사구가 풍부한 실전 문장:**
 
 ```
-The taxpayer in Seoul filed a tax return
-for the fiscal year 2025
+The applicant in Seoul submitted an application
+for the scholarship program 2025
 on March 15
-with electronic signature
-through the NTS portal
+with a personal statement
+through the university portal
 without any errors.
 ```
 
 분석:
 | 전치사구 | 역할 | 의미 |
 |---------|------|------|
-| in Seoul | 형용사 (taxpayer 수식) | 서울에 있는 |
-| for the fiscal year 2025 | 부사 (목적) | 2025 회계연도를 위해 |
+| in Seoul | 형용사 (applicant 수식) | 서울에 있는 |
+| for the scholarship program 2025 | 부사 (목적) | 2025 장학 프로그램을 위해 |
 | on March 15 | 부사 (시간) | 3월 15일에 |
-| with electronic signature | 부사 (수단) | 전자서명으로 |
-| through the NTS portal | 부사 (경로) | 국세청 포털을 통해 |
+| with a personal statement | 부사 (수단) | 자기소개서와 함께 |
+| through the university portal | 부사 (경로) | 대학 포털을 통해 |
 | without any errors | 부사 (상태) | 오류 없이 |
 
 **일상 업무 문장:**
 
 ```
-The senior accountant at our firm
+The senior engineer at our company
 in the Gangnam office
-for the corporate tax division
-reviewed the financial statements
+for the mobile development team
+reviewed the project proposal
 from the client
 on Tuesday afternoon
 with great attention to detail
-for the annual audit report.
+for the annual planning report.
 ```
 
 #### PRACTICE: 연습 문제
@@ -1161,20 +1161,20 @@ for the annual audit report.
 
 다음 문장에서 밑줄 친 전치사구가 부사인지 형용사인지 판별하세요.
 
-1. The accountant `on our team` found the error.
+1. The engineer `on our team` found the error.
 2. I submit the report `at noon`.
 3. The document `in the shared folder` needs review.
 4. We communicate `by email`.
-5. The meeting `about the new regulation` is `on Friday`.
+5. The meeting `about the new guideline` is `on Friday`.
 
 <details>
 <summary>정답 보기</summary>
 
-1. 형용사 (accountant를 수식 — "우리 팀의 회계사")
+1. 형용사 (engineer를 수식 — "우리 팀의 엔지니어")
 2. 부사 (submit를 수식 — "정오에")
 3. 형용사 (document를 수식 — "공유 폴더에 있는 문서")
 4. 부사 (communicate를 수식 — "이메일로")
-5. about the new regulation = 형용사 (meeting 수식), on Friday = 부사 (시간)
+5. about the new guideline = 형용사 (meeting 수식), on Friday = 부사 (시간)
 
 </details>
 
@@ -1187,14 +1187,14 @@ for the annual audit report.
 <details>
 <summary>예시 답안</summary>
 
-`The team in Seoul submitted the report to the head office on Friday afternoon with all supporting documents for the annual tax review.`
+`The team in Seoul submitted the report to the head office on Friday afternoon with all supporting documents for the annual performance review.`
 
 전치사구:
 - in Seoul (어떤 팀?)
 - to the head office (어디로?)
 - on Friday afternoon (언제?)
 - with all supporting documents (어떻게?)
-- for the annual tax review (왜?)
+- for the annual performance review (왜?)
 
 </details>
 
@@ -1202,21 +1202,21 @@ for the annual audit report.
 
 다음 문장에서 기본 SVO를 찾고, 나머지 전치사구를 분리하세요.
 
-`The senior accountant on the tax advisory team at our firm in Seoul found a critical error in the withholding calculation on Monday morning with the help of a junior colleague for the quarterly compliance review.`
+`The senior developer on the backend engineering team at our company in Seoul found a critical error in the payment processing module on Monday morning with the help of a junior colleague for the quarterly quality review.`
 
 <details>
 <summary>정답 보기</summary>
 
-**SVO**: `The senior accountant found a critical error.`
+**SVO**: `The senior developer found a critical error.`
 
 전치사구:
-- on the tax advisory team (형용사 — accountant 수식)
-- at our firm (형용사 — team 수식)
-- in Seoul (형용사 — firm 수식)
-- in the withholding calculation (형용사 — error 수식)
+- on the backend engineering team (형용사 — developer 수식)
+- at our company (형용사 — team 수식)
+- in Seoul (형용사 — company 수식)
+- in the payment processing module (형용사 — error 수식)
 - on Monday morning (부사 — 시간)
 - with the help of a junior colleague (부사 — 수단)
-- for the quarterly compliance review (부사 — 목적)
+- for the quarterly quality review (부사 — 목적)
 
 </details>
 
