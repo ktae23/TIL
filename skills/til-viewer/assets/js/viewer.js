@@ -612,62 +612,43 @@ function downloadPDF() {
     btn.textContent = '⏳';
     btn.disabled = true;
 
-    printFiles([file], file.title, function() {
+    generatePDF(file).then(function() {
         btn.textContent = '📥';
         btn.disabled = false;
     });
 }
 
-function printFiles(files, title, onDone) {
-    // html2pdf.js로 진짜 PDF 파일 생성 — window.print() 완전 우회
-    // 브라우저 인쇄 엔진에 의존하지 않으므로 모바일에서도 동일하게 동작
-
-    // 1. 콘텐츠 컨테이너 생성
+function generatePDF(file) {
+    // html2pdf.js로 단일 파일 PDF 생성 — Promise 반환
     var container = document.createElement('div');
     container.className = 'content-inner';
-    var html = '';
-    files.forEach(function(file) {
-        html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
-    });
-    container.innerHTML = html;
+    container.innerHTML = '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
     container.querySelectorAll('pre code').forEach(function(block) {
         hljs.highlightElement(block);
     });
     convertDiagramsToImages(container);
 
-    // 2. 스타일이 적용된 래퍼 (html2canvas는 화면에 보이는 요소만 캡처)
     var wrapper = document.createElement('div');
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background:#fff;z-index:99999;padding:15mm;}' +
-        '#pdf-render-wrapper .pdf-generating{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.2rem;color:#666;z-index:100000;}';
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background:#fff;z-index:99999;padding:15mm;}';
     wrapper.appendChild(style);
-    var msg = document.createElement('div');
-    msg.className = 'pdf-generating';
-    msg.textContent = 'PDF 생성 중...';
-    wrapper.appendChild(msg);
     wrapper.appendChild(container);
-
-    // 3. DOM에 추가 (전체 화면 오버레이로 표시)
     document.body.appendChild(wrapper);
-    msg.remove();
 
-    // 4. PDF 생성 + 다운로드
-    html2pdf().set({
+    return html2pdf().set({
         margin: 15,
-        filename: title + '.pdf',
+        filename: file.title + '.pdf',
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { scale: 2, useCORS: true, logging: false },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
     }).from(container).save().then(function() {
         wrapper.remove();
-        if (onDone) onDone();
     }).catch(function(err) {
         console.error('PDF generation failed:', err);
         wrapper.remove();
-        if (onDone) onDone();
     });
 }
 
@@ -784,7 +765,7 @@ function showSelectBar() {
     bar.id = 'select-bar';
     bar.innerHTML = '<span id="select-count">0개 선택</span>' +
         '<button onclick="toggleSelectMode()">취소</button>' +
-        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>합본 PDF 다운로드</button>';
+        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>선택 PDF 다운로드</button>';
     document.body.appendChild(bar);
     var qa = document.getElementById('quick-actions');
     if (qa) qa.classList.add('has-select-bar');
@@ -818,12 +799,18 @@ function downloadSelectedPDF() {
     if (files.length === 0) return;
 
     var dlBtn = document.getElementById('select-download-btn');
-    if (dlBtn) { dlBtn.textContent = '⏳ 생성 중...'; dlBtn.disabled = true; }
+    if (dlBtn) { dlBtn.textContent = '⏳ 0/' + files.length; dlBtn.disabled = true; }
 
-    var title = files.length === 1 ? files[0].title : files[0].title + ' 외 ' + (files.length - 1) + '건';
+    // 순차 다운로드: 각 파일을 개별 PDF로 저장
+    var chain = Promise.resolve();
+    files.forEach(function(file, i) {
+        chain = chain.then(function() {
+            if (dlBtn) dlBtn.textContent = '⏳ ' + (i + 1) + '/' + files.length;
+            return generatePDF(file);
+        });
+    });
 
-    printFiles(files, title, function() {
-        // Bug 3 fix: 다운로드 완료 후 선택 모드 종료 + 이전 문서 복귀
+    chain.then(function() {
         toggleSelectMode();
         if (state.currentFile) {
             loadFile(state.currentFile);
