@@ -136,7 +136,76 @@ onclone: function(clonedDoc) {
 });
 ```
 
-## html2canvas의 대안적 접근법
+### 5. 프린트 다이얼로그 파일명
+
+**증상**: `iframe.contentWindow.print()` 호출 시 저장 파일명이 부모 페이지 제목("TIL Viewer")으로 설정됨
+
+**원인**: Chrome은 iframe 프린트 시 iframe의 `document.title`이 아닌 **부모 페이지의 `document.title`**을 사용
+
+**해결**: 프린트 직전에 부모 타이틀을 임시 변경, 프린트 후 복원
+
+```javascript
+var originalTitle = document.title;
+document.title = file.title;       // 파일명으로 사용될 제목
+iframe.contentWindow.print();
+document.title = originalTitle;     // 원래 제목 복원
+```
+
+## 최종 결론: window.print()가 정답
+
+html2pdf.js의 html2canvas 기반 래스터 방식은 실전에서 여러 한계에 부딪힌다:
+
+| 문제 | html2pdf.js | window.print() |
+|------|-------------|----------------|
+| overflow 클리핑 백지 | `onclone`으로 우회 가능 | 해당 없음 |
+| 캔버스 높이 제한 (긴 문서 백지) | **근본적 한계** | 제한 없음 |
+| 표 페이지 나눔 잘림 | 부분적 해결 | CSS `page-break` 완벽 지원 |
+| 해상도 | scale 의존 (래스터) | **벡터 PDF** (무한 확대) |
+| 텍스트 선택 | 불가 (이미지) | **가능** |
+
+특히 태블릿에서 S펜으로 필기하며 학습하는 용도라면 window.print()의 벡터 PDF가 압도적으로 유리하다.
+
+### window.print() 구현 패턴
+
+```javascript
+function downloadPDF() {
+    // 1. 격리된 iframe 생성 (인라인 CSS + 페이지 나눔 규칙 포함)
+    var iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-10000px;';
+    document.body.appendChild(iframe);
+
+    // 2. 깨끗한 문서에 콘텐츠 렌더링
+    var doc = iframe.contentDocument;
+    doc.open();
+    doc.write(PRINT_TEMPLATE);  // @page, page-break CSS 포함
+    doc.close();
+
+    iframe.onload = function() {
+        doc.getElementById('content').innerHTML = renderedMarkdown;
+
+        // 3. 부모 타이틀 임시 변경 → 파일명 설정
+        var originalTitle = document.title;
+        document.title = '원하는 파일명';
+        iframe.contentWindow.print();
+        document.title = originalTitle;
+
+        // 4. 정리
+        document.body.removeChild(iframe);
+    };
+}
+```
+
+### 페이지 나눔 CSS (print용)
+
+```css
+@page { margin: 15mm; }
+tr { page-break-inside: avoid; }         /* 표 행 내부 잘림 방지 */
+pre, blockquote { page-break-inside: avoid; }  /* 코드블록/인용문 보호 */
+h1, h2, h3, h4 { page-break-after: avoid; }   /* 제목 고아 방지 */
+table { page-break-inside: auto; }       /* 표 자체는 나눔 허용 */
+```
+
+## html2canvas 대안적 접근법 (참고)
 
 ### iframe 격리 방식 (시도 후 실패)
 
@@ -162,9 +231,10 @@ DOM → SVG foreignObject → Canvas → Image
 
 ## 실전 체크리스트
 
-- [ ] 대상 요소의 조상에 `overflow: hidden`이 있는지 확인
-- [ ] `height: calc(100vh - ...)` 같은 viewport 의존 값이 있는지 확인
-- [ ] 긴 문서의 경우 캔버스 높이 제한(16,384px) 고려
-- [ ] 다크모드 지원 시 `onclone`에서 라이트 테마 강제
-- [ ] `file://` 프로토콜 배포 시 JS/CSS 인라인 삽입
-- [ ] `onclone` 콜백을 활용하여 클론 문서만 수정 (원본 보존)
+- [ ] **래스터 vs 벡터**: 텍스트 선택/확대가 필요하면 window.print(), 원클릭이 필요하면 html2pdf
+- [ ] 긴 문서(20p+)는 html2pdf 캔버스 제한으로 사실상 window.print() 필수
+- [ ] `overflow: hidden` 조상이 있으면 html2canvas `onclone`으로 해제
+- [ ] 프린트 파일명은 `document.title`을 임시 변경하여 제어
+- [ ] 다크모드 지원 시 인라인 CSS에 라이트 테마 하드코딩
+- [ ] `file://` 배포 시 JS/CSS 인라인 삽입 (캐시 방지)
+- [ ] 표/코드블록/제목에 `page-break-inside: avoid` CSS 적용
