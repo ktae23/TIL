@@ -621,7 +621,9 @@ function printFiles(files, title, onDone) {
     iframeDoc.write(buildPrintHTML(title));
     iframeDoc.close();
 
-    iframe.onload = function() {
+    // Bug 2 fix: iframe.onload 대신 setTimeout 사용
+    // doc.write()+doc.close()는 인라인이므로 load가 즉시 완료되어 onload를 놓칠 수 있음
+    setTimeout(function() {
         var target = iframeDoc.getElementById('pdf-content');
         var html = '';
         files.forEach(function(file) {
@@ -636,14 +638,25 @@ function printFiles(files, title, onDone) {
         setTimeout(function() {
             var originalTitle = document.title;
             document.title = title;
+
+            // Bug 1 fix: afterprint 이벤트로 타이틀 복원 지연 (모바일 비동기 대응)
+            var titleRestored = false;
+            function restoreTitle() {
+                if (titleRestored) return;
+                titleRestored = true;
+                document.title = originalTitle;
+            }
+            iframe.contentWindow.addEventListener('afterprint', restoreTitle, { once: true });
+            setTimeout(restoreTitle, 5000); // fallback
+
             iframe.contentWindow.print();
-            document.title = originalTitle;
+
             setTimeout(function() {
                 document.body.removeChild(iframe);
                 if (onDone) onDone();
             }, 1000);
         }, 300);
-    };
+    }, 100);
 }
 
 // ========================================
@@ -798,8 +811,14 @@ function downloadSelectedPDF() {
     var title = files.length === 1 ? files[0].title : files[0].title + ' 외 ' + (files.length - 1) + '건';
 
     printFiles(files, title, function() {
-        // 다운로드 완료 후 선택 모드 종료
+        // Bug 3 fix: 다운로드 완료 후 선택 모드 종료 + 이전 문서 복귀
         toggleSelectMode();
+        if (state.currentFile) {
+            loadFile(state.currentFile);
+        }
+        if (window.innerWidth <= 768) {
+            closeMobileSidebar();
+        }
     });
 }
 
