@@ -632,7 +632,7 @@ function generatePDF(file) {
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;background:#fff;z-index:-1;visibility:hidden;padding:0;}' +
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;background:#fff;z-index:-1;opacity:0;pointer-events:none;padding:0;}' +
         '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
