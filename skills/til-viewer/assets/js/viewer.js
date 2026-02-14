@@ -4,12 +4,10 @@
 // Note: TIL_DATA is injected inline in the HTML file
 
 // ========================================
-// PDF PRINT TEMPLATE (window.print() 벡터 방식용)
+// PDF PRINT CSS (재사용 가능한 인쇄 스타일)
 // ========================================
-function buildPrintHTML(title) {
-    return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
-    '<title>' + title.replace(/</g, '&lt;') + '</title><style>' +
-    '@page { margin: 15mm; }' +
+function getPrintCSS() {
+    return '@page { margin: 15mm; }' +
     '* { margin:0; padding:0; box-sizing:border-box; }' +
     'body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Roboto,sans-serif; color:#212529; line-height:1.6; background:#fff; }' +
     '.content-inner { max-width:100%; }' +
@@ -36,7 +34,16 @@ function buildPrintHTML(title) {
     'h1,h2,h3,h4 { page-break-after:avoid; }' +
     '.batch-doc + .batch-doc { page-break-before:always; }' +
     'pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}' +
-    '.hljs{color:#24292e;background:#fff}.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}.hljs-built_in,.hljs-symbol{color:#e36209}.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}.hljs-subst{color:#24292e}.hljs-section{color:#005cc5;font-weight:700}.hljs-bullet{color:#735c0f}.hljs-emphasis{color:#24292e;font-style:italic}.hljs-strong{color:#24292e;font-weight:700}.hljs-addition{color:#22863a;background-color:#f0fff4}.hljs-deletion{color:#b31d28;background-color:#ffeef0}' +
+    '.hljs{color:#24292e;background:#fff}.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}.hljs-built_in,.hljs-symbol{color:#e36209}.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}.hljs-subst{color:#24292e}.hljs-section{color:#005cc5;font-weight:700}.hljs-bullet{color:#735c0f}.hljs-emphasis{color:#24292e;font-style:italic}.hljs-strong{color:#24292e;font-weight:700}.hljs-addition{color:#22863a;background-color:#f0fff4}.hljs-deletion{color:#b31d28;background-color:#ffeef0}';
+}
+
+// ========================================
+// PDF PRINT TEMPLATE (buildPrintHTML은 getPrintCSS 사용)
+// ========================================
+function buildPrintHTML(title) {
+    return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
+    '<title>' + title.replace(/</g, '&lt;') + '</title><style>' +
+    getPrintCSS() +
     '</style></head><body><div class="content-inner" id="pdf-content"></div></body></html>';
 }
 
@@ -612,43 +619,61 @@ function downloadPDF() {
 }
 
 function printFiles(files, title, onDone) {
-    // 새 창에서 프린트 (모바일에서 iframe.contentWindow.print()가 동작하지 않는 문제 해결)
-    var printWindow = window.open('', '_blank');
-    if (!printWindow) {
-        alert('팝업이 차단되었습니다. 팝업을 허용해주세요.');
+    // Print Overlay 방식: 메인 윈도우의 window.print() 사용 (모바일 호환)
+    // 1. overlay div 생성 (screen에서는 숨김)
+    var overlay = document.createElement('div');
+    overlay.id = 'print-overlay';
+    overlay.className = 'content-inner';
+
+    // 2. 콘텐츠 주입
+    var html = '';
+    files.forEach(function(file) {
+        html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
+    });
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+
+    // 코드 하이라이팅
+    overlay.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
+
+    // 다이어그램 → PNG 변환
+    convertDiagramsToImages(overlay);
+
+    // 3. 인쇄 전용 스타일 추가
+    var style = document.createElement('style');
+    style.id = 'print-overlay-style';
+    style.textContent = '#print-overlay { display: none; }' +
+        '@media print {' +
+        '  body > *:not(#print-overlay):not(#print-overlay-style) { display: none !important; }' +
+        '  #print-overlay { display: block !important; }' +
+        '  ' + getPrintCSS() +
+        '}';
+    document.head.appendChild(style);
+
+    // 4. 파일명 설정 (document.title → PDF 저장 시 파일명)
+    var originalTitle = document.title;
+    document.title = title;
+
+    // 5. 클린업 함수
+    var done = false;
+    function cleanup() {
+        if (done) return;
+        done = true;
+        document.title = originalTitle;
+        var el = document.getElementById('print-overlay');
+        if (el) el.remove();
+        var st = document.getElementById('print-overlay-style');
+        if (st) st.remove();
         if (onDone) onDone();
-        return;
     }
 
-    printWindow.document.open();
-    printWindow.document.write(buildPrintHTML(title));
-    printWindow.document.close();
+    // 6. afterprint 이벤트 + 30초 fallback
+    window.addEventListener('afterprint', cleanup, { once: true });
 
+    // 7. 프린트 호출 (약간의 딜레이로 DOM 반영 보장)
     setTimeout(function() {
-        var target = printWindow.document.getElementById('pdf-content');
-        var html = '';
-        files.forEach(function(file) {
-            html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
-        });
-        target.innerHTML = html;
-        target.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
-
-        // 다이어그램 pre 블록을 PNG 이미지로 변환
-        convertDiagramsToImages(target);
-
-        setTimeout(function() {
-            var done = false;
-            function finish() {
-                if (done) return;
-                done = true;
-                try { printWindow.close(); } catch(e) {}
-                if (onDone) onDone();
-            }
-
-            printWindow.addEventListener('afterprint', finish, { once: true });
-            printWindow.print();
-            setTimeout(finish, 30000); // fallback
-        }, 300);
+        window.print();
+        setTimeout(cleanup, 30000); // fallback
     }, 100);
 }
 
