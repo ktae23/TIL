@@ -641,11 +641,18 @@ function generatePDF(file) {
     return new Promise(function(resolve) {
         setTimeout(resolve, 500);
     }).then(function() {
+        // 모바일 Safari 캔버스 한계(~16M pixels)에 맞춰 scale 동적 계산
+        var w = container.scrollWidth || 800;
+        var h = container.scrollHeight || 600;
+        var maxPixels = 16000000;
+        var safeScale = Math.sqrt(maxPixels / (w * h));
+        var scale = Math.min(2, Math.max(0.5, Math.floor(safeScale * 10) / 10));
+
         return html2pdf().set({
             margin: 10,
             filename: file.title + '.pdf',
-            image: { type: 'jpeg', quality: 0.90 },
-            html2canvas: { scale: 1, useCORS: true, logging: false, windowWidth: 800 },
+            image: { type: 'jpeg', quality: 0.92 },
+            html2canvas: { scale: scale, useCORS: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
         }).from(container).save();
