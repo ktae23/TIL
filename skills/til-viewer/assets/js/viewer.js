@@ -553,7 +553,10 @@ function downloadPDF() {
 }
 
 function generatePDF(file) {
-    // html2pdf.js 기본 렌더링 — wrapper를 화면에 표시해야 html2canvas 동작
+    // 페이지별 렌더링: html2canvas y/height 옵션으로 페이지 단위 캡처 → 항상 scale 2
+    var W = 720;
+    var PAGE_H = Math.floor(W * 277 / 190); // ~1050px (A4 비율)
+
     var container = document.createElement('div');
     container.className = 'content-inner';
     container.innerHTML = '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
@@ -566,26 +569,41 @@ function generatePDF(file) {
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;height:100vh;overflow:auto;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
         '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
 
-    // 동적 scale: 모바일 캔버스 한계 대응
-    var w = 720;
-    var h = container.scrollHeight || 600;
-    var maxPx = 16000000;
-    var scale = Math.min(2, Math.max(0.75, Math.floor(Math.sqrt(maxPx / (w * h)) * 10) / 10));
+    var doc, totalH, pages;
 
-    return html2pdf().set({
-        margin: 10,
-        filename: file.title + '.pdf',
-        image: { type: 'jpeg', quality: 0.92 },
-        html2canvas: { scale: scale, useCORS: true, logging: false, width: 720 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-    }).from(container).save().then(function() {
+    return new Promise(function(r) { setTimeout(r, 500); })
+    .then(function() {
+        totalH = container.scrollHeight;
+        pages = Math.ceil(totalH / PAGE_H);
+        doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+        function renderPage(i) {
+            if (i >= pages) return Promise.resolve();
+            if (i > 0) doc.addPage();
+
+            var y = i * PAGE_H;
+            var h = Math.min(PAGE_H, totalH - y);
+
+            return html2canvas(container, {
+                scale: 2, useCORS: true, logging: false,
+                x: 0, y: y, width: W, height: h,
+                scrollX: 0, scrollY: 0, windowWidth: W
+            }).then(function(canvas) {
+                var imgData = canvas.toDataURL('image/png');
+                doc.addImage(imgData, 'PNG', 10, 10, 190, (canvas.height / canvas.width) * 190);
+                canvas.width = 0; canvas.height = 0; canvas = null;
+                return renderPage(i + 1);
+            });
+        }
+        return renderPage(0);
+    }).then(function() {
+        doc.save(file.title + '.pdf');
         wrapper.remove();
     }).catch(function(err) {
         console.error('PDF generation failed:', err);
