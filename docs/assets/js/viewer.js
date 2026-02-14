@@ -618,8 +618,14 @@ function downloadPDF() {
     });
 }
 
-function generatePDF(file) {
-    // 페이지 단위 렌더링: 각 페이지를 개별 캔버스로 캡처 → 항상 scale 2 가능
+var PDF_W = 720;
+var PDF_PAGE_H = Math.floor(PDF_W * 277 / 190); // A4 비율 ~1050px
+var PDF_SCALE = 2; // 각 페이지 캔버스: 1440×2100 = ~3M pixels (안전)
+var PDF_CSS = '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;background:#fff;z-index:-1;opacity:0;pointer-events:none;padding:0;}' +
+    '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
+
+// 단일 파일의 모든 페이지를 doc에 렌더링 (isFirst=true면 첫 페이지에 addPage 안 함)
+function renderFileToDoc(file, doc, isFirst) {
     var container = document.createElement('div');
     container.className = 'content-inner';
     container.innerHTML = '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
@@ -631,54 +637,52 @@ function generatePDF(file) {
     var wrapper = document.createElement('div');
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
-    style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;background:#fff;z-index:-1;opacity:0;pointer-events:none;padding:0;}' +
-        '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
+    style.textContent = getPrintCSS() + PDF_CSS;
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
 
-    var CONTENT_W = 720;
-    var PAGE_H = Math.floor(CONTENT_W * 277 / 190); // A4 비율 ~1050px
-    var SCALE = 2; // 각 페이지 캔버스: 1440×2100 = ~3M pixels (안전)
-
     return new Promise(function(resolve) {
-        setTimeout(resolve, 500);
+        setTimeout(resolve, 300);
     }).then(function() {
         var totalH = container.scrollHeight;
-        var pages = Math.ceil(totalH / PAGE_H);
-        var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-
+        var pages = Math.ceil(totalH / PDF_PAGE_H);
         wrapper.style.overflow = 'hidden';
 
         function renderPage(i) {
             if (i >= pages) {
-                doc.save(file.title + '.pdf');
                 wrapper.remove();
                 return Promise.resolve();
             }
-            container.style.marginTop = -(i * PAGE_H) + 'px';
-            var h = Math.min(PAGE_H, totalH - i * PAGE_H);
+            if (i > 0 || !isFirst) doc.addPage();
+            container.style.marginTop = -(i * PDF_PAGE_H) + 'px';
+            var h = Math.min(PDF_PAGE_H, totalH - i * PDF_PAGE_H);
             wrapper.style.height = h + 'px';
 
             return new Promise(function(r) { setTimeout(r, 50); })
             .then(function() {
                 return html2canvas(wrapper, {
-                    scale: SCALE, useCORS: true, logging: false,
-                    width: CONTENT_W, height: h
+                    scale: PDF_SCALE, useCORS: true, logging: false,
+                    width: PDF_W, height: h
                 });
             }).then(function(canvas) {
                 var imgData = canvas.toDataURL('image/png');
-                if (i > 0) doc.addPage();
-                doc.addImage(imgData, 'PNG', 10, 10, 190, h * 190 / CONTENT_W);
+                doc.addImage(imgData, 'PNG', 10, 10, 190, h * 190 / PDF_W);
                 canvas = null;
                 return renderPage(i + 1);
             });
         }
         return renderPage(0);
+    });
+}
+
+// 단일 파일 PDF 생성
+function generatePDF(file) {
+    var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    return renderFileToDoc(file, doc, true).then(function() {
+        doc.save(file.title + '.pdf');
     }).catch(function(err) {
         console.error('PDF generation failed:', err);
-        wrapper.remove();
     });
 }
 
@@ -795,7 +799,7 @@ function showSelectBar() {
     bar.id = 'select-bar';
     bar.innerHTML = '<span id="select-count">0개 선택</span>' +
         '<button onclick="toggleSelectMode()">취소</button>' +
-        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>선택 PDF 다운로드</button>';
+        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>합본 PDF 다운로드</button>';
     document.body.appendChild(bar);
     var qa = document.getElementById('quick-actions');
     if (qa) qa.classList.add('has-select-bar');
@@ -831,18 +835,19 @@ function downloadSelectedPDF() {
     var dlBtn = document.getElementById('select-download-btn');
     if (dlBtn) { dlBtn.textContent = '⏳ 0/' + files.length; dlBtn.disabled = true; }
 
-    // 순차 다운로드: 각 파일을 개별 PDF로 저장 (파일 간 1초 간격)
+    // 하나의 PDF에 모든 파일을 페이지별로 렌더링 (save 1회 = 모바일 다운로드 제한 회피)
+    var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     var chain = Promise.resolve();
     files.forEach(function(file, i) {
         chain = chain.then(function() {
             if (dlBtn) dlBtn.textContent = '⏳ ' + (i + 1) + '/' + files.length;
-            return generatePDF(file).then(function() {
-                return new Promise(function(resolve) { setTimeout(resolve, 1000); });
-            });
+            return renderFileToDoc(file, doc, i === 0);
         });
     });
 
     chain.then(function() {
+        var title = files.length === 1 ? files[0].title : files[0].title + ' 외 ' + (files.length - 1) + '건';
+        doc.save(title + '.pdf');
         toggleSelectMode();
         if (state.currentFile) {
             loadFile(state.currentFile);
@@ -850,6 +855,9 @@ function downloadSelectedPDF() {
         if (window.innerWidth <= 768) {
             closeMobileSidebar();
         }
+    }).catch(function(err) {
+        console.error('Batch PDF failed:', err);
+        if (dlBtn) { dlBtn.textContent = '선택 PDF 다운로드'; dlBtn.disabled = false; }
     });
 }
 
