@@ -79,6 +79,9 @@ def main():
     # HTML script 태그 내에서 안전하게 사용하기 위해 이스케이프
     json_str = json_str.replace("</", "<\\/").replace("<!--", "<\\!--")
 
+    # 캐시 버스팅용 타임스탬프
+    cache_bust = int(datetime.now().timestamp())
+
     # 3. HTML 생성 (상대 경로 사용)
     html_content = f"""<!DOCTYPE html>
 <html lang="ko">
@@ -86,7 +89,7 @@ def main():
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TIL Viewer</title>
-    <link rel="stylesheet" href="assets/css/viewer.css">
+    <link rel="stylesheet" href="assets/css/viewer.css?v={cache_bust}">
     <link rel="stylesheet" href="assets/lib/highlight/github.min.css" id="hljs-light">
     <link rel="stylesheet" href="assets/lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
 </head>
@@ -140,7 +143,7 @@ def main():
     <script src="assets/lib/fuse.min.js"></script>
     <script src="assets/lib/highlight/highlight.min.js"></script>
     <script>const TIL_DATA = {json_str};</script>
-    <script src="assets/js/viewer.js"></script>
+    <script src="assets/js/viewer.js?v={cache_bust}"></script>
 </body>
 </html>"""
 
