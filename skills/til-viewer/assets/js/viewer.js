@@ -619,68 +619,53 @@ function downloadPDF() {
 }
 
 function printFiles(files, title, onDone) {
-    // 6차: 화면 레벨 DOM 교체 — @media print에 절대 의존하지 않음
-    // 모바일 Safari는 화면에 보이는 것을 그대로 인쇄
+    // html2pdf.js로 진짜 PDF 파일 생성 — window.print() 완전 우회
+    // 브라우저 인쇄 엔진에 의존하지 않으므로 모바일에서도 동일하게 동작
 
-    // 1. overlay 생성 + 콘텐츠 주입
-    var overlay = document.createElement('div');
-    overlay.id = 'print-overlay';
-    overlay.className = 'content-inner';
+    // 1. 콘텐츠 컨테이너 생성
+    var container = document.createElement('div');
+    container.className = 'content-inner';
     var html = '';
     files.forEach(function(file) {
         html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
     });
-    overlay.innerHTML = html;
-    overlay.querySelectorAll('pre code').forEach(function(block) {
+    container.innerHTML = html;
+    container.querySelectorAll('pre code').forEach(function(block) {
         hljs.highlightElement(block);
     });
-    convertDiagramsToImages(overlay);
+    convertDiagramsToImages(container);
 
-    // 2. 기존 body 자식 숨기기 (화면 레벨 — inline style)
-    var bodyChildren = Array.from(document.body.children);
-    bodyChildren.forEach(function(el) {
-        el.setAttribute('data-print-hidden', '');
-        el.style.setProperty('display', 'none', 'important');
-    });
-
-    // 3. overlay를 body에 추가 + inline display:block (CSS display:none 오버라이드)
-    overlay.style.display = 'block';
-    document.body.appendChild(overlay);
-    document.body.classList.add('print-overlay-active');
-
-    // 4. 인쇄 타이포그래피 스타일 (@media print 없이 직접 적용)
+    // 2. 스타일이 적용된 래퍼 (html2pdf 렌더링용)
+    var wrapper = document.createElement('div');
     var style = document.createElement('style');
-    style.id = 'print-overlay-style';
     style.textContent = getPrintCSS();
-    document.head.appendChild(style);
+    wrapper.appendChild(style);
+    wrapper.appendChild(container);
 
-    // 5. 파일명 설정
-    var originalTitle = document.title;
-    document.title = title;
+    // 3. DOM에 임시 추가 (html2canvas가 렌더링에 필요)
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = '-9999px';
+    wrapper.style.top = '0';
+    wrapper.style.width = '180mm';
+    wrapper.style.background = '#fff';
+    document.body.appendChild(wrapper);
 
-    // 6. 클린업
-    var done = false;
-    function cleanup() {
-        if (done) return;
-        done = true;
-        document.title = originalTitle;
-        document.body.classList.remove('print-overlay-active');
-        overlay.remove();
-        style.remove();
-        bodyChildren.forEach(function(el) {
-            el.removeAttribute('data-print-hidden');
-            el.style.removeProperty('display');
-        });
+    // 4. PDF 생성 + 다운로드
+    html2pdf().set({
+        margin: 15,
+        filename: title + '.pdf',
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+    }).from(container).save().then(function() {
+        wrapper.remove();
         if (onDone) onDone();
-    }
-
-    window.addEventListener('afterprint', cleanup, { once: true });
-
-    // 7. 500ms 딜레이 (iOS Safari 비동기 렌더링 대응) 후 인쇄
-    setTimeout(function() {
-        window.print();
-        setTimeout(cleanup, 30000);
-    }, 500);
+    }).catch(function(err) {
+        console.error('PDF generation failed:', err);
+        wrapper.remove();
+        if (onDone) onDone();
+    });
 }
 
 // ========================================
