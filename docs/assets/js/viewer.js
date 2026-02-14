@@ -632,7 +632,7 @@ function generatePDF(file) {
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background:#fff;z-index:99999;padding:15mm;}';
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;height:100vh;overflow:hidden;background:#fff;z-index:99999;padding:10mm 15mm;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
@@ -642,17 +642,17 @@ function generatePDF(file) {
         setTimeout(resolve, 500);
     }).then(function() {
         // 모바일 Safari 캔버스 한계(~16M pixels)에 맞춰 scale 동적 계산
-        var w = container.scrollWidth || 800;
+        var w = 720;
         var h = container.scrollHeight || 600;
         var maxPixels = 16000000;
         var safeScale = Math.sqrt(maxPixels / (w * h));
-        var scale = Math.min(2, Math.max(0.5, Math.floor(safeScale * 10) / 10));
+        var scale = Math.min(2, Math.max(0.75, Math.floor(safeScale * 10) / 10));
 
         return html2pdf().set({
-            margin: 10,
+            margin: [10, 10, 10, 10],
             filename: file.title + '.pdf',
-            image: { type: 'jpeg', quality: 0.92 },
-            html2canvas: { scale: scale, useCORS: true, logging: false },
+            image: { type: 'png' },
+            html2canvas: { scale: scale, useCORS: true, logging: false, width: 720 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
         }).from(container).save();
