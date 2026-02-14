@@ -612,19 +612,20 @@ function downloadPDF() {
 }
 
 function printFiles(files, title, onDone) {
-    var iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:600px;border:none;';
-    document.body.appendChild(iframe);
+    // 새 창에서 프린트 (모바일에서 iframe.contentWindow.print()가 동작하지 않는 문제 해결)
+    var printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('팝업이 차단되었습니다. 팝업을 허용해주세요.');
+        if (onDone) onDone();
+        return;
+    }
 
-    var iframeDoc = iframe.contentDocument;
-    iframeDoc.open();
-    iframeDoc.write(buildPrintHTML(title));
-    iframeDoc.close();
+    printWindow.document.open();
+    printWindow.document.write(buildPrintHTML(title));
+    printWindow.document.close();
 
-    // Bug 2 fix: iframe.onload 대신 setTimeout 사용
-    // doc.write()+doc.close()는 인라인이므로 load가 즉시 완료되어 onload를 놓칠 수 있음
     setTimeout(function() {
-        var target = iframeDoc.getElementById('pdf-content');
+        var target = printWindow.document.getElementById('pdf-content');
         var html = '';
         files.forEach(function(file) {
             html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
@@ -636,25 +637,17 @@ function printFiles(files, title, onDone) {
         convertDiagramsToImages(target);
 
         setTimeout(function() {
-            var originalTitle = document.title;
-            document.title = title;
-
-            // Bug 1 fix: afterprint 이벤트로 타이틀 복원 지연 (모바일 비동기 대응)
-            var titleRestored = false;
-            function restoreTitle() {
-                if (titleRestored) return;
-                titleRestored = true;
-                document.title = originalTitle;
-            }
-            iframe.contentWindow.addEventListener('afterprint', restoreTitle, { once: true });
-            setTimeout(restoreTitle, 5000); // fallback
-
-            iframe.contentWindow.print();
-
-            setTimeout(function() {
-                document.body.removeChild(iframe);
+            var done = false;
+            function finish() {
+                if (done) return;
+                done = true;
+                try { printWindow.close(); } catch(e) {}
                 if (onDone) onDone();
-            }, 1000);
+            }
+
+            printWindow.addEventListener('afterprint', finish, { once: true });
+            printWindow.print();
+            setTimeout(finish, 30000); // fallback
         }, 300);
     }, 100);
 }
