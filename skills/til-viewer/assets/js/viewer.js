@@ -553,11 +553,7 @@ function downloadPDF() {
 }
 
 function generatePDF(file) {
-    // 페이지 단위 렌더링: 각 페이지를 개별 캔버스로 캡처 → 항상 scale 2
-    var CONTENT_W = 720;
-    var PAGE_H = Math.floor(CONTENT_W * 277 / 190); // A4 비율 ~1050px
-    var SCALE = 2; // 각 페이지 캔버스: 1440×2100 = ~3M pixels (안전)
-
+    // html2pdf.js 기본 렌더링 — wrapper를 화면에 표시해야 html2canvas 동작
     var container = document.createElement('div');
     container.className = 'content-inner';
     container.innerHTML = '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
@@ -570,45 +566,27 @@ function generatePDF(file) {
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;background:#fff;z-index:99999;padding:0;}' +
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:720px;height:100vh;overflow:auto;background:#fff;z-index:99999;padding:15mm;}' +
         '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
 
-    return new Promise(function(resolve) {
-        setTimeout(resolve, 300);
-    }).then(function() {
-        var totalH = container.scrollHeight;
-        var pages = Math.ceil(totalH / PAGE_H);
-        var doc = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-        wrapper.style.overflow = 'hidden';
+    // 동적 scale: 모바일 캔버스 한계 대응
+    var w = 720;
+    var h = container.scrollHeight || 600;
+    var maxPx = 16000000;
+    var scale = Math.min(2, Math.max(0.75, Math.floor(Math.sqrt(maxPx / (w * h)) * 10) / 10));
 
-        function renderPage(i) {
-            if (i >= pages) {
-                doc.save(file.title + '.pdf');
-                wrapper.remove();
-                return Promise.resolve();
-            }
-            if (i > 0) doc.addPage();
-            container.style.marginTop = -(i * PAGE_H) + 'px';
-            var h = Math.min(PAGE_H, totalH - i * PAGE_H);
-            wrapper.style.height = h + 'px';
-
-            return new Promise(function(r) { setTimeout(r, 50); })
-            .then(function() {
-                return html2canvas(wrapper, {
-                    scale: SCALE, useCORS: true, logging: false,
-                    width: CONTENT_W, height: h
-                });
-            }).then(function(canvas) {
-                var imgData = canvas.toDataURL('image/png');
-                doc.addImage(imgData, 'PNG', 10, 10, 190, h * 190 / CONTENT_W);
-                canvas = null;
-                return renderPage(i + 1);
-            });
-        }
-        return renderPage(0);
+    return html2pdf().set({
+        margin: 10,
+        filename: file.title + '.pdf',
+        image: { type: 'jpeg', quality: 0.92 },
+        html2canvas: { scale: scale, useCORS: true, logging: false, width: 720 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+    }).from(container).save().then(function() {
+        wrapper.remove();
     }).catch(function(err) {
         console.error('PDF generation failed:', err);
         wrapper.remove();
