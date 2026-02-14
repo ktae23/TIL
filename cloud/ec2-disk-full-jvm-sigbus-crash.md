@@ -205,4 +205,4 @@ cron으로 오래된 로그, 임시 파일을 정기적으로 정리한다.
 - [Oracle Java Bug ID: 7007769](https://bugs.java.com/bugdatabase/view_bug?bug_id=7007769)
 - [AWS EBS 볼륨 크기 수정](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html)
 
-*마지막 업데이트: 2025년 02월*
+*마지막 업데이트: 2026년 02월*

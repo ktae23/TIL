@@ -540,4 +540,4 @@ services:
 - [CNCF Cloud Native Definition](https://github.com/cncf/toc/blob/main/DEFINITION.md)
 - [Resilience4j 공식 문서](https://resilience4j.readme.io/)
 
-*마지막 업데이트: 2025년 01월*
+*마지막 업데이트: 2026년 01월*

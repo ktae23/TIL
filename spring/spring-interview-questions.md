@@ -532,4 +532,4 @@ public void noRollbackForBusiness() {
 
 ---
 
-*마지막 업데이트: 2025년 01월*
+*마지막 업데이트: 2026년 01월*

@@ -1,0 +1,1 @@
+../build-tool/gradle-multi-module.md

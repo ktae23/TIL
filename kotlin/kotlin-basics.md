@@ -542,4 +542,4 @@ val result = 3 times "Hi "  // "Hi Hi Hi "
 - [Kotlin Koans](https://play.kotlinlang.org/koans/overview)
 - [From Java to Kotlin](https://github.com/MindorksOpenSource/from-java-to-kotlin)
 
-*마지막 업데이트: 2025년 01월*
+*마지막 업데이트: 2026년 01월*
