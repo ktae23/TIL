@@ -38,16 +38,6 @@ function getPrintCSS() {
 }
 
 // ========================================
-// PDF PRINT TEMPLATE (buildPrintHTML은 getPrintCSS 사용)
-// ========================================
-function buildPrintHTML(title) {
-    return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
-    '<title>' + title.replace(/</g, '&lt;') + '</title><style>' +
-    getPrintCSS() +
-    '</style></head><body><div class="content-inner" id="pdf-content"></div></body></html>';
-}
-
-// ========================================
 // APPLICATION STATE
 // ========================================
 const state = {
@@ -56,8 +46,7 @@ const state = {
     searchIndex: null,
     collapsedCategories: new Set(),
     currentFilter: 'all',
-    fileOrder: [],  // flat list of all file paths for arrow nav
-    selectMode: false
+    fileOrder: []  // flat list of all file paths for arrow nav
 };
 
 // ========================================
@@ -539,9 +528,6 @@ function initKeyboardShortcuts() {
             case 'P':
                 downloadPDF();
                 break;
-            case 's':
-            case 'S':
-                break;
             case '?':
                 showShortcuts();
                 break;
@@ -550,7 +536,7 @@ function initKeyboardShortcuts() {
 }
 
 // ========================================
-// PDF DOWNLOAD (window.print() 벡터 방식)
+// PDF DOWNLOAD (html2pdf.js 페이지별 렌더링)
 // ========================================
 function downloadPDF() {
     var file = findFileByPath(state.currentFile);
@@ -715,9 +701,6 @@ function convertDiagramsToImages(container) {
     });
 }
 
-// ========================================
-// (SELECT MODE 제거됨 — 단일 PDF 다운로드만 지원)
-// ========================================
 
 // ========================================
 // QUICK ACTIONS
