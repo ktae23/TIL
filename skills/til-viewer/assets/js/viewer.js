@@ -635,20 +635,23 @@ function printFiles(files, title, onDone) {
     });
     convertDiagramsToImages(container);
 
-    // 2. 스타일이 적용된 래퍼 (html2pdf 렌더링용)
+    // 2. 스타일이 적용된 래퍼 (html2canvas는 화면에 보이는 요소만 캡처)
     var wrapper = document.createElement('div');
+    wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
-    style.textContent = getPrintCSS();
+    style.textContent = getPrintCSS() +
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:100%;height:100%;overflow:auto;background:#fff;z-index:99999;padding:15mm;}' +
+        '#pdf-render-wrapper .pdf-generating{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.2rem;color:#666;z-index:100000;}';
     wrapper.appendChild(style);
+    var msg = document.createElement('div');
+    msg.className = 'pdf-generating';
+    msg.textContent = 'PDF 생성 중...';
+    wrapper.appendChild(msg);
     wrapper.appendChild(container);
 
-    // 3. DOM에 임시 추가 (html2canvas가 렌더링에 필요)
-    wrapper.style.position = 'fixed';
-    wrapper.style.left = '-9999px';
-    wrapper.style.top = '0';
-    wrapper.style.width = '180mm';
-    wrapper.style.background = '#fff';
+    // 3. DOM에 추가 (전체 화면 오버레이로 표시)
     document.body.appendChild(wrapper);
+    msg.remove();
 
     // 4. PDF 생성 + 다운로드
     html2pdf().set({
