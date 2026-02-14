@@ -118,6 +118,7 @@ def main():
         </div>
     </div>
     <div class="quick-actions" id="quick-actions">
+        <button class="quick-btn" id="select-mode-btn" onclick="toggleSelectMode()" title="문서 선택 모드 (S)">☰</button>
         <button class="quick-btn" id="pdf-download-btn" onclick="downloadPDF()" title="PDF 다운로드 (P)" style="display:none">📥</button>
         <button class="quick-btn" onclick="showShortcuts()" title="단축키 (?)">?</button>
         <button class="quick-btn" onclick="scrollToTop()" title="맨 위로">&#8593;</button>
@@ -130,6 +131,7 @@ def main():
         <div class="shortcut-item"><span>검색</span><span class="shortcut-key">Ctrl+K</span></div>
         <div class="shortcut-item"><span>테마 전환</span><span class="shortcut-key">T</span></div>
         <div class="shortcut-item"><span>PDF 다운로드</span><span class="shortcut-key">P</span></div>
+        <div class="shortcut-item"><span>문서 선택 모드</span><span class="shortcut-key">S</span></div>
         <div class="shortcut-item"><span>맨 위로</span><span class="shortcut-key">Home</span></div>
         <div class="shortcut-item"><span>닫기</span><span class="shortcut-key">Esc</span></div>
     </div>

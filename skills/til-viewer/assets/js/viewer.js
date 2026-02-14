@@ -48,7 +48,9 @@ const state = {
     searchIndex: null,
     collapsedCategories: new Set(),
     currentFilter: 'all',
-    fileOrder: []  // flat list of all file paths for arrow nav
+    fileOrder: [],  // flat list of all file paths for arrow nav
+    selectMode: false,
+    selectedFiles: new Set()
 };
 
 // ========================================
@@ -185,7 +187,30 @@ function buildFileList() {
             <span>${category}</span>
             <span class="category-count">(${categoryData.files.length})</span>
         `;
-        titleDiv.onclick = () => toggleCategory(category);
+        titleDiv.onclick = (e) => {
+            if (e.target.closest('.category-select-all')) return;
+            toggleCategory(category);
+        };
+
+        if (state.selectMode) {
+            const allSelected = categoryData.files.every(f => state.selectedFiles.has(f.path));
+            const selectAllBtn = document.createElement('span');
+            selectAllBtn.className = 'category-select-all';
+            selectAllBtn.textContent = allSelected ? '☑' : '☐';
+            selectAllBtn.title = '전체 선택/해제';
+            selectAllBtn.onclick = (e) => {
+                e.stopPropagation();
+                const paths = categoryData.files.map(f => f.path);
+                if (allSelected) {
+                    paths.forEach(p => state.selectedFiles.delete(p));
+                } else {
+                    paths.forEach(p => state.selectedFiles.add(p));
+                }
+                buildFileList();
+                updateSelectBar();
+            };
+            titleDiv.appendChild(selectAllBtn);
+        }
 
         categoryDiv.appendChild(titleDiv);
 
@@ -195,9 +220,36 @@ function buildFileList() {
         categoryData.files.forEach(file => {
             const fileItem = document.createElement('div');
             fileItem.className = 'file-item';
-            fileItem.textContent = file.title;
+            if (state.selectMode) {
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'file-select-cb';
+                cb.checked = state.selectedFiles.has(file.path);
+                cb.onclick = (e) => {
+                    e.stopPropagation();
+                    if (cb.checked) {
+                        state.selectedFiles.add(file.path);
+                    } else {
+                        state.selectedFiles.delete(file.path);
+                    }
+                    updateSelectBar();
+                };
+                fileItem.appendChild(cb);
+                const span = document.createElement('span');
+                span.textContent = file.title;
+                fileItem.appendChild(span);
+            } else {
+                fileItem.textContent = file.title;
+            }
             fileItem.title = file.createdAt ? `${file.title} (${file.createdAt})` : file.title;
-            fileItem.onclick = () => loadFile(file.path);
+            fileItem.onclick = () => {
+                if (state.selectMode) {
+                    const cb = fileItem.querySelector('.file-select-cb');
+                    if (cb) { cb.checked = !cb.checked; cb.onclick({ stopPropagation() {} }); }
+                    return;
+                }
+                loadFile(file.path);
+            };
 
             if (state.currentFile === file.path) {
                 fileItem.classList.add('active');
@@ -530,6 +582,10 @@ function initKeyboardShortcuts() {
             case 'P':
                 downloadPDF();
                 break;
+            case 's':
+            case 'S':
+                toggleSelectMode();
+                break;
             case '?':
                 showShortcuts();
                 break;
@@ -573,6 +629,96 @@ function downloadPDF() {
                 document.body.removeChild(iframe);
                 btn.textContent = '📥';
                 btn.disabled = false;
+            }, 1000);
+        }, 300);
+    };
+}
+
+// ========================================
+// SELECT MODE & BATCH PDF
+// ========================================
+function toggleSelectMode() {
+    state.selectMode = !state.selectMode;
+    if (!state.selectMode) {
+        state.selectedFiles.clear();
+        removeSelectBar();
+    } else {
+        showSelectBar();
+    }
+    buildFileList();
+
+    var btn = document.getElementById('select-mode-btn');
+    if (btn) btn.textContent = state.selectMode ? '✓' : '☰';
+}
+
+function showSelectBar() {
+    if (document.getElementById('select-bar')) return;
+    var bar = document.createElement('div');
+    bar.id = 'select-bar';
+    bar.innerHTML = '<span id="select-count">0개 선택</span>' +
+        '<button id="select-download-btn" onclick="downloadSelectedPDF()" disabled>합본 PDF 다운로드</button>' +
+        '<button onclick="toggleSelectMode()">취소</button>';
+    document.body.appendChild(bar);
+}
+
+function removeSelectBar() {
+    var bar = document.getElementById('select-bar');
+    if (bar) bar.remove();
+}
+
+function updateSelectBar() {
+    var count = state.selectedFiles.size;
+    var countEl = document.getElementById('select-count');
+    if (countEl) countEl.textContent = count + '개 선택';
+    var dlBtn = document.getElementById('select-download-btn');
+    if (dlBtn) dlBtn.disabled = count === 0;
+}
+
+function downloadSelectedPDF() {
+    if (state.selectedFiles.size === 0) return;
+
+    var files = [];
+    // fileOrder 순서대로 정렬
+    state.fileOrder.forEach(function(path) {
+        if (state.selectedFiles.has(path)) {
+            var f = findFileByPath(path);
+            if (f) files.push(f);
+        }
+    });
+    if (files.length === 0) return;
+
+    var dlBtn = document.getElementById('select-download-btn');
+    if (dlBtn) { dlBtn.textContent = '⏳ 생성 중...'; dlBtn.disabled = true; }
+
+    var iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:900px;height:600px;border:none;';
+    document.body.appendChild(iframe);
+
+    var doc = iframe.contentDocument;
+    doc.open();
+    doc.write(PDF_PRINT_TEMPLATE);
+    doc.close();
+
+    iframe.onload = function() {
+        var target = doc.getElementById('pdf-content');
+        var html = '';
+        files.forEach(function(file, i) {
+            if (i > 0) html += '<div style="page-break-before:always"></div>';
+            html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
+        });
+        target.innerHTML = html;
+        target.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
+
+        setTimeout(function() {
+            var originalTitle = document.title;
+            var title = files.length === 1 ? files[0].title : files[0].title + ' 외 ' + (files.length - 1) + '건';
+            document.title = title;
+            doc.title = title;
+            iframe.contentWindow.print();
+            document.title = originalTitle;
+            setTimeout(function() {
+                document.body.removeChild(iframe);
+                if (dlBtn) { dlBtn.textContent = '합본 PDF 다운로드'; dlBtn.disabled = false; }
             }, 1000);
         }, 300);
     };
