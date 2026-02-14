@@ -563,9 +563,10 @@ function downloadPDF() {
         target.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
 
         setTimeout(function() {
-            // Chrome은 iframe 프린트 시 부모 페이지 title을 파일명으로 사용
+            // 부모 + iframe 양쪽 title 설정 (브라우저별 참조 방식 다름)
             var originalTitle = document.title;
             document.title = file.title;
+            doc.title = file.title;
             iframe.contentWindow.print();
             document.title = originalTitle;
             setTimeout(function() {
