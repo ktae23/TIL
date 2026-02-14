@@ -637,14 +637,19 @@ function generatePDF(file) {
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
 
-    return html2pdf().set({
-        margin: 15,
-        filename: file.title + '.pdf',
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-    }).from(container).save().then(function() {
+    // 브라우저 렌더링 완료 대기 후 PDF 캡처
+    return new Promise(function(resolve) {
+        setTimeout(resolve, 500);
+    }).then(function() {
+        return html2pdf().set({
+            margin: 10,
+            filename: file.title + '.pdf',
+            image: { type: 'jpeg', quality: 0.90 },
+            html2canvas: { scale: 1, useCORS: true, logging: false, windowWidth: 800 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        }).from(container).save();
+    }).then(function() {
         wrapper.remove();
     }).catch(function(err) {
         console.error('PDF generation failed:', err);
@@ -801,12 +806,14 @@ function downloadSelectedPDF() {
     var dlBtn = document.getElementById('select-download-btn');
     if (dlBtn) { dlBtn.textContent = '⏳ 0/' + files.length; dlBtn.disabled = true; }
 
-    // 순차 다운로드: 각 파일을 개별 PDF로 저장
+    // 순차 다운로드: 각 파일을 개별 PDF로 저장 (파일 간 1초 간격)
     var chain = Promise.resolve();
     files.forEach(function(file, i) {
         chain = chain.then(function() {
             if (dlBtn) dlBtn.textContent = '⏳ ' + (i + 1) + '/' + files.length;
-            return generatePDF(file);
+            return generatePDF(file).then(function() {
+                return new Promise(function(resolve) { setTimeout(resolve, 1000); });
+            });
         });
     });
 
