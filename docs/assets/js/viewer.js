@@ -619,13 +619,20 @@ function downloadPDF() {
 }
 
 function printFiles(files, title, onDone) {
-    // Print Overlay 방식: 메인 윈도우의 window.print() 사용 (모바일 호환)
-    // 1. overlay div 생성 (screen에서는 숨김)
+    // Print Overlay 방식: body 자식을 직접 숨기고 overlay만 표시
+    // (@media print는 모바일에서 무시되는 문제가 있어 직접 DOM 조작)
+
+    // 1. 기존 body 자식 모두 숨기기
+    var bodyChildren = Array.from(document.body.children);
+    bodyChildren.forEach(function(el) {
+        el.setAttribute('data-print-hidden', '');
+        el.style.setProperty('display', 'none', 'important');
+    });
+
+    // 2. overlay div 생성 + 콘텐츠 주입
     var overlay = document.createElement('div');
     overlay.id = 'print-overlay';
     overlay.className = 'content-inner';
-
-    // 2. 콘텐츠 주입
     var html = '';
     files.forEach(function(file) {
         html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
@@ -639,18 +646,13 @@ function printFiles(files, title, onDone) {
     // 다이어그램 → PNG 변환
     convertDiagramsToImages(overlay);
 
-    // 3. 인쇄 전용 스타일 추가
+    // 3. 인쇄 스타일 추가
     var style = document.createElement('style');
     style.id = 'print-overlay-style';
-    style.textContent = '#print-overlay { display: none; }' +
-        '@media print {' +
-        '  body > *:not(#print-overlay):not(#print-overlay-style) { display: none !important; }' +
-        '  #print-overlay { display: block !important; }' +
-        '  ' + getPrintCSS() +
-        '}';
+    style.textContent = getPrintCSS();
     document.head.appendChild(style);
 
-    // 4. 파일명 설정 (document.title → PDF 저장 시 파일명)
+    // 4. 파일명 설정
     var originalTitle = document.title;
     document.title = title;
 
@@ -660,20 +662,22 @@ function printFiles(files, title, onDone) {
         if (done) return;
         done = true;
         document.title = originalTitle;
-        var el = document.getElementById('print-overlay');
-        if (el) el.remove();
-        var st = document.getElementById('print-overlay-style');
-        if (st) st.remove();
+        overlay.remove();
+        style.remove();
+        bodyChildren.forEach(function(el) {
+            el.removeAttribute('data-print-hidden');
+            el.style.removeProperty('display');
+        });
         if (onDone) onDone();
     }
 
-    // 6. afterprint 이벤트 + 30초 fallback
+    // 6. afterprint + 30초 fallback
     window.addEventListener('afterprint', cleanup, { once: true });
 
-    // 7. 프린트 호출 (약간의 딜레이로 DOM 반영 보장)
+    // 7. 프린트 호출
     setTimeout(function() {
         window.print();
-        setTimeout(cleanup, 30000); // fallback
+        setTimeout(cleanup, 30000);
     }, 100);
 }
 
