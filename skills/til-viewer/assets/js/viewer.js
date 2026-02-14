@@ -619,10 +619,10 @@ function downloadPDF() {
 }
 
 function printFiles(files, title, onDone) {
-    // Print Overlay 방식: 정적 CSS @media print 규칙 + body 클래스 토글
-    // (동적 style 주입/inline display:none은 모바일에서 무시되므로 정적 CSS만 사용)
+    // 6차: 화면 레벨 DOM 교체 — @media print에 절대 의존하지 않음
+    // 모바일 Safari는 화면에 보이는 것을 그대로 인쇄
 
-    // 1. overlay 생성 + 콘텐츠 주입 (동기 작업)
+    // 1. overlay 생성 + 콘텐츠 주입
     var overlay = document.createElement('div');
     overlay.id = 'print-overlay';
     overlay.className = 'content-inner';
@@ -631,28 +631,34 @@ function printFiles(files, title, onDone) {
         html += '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
     });
     overlay.innerHTML = html;
-
-    // 코드 하이라이팅
-    overlay.querySelectorAll('pre code').forEach(function(block) { hljs.highlightElement(block); });
-
-    // 다이어그램 → PNG 변환
+    overlay.querySelectorAll('pre code').forEach(function(block) {
+        hljs.highlightElement(block);
+    });
     convertDiagramsToImages(overlay);
 
-    // 2. DOM에 추가 + body 클래스 활성화
+    // 2. 기존 body 자식 숨기기 (화면 레벨 — inline style)
+    var bodyChildren = Array.from(document.body.children);
+    bodyChildren.forEach(function(el) {
+        el.setAttribute('data-print-hidden', '');
+        el.style.setProperty('display', 'none', 'important');
+    });
+
+    // 3. overlay를 body에 추가 + inline display:block (CSS display:none 오버라이드)
+    overlay.style.display = 'block';
     document.body.appendChild(overlay);
     document.body.classList.add('print-overlay-active');
 
-    // 3. 인쇄 타이포그래피 스타일 (best-effort, 없어도 콘텐츠는 정확)
+    // 4. 인쇄 타이포그래피 스타일 (@media print 없이 직접 적용)
     var style = document.createElement('style');
     style.id = 'print-overlay-style';
-    style.textContent = '@media print { ' + getPrintCSS() + ' }';
+    style.textContent = getPrintCSS();
     document.head.appendChild(style);
 
-    // 4. 파일명 설정
+    // 5. 파일명 설정
     var originalTitle = document.title;
     document.title = title;
 
-    // 5. 클린업 함수
+    // 6. 클린업
     var done = false;
     function cleanup() {
         if (done) return;
@@ -661,13 +667,16 @@ function printFiles(files, title, onDone) {
         document.body.classList.remove('print-overlay-active');
         overlay.remove();
         style.remove();
+        bodyChildren.forEach(function(el) {
+            el.removeAttribute('data-print-hidden');
+            el.style.removeProperty('display');
+        });
         if (onDone) onDone();
     }
 
-    // 6. afterprint + 30초 fallback
     window.addEventListener('afterprint', cleanup, { once: true });
 
-    // 7. 500ms 딜레이 (iOS Safari 비동기 렌더링 대응)
+    // 7. 500ms 딜레이 (iOS Safari 비동기 렌더링 대응) 후 인쇄
     setTimeout(function() {
         window.print();
         setTimeout(cleanup, 30000);
