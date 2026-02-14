@@ -804,6 +804,10 @@ body {
 /* ========================================
    PRINT STYLES
    ======================================== */
+#print-overlay {
+    display: none;
+}
+
 @media print {
     .header, .sidebar, .toc-panel, .quick-actions,
     .overlay, .search-container, .progress-bar,
@@ -812,4 +816,13 @@ body {
     .content-inner { max-width: 100% !important; }
     .container, .main-container { display: block !important; }
     pre { white-space: pre-wrap !important; word-break: break-all !important; }
+
+    /* Overlay print mode: body.print-overlay-active일 때만 활성화 */
+    body.print-overlay-active > *:not(#print-overlay) {
+        display: none !important;
+    }
+    body.print-overlay-active #print-overlay {
+        display: block !important;
+        max-width: 100% !important;
+    }
 }
