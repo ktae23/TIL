@@ -140,7 +140,7 @@ body {
 /* ========================================
    LAYOUT
    ======================================== */
-.container {
+.container, .main-container {
     display: flex;
     margin-top: 60px;
     height: calc(100vh - 60px);
@@ -548,7 +548,7 @@ body {
 /* ========================================
    OVERLAY (Mobile)
    ======================================== */
-.overlay {
+.overlay, .sidebar-overlay {
     display: none;
     position: fixed;
     top: 60px;
@@ -559,7 +559,7 @@ body {
     z-index: 40;
 }
 
-.overlay.show {
+.overlay.show, .sidebar-overlay.show {
     display: block;
 }
 
@@ -636,7 +636,7 @@ body {
 /* ========================================
    MOBILE MENU
    ======================================== */
-.menu-toggle {
+.menu-toggle, .menu-button {
     display: none;
     background: none;
     border: none;
@@ -672,7 +672,7 @@ body {
         padding: 24px;
     }
 
-    .menu-toggle {
+    .menu-toggle, .menu-button {
         display: block;
     }
 
