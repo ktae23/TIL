@@ -696,6 +696,11 @@ function showShortcuts() {
     if (modal) modal.classList.toggle('show');
 }
 
+function toggleTOC() {
+    const toc = document.getElementById('toc-panel');
+    if (toc) toc.classList.toggle('open');
+}
+
 // ========================================
 // URL ROUTING
 // ========================================

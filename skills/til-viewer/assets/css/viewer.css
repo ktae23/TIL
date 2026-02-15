@@ -707,12 +707,38 @@ body {
     color: var(--text-primary);
 }
 
+.toc-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    padding: 4px 8px;
+}
+
 /* ========================================
    RESPONSIVE
    ======================================== */
 @media (max-width: 1024px) {
+    .toc-toggle {
+        display: block;
+    }
+
     .toc-panel {
-        display: none;
+        position: fixed;
+        right: -260px;
+        top: 60px;
+        height: calc(100vh - 60px);
+        width: 240px;
+        z-index: 50;
+        transition: right 0.3s;
+        border-left: 1px solid var(--border-color);
+        box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+    }
+
+    .toc-panel.open {
+        right: 0;
     }
 }
 

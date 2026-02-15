@@ -99,7 +99,7 @@ def main():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIL Viewer</title>
+    <title>ktae23 학습저장소</title>
     <link rel="stylesheet" href="assets/css/viewer.css?v={cache_bust}">
     <link rel="stylesheet" href="assets/lib/highlight/github.min.css" id="hljs-light">
     <link rel="stylesheet" href="assets/lib/highlight/github-dark.min.css" id="hljs-dark" disabled>
@@ -108,16 +108,18 @@ def main():
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="header">
         <button class="menu-button" id="menu-button">☰</button>
-        <h1>TIL Viewer</h1>
+        <h1>ktae23 학습저장소</h1>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search files and content... (Ctrl+K)" autocomplete="off" />
         </div>
+        <button class="toc-toggle" id="toc-toggle" onclick="toggleTOC()" title="목차">≡</button>
         <button class="theme-toggle" id="theme-toggle">Dark</button>
     </div>
     <div class="main-container">
         <div class="sidebar" id="sidebar">
             <div class="special-links">
                 <a href="algorithm-practice.html" class="special-link">📚 Algorithm Practice</a>
+                <a href="https://www.linkedin.com/in/ktae23" class="special-link" target="_blank">🔗 LinkedIn</a>
             </div>
             <div id="file-list"></div>
         </div>
