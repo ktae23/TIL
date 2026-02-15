@@ -553,8 +553,13 @@ function downloadPDF() {
 }
 
 function generatePDF(file) {
-    // html2pdf 기본 렌더링, 1440px 너비로 해상도 확보
-    // 720px→1440px: 높이 절반 → 동적 scale 상승 → DPI ~150+
+    // A4 비율 viewport (794px = 210mm × 96/25.4) + 높은 scale로 선명한 PDF 생성
+    // 좁은 viewport → pixel budget 절약 → scale 3x 가능 → 288 DPI
+    var PDF_WIDTH = 794;
+    var TARGET_SCALE = 3;
+    var MAX_CANVAS_PX = 64000000;
+    var MIN_SCALE = 1.5;
+
     var container = document.createElement('div');
     container.className = 'content-inner';
     container.innerHTML = '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
@@ -567,22 +572,25 @@ function generatePDF(file) {
     wrapper.id = 'pdf-render-wrapper';
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:1440px;height:100vh;overflow:auto;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
-        '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
+        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:' + PDF_WIDTH + 'px;height:100vh;overflow:auto;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
+        '#pdf-render-wrapper .content-inner{padding:0;margin:0;}' +
+        '#pdf-render-wrapper pre{white-space:pre-wrap;word-break:break-all;}' +
+        '#pdf-render-wrapper pre code.hljs{white-space:pre-wrap;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
 
-    var w = 1440;
     var h = container.scrollHeight || 600;
-    var maxPx = 16000000;
-    var scale = Math.min(2, Math.max(0.75, Math.floor(Math.sqrt(maxPx / (w * h)) * 10) / 10));
+    var rawScale = Math.sqrt(MAX_CANVAS_PX / (PDF_WIDTH * h));
+    var scale = Math.min(TARGET_SCALE, Math.max(MIN_SCALE, Math.floor(rawScale * 10) / 10));
+    var effectiveDPI = Math.round(PDF_WIDTH * scale / 8.27);
+    console.log('[PDF] height=' + h + 'px, scale=' + scale + ', effectiveDPI=' + effectiveDPI);
 
     return html2pdf().set({
         margin: 10,
         filename: file.title + '.pdf',
         image: { type: 'png' },
-        html2canvas: { scale: scale, useCORS: true, logging: false, width: 1440 },
+        html2canvas: { scale: scale, useCORS: true, logging: false, width: PDF_WIDTH },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
     }).from(container).save().then(function() {
