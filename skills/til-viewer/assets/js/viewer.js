@@ -575,7 +575,9 @@ function generatePDF(file) {
         '#pdf-render-wrapper{position:fixed;left:0;top:0;width:' + PDF_WIDTH + 'px;height:100vh;overflow:auto;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
         '#pdf-render-wrapper .content-inner{padding:0;margin:0;}' +
         '#pdf-render-wrapper pre{white-space:pre-wrap;word-break:break-all;}' +
-        '#pdf-render-wrapper pre code.hljs{white-space:pre-wrap;}';
+        '#pdf-render-wrapper pre code.hljs{white-space:pre-wrap;}' +
+        '#pdf-render-wrapper table{width:100%;table-layout:fixed;}' +
+        '#pdf-render-wrapper td,#pdf-render-wrapper th{word-break:break-word;overflow-wrap:break-word;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
