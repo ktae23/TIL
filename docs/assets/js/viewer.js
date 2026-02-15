@@ -624,14 +624,15 @@ function initKeyboardShortcuts() {
 // ========================================
 // PRINT (window.print 벡터 PDF)
 // ========================================
+var _originalTitle = null;
+
 function printDocument() {
     if (!state.currentFile) return;
     var file = findFileByPath(state.currentFile);
     if (!file) return;
-    var originalTitle = document.title;
+    _originalTitle = document.title;
     document.title = file.title;
     window.print();
-    document.title = originalTitle;
 }
 
 var _printQueue = null;
@@ -668,6 +669,10 @@ function _printNext() {
 }
 
 window.addEventListener('afterprint', function() {
+    if (_originalTitle !== null) {
+        document.title = _originalTitle;
+        _originalTitle = null;
+    }
     if (!_printQueue) return;
     _printQueue.idx++;
     if (_printQueue.idx < _printQueue.files.length) {
