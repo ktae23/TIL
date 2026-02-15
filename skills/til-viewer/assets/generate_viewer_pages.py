@@ -132,7 +132,7 @@ def main():
         </div>
     </div>
     <div class="quick-actions" id="quick-actions">
-        <button class="quick-btn" id="pdf-download-btn" onclick="downloadPDF()" title="PDF 다운로드 (P)" style="display:none">📥</button>
+        <button class="quick-btn" id="pdf-download-btn" onclick="printDocument()" title="인쇄 / PDF 저장 (P)" style="display:none">🖨️</button>
         <button class="quick-btn" onclick="showShortcuts()" title="단축키 (?)">?</button>
         <button class="quick-btn" onclick="scrollToTop()" title="맨 위로">&#8593;</button>
     </div>
@@ -143,7 +143,7 @@ def main():
         <div class="shortcut-item"><span>다음 문서</span><span class="shortcut-key">&#8594;</span></div>
         <div class="shortcut-item"><span>검색</span><span class="shortcut-key">Ctrl+K</span></div>
         <div class="shortcut-item"><span>테마 전환</span><span class="shortcut-key">T</span></div>
-        <div class="shortcut-item"><span>PDF 다운로드</span><span class="shortcut-key">P</span></div>
+        <div class="shortcut-item"><span>인쇄 / PDF 저장</span><span class="shortcut-key">P</span></div>
         <div class="shortcut-item"><span>맨 위로</span><span class="shortcut-key">Home</span></div>
         <div class="shortcut-item"><span>닫기</span><span class="shortcut-key">Esc</span></div>
     </div>
@@ -151,7 +151,6 @@ def main():
     <script src="assets/lib/marked.min.js"></script>
     <script src="assets/lib/fuse.min.js"></script>
     <script src="assets/lib/highlight/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
     <script>const TIL_DATA = {json_str};</script>
     <script src="assets/js/viewer.js?v={cache_bust}"></script>
 </body>

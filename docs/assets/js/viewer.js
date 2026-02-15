@@ -4,40 +4,6 @@
 // Note: TIL_DATA is injected inline in the HTML file
 
 // ========================================
-// PDF PRINT CSS (재사용 가능한 인쇄 스타일)
-// ========================================
-function getPrintCSS() {
-    return '@page { margin: 15mm; }' +
-    '* { margin:0; padding:0; box-sizing:border-box; }' +
-    'body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Roboto,sans-serif; color:#212529; line-height:1.6; background:#fff; }' +
-    '.content-inner { max-width:100%; }' +
-    '.content-inner h1 { font-size:2rem; margin-bottom:8px; padding-bottom:16px; border-bottom:2px solid #3182f6; }' +
-    '.content-inner h2 { font-size:1.5rem; margin:32px 0 16px; padding-bottom:8px; border-bottom:1px solid #dee2e6; }' +
-    '.content-inner h3 { font-size:1.25rem; margin:24px 0 12px; color:#3182f6; }' +
-    '.content-inner h4 { font-size:1.1rem; margin:20px 0 10px; }' +
-    '.content-inner p { margin-bottom:16px; }' +
-    '.content-inner ul,.content-inner ol { margin-bottom:16px; padding-left:24px; }' +
-    '.content-inner li { margin-bottom:8px; }' +
-    '.content-inner pre { background:#f4f4f5; border-radius:8px; padding:16px; overflow-x:auto; margin-bottom:16px; border:1px solid #dee2e6; line-height:1.45; page-break-inside:avoid; }' +
-    '.content-inner code { font-family:"SF Mono",Monaco,Consolas,"Courier New",monospace; font-size:0.9em; }' +
-    '.content-inner :not(pre)>code { background:#f4f4f5; padding:2px 6px; border-radius:4px; }' +
-    '.content-inner pre code { background:transparent; padding:0; }' +
-    '.content-inner blockquote { border-left:4px solid #3182f6; padding:12px 16px; margin:16px 0; color:#495057; background:#f8f9fa; border-radius:0 8px 8px 0; page-break-inside:avoid; }' +
-    '.content-inner table { width:100%; border-collapse:collapse; margin-bottom:16px; page-break-inside:auto; }' +
-    '.content-inner th,.content-inner td { border:1px solid #dee2e6; padding:10px 12px; text-align:left; }' +
-    '.content-inner th { background:#f8f9fa; font-weight:600; }' +
-    '.content-inner tr { page-break-inside:avoid; }' +
-    '.content-inner hr { border:none; border-top:1px solid #dee2e6; margin:32px 0; }' +
-    '.content-inner a { color:#3182f6; text-decoration:none; }' +
-    '.content-inner strong { color:#3182f6; }' +
-    '.content-inner img { max-width:100%; height:auto; page-break-inside:avoid; }' +
-    'h1,h2,h3,h4 { page-break-after:avoid; }' +
-    '.batch-doc + .batch-doc { page-break-before:always; }' +
-    'pre code.hljs{display:block;overflow-x:auto;padding:1em}code.hljs{padding:3px 5px}' +
-    '.hljs{color:#24292e;background:#fff}.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}.hljs-built_in,.hljs-symbol{color:#e36209}.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}.hljs-subst{color:#24292e}.hljs-section{color:#005cc5;font-weight:700}.hljs-bullet{color:#735c0f}.hljs-emphasis{color:#24292e;font-style:italic}.hljs-strong{color:#24292e;font-weight:700}.hljs-addition{color:#22863a;background-color:#f0fff4}.hljs-deletion{color:#b31d28;background-color:#ffeef0}';
-}
-
-// ========================================
 // APPLICATION STATE
 // ========================================
 const state = {
@@ -219,8 +185,16 @@ function buildFileList() {
             <span class="category-arrow ${isCollapsed ? '' : 'expanded'}">&#9654;</span>
             <span>${category}</span>
             <span class="category-count">(${totalCount})</span>
+            <span class="category-print-btn" title="${category} 전체 인쇄">&#128424;</span>
         `;
-        titleDiv.onclick = () => toggleCategory(category);
+        titleDiv.onclick = (e) => {
+            if (e.target.classList.contains('category-print-btn')) {
+                e.stopPropagation();
+                printCategory(category);
+                return;
+            }
+            toggleCategory(category);
+        };
 
         categoryDiv.appendChild(titleDiv);
 
@@ -638,7 +612,7 @@ function initKeyboardShortcuts() {
                 break;
             case 'p':
             case 'P':
-                downloadPDF();
+                printDocument();
                 break;
             case '?':
                 showShortcuts();
@@ -648,180 +622,60 @@ function initKeyboardShortcuts() {
 }
 
 // ========================================
-// PDF DOWNLOAD (html2pdf.js 페이지별 렌더링)
+// PRINT (window.print 벡터 PDF)
 // ========================================
-function downloadPDF() {
+function printDocument() {
+    if (!state.currentFile) return;
     var file = findFileByPath(state.currentFile);
     if (!file) return;
-
-    var btn = document.getElementById('pdf-download-btn');
-    btn.textContent = '⏳';
-    btn.disabled = true;
-
-    generatePDF(file).then(function() {
-        btn.textContent = '📥';
-        btn.disabled = false;
-    });
+    var originalTitle = document.title;
+    document.title = file.title;
+    window.print();
+    document.title = originalTitle;
 }
 
-function shrinkOverflowElements(container) {
-    var maxW = container.offsetWidth;
-    // table/pre 공통: 넘치면 transform scale로 축소 (padding 포함 전체 축소)
-    container.querySelectorAll('table, pre').forEach(function(el) {
-        // pre는 자연 너비 측정을 위해 wrapping 해제
-        if (el.tagName === 'PRE') {
-            el.style.whiteSpace = 'pre';
-            el.style.overflowX = 'visible';
-            el.style.width = 'max-content';
-            void el.offsetWidth;
-        }
-        var natural = el.tagName === 'PRE' ? el.offsetWidth : el.scrollWidth;
-        if (el.tagName === 'PRE') el.style.width = '';
-        if (natural > maxW + 2) {
-            var ratio = maxW / natural;
-            el.style.transformOrigin = 'top left';
-            el.style.transform = 'scale(' + ratio + ')';
-            el.style.marginBottom = '-' + (el.offsetHeight * (1 - ratio)) + 'px';
-            if (el.tagName === 'PRE') el.style.overflowX = 'hidden';
-        }
-    });
-}
+var _printQueue = null;
 
-function generatePDF(file) {
-    // A4 비율 viewport (794px = 210mm × 96/25.4) + 높은 scale로 선명한 PDF 생성
-    // 좁은 viewport → pixel budget 절약 → scale 3x 가능 → 288 DPI
-    var PDF_WIDTH = 794;
-    var TARGET_SCALE = 3;
-    var MAX_CANVAS_PX = 64000000;
-    var MIN_SCALE = 1.5;
+function printCategory(category) {
+    var catData = TIL_DATA.categories[category];
+    if (!catData) return;
 
-    var container = document.createElement('div');
-    container.className = 'content-inner';
-    container.innerHTML = '<div class="batch-doc">' + marked.parse(file.content) + '</div>';
-    container.querySelectorAll('pre code').forEach(function(block) {
-        hljs.highlightElement(block);
-    });
-    convertDiagramsToImages(container);
-
-    var wrapper = document.createElement('div');
-    wrapper.id = 'pdf-render-wrapper';
-    var style = document.createElement('style');
-    style.textContent = getPrintCSS() +
-        '#pdf-render-wrapper{position:fixed;left:0;top:0;width:' + PDF_WIDTH + 'px;height:100vh;overflow:auto;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
-        '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
-    wrapper.appendChild(style);
-    wrapper.appendChild(container);
-    document.body.appendChild(wrapper);
-
-    // 넓은 표/pre를 컨테이너에 맞게 자동 축소
-    shrinkOverflowElements(container);
-
-    var h = container.scrollHeight || 600;
-    var rawScale = Math.sqrt(MAX_CANVAS_PX / (PDF_WIDTH * h));
-    var scale = Math.min(TARGET_SCALE, Math.max(MIN_SCALE, Math.floor(rawScale * 10) / 10));
-    var effectiveDPI = Math.round(PDF_WIDTH * scale / 8.27);
-    console.log('[PDF] height=' + h + 'px, scale=' + scale + ', effectiveDPI=' + effectiveDPI);
-
-    return html2pdf().set({
-        margin: 10,
-        filename: file.title + '.pdf',
-        image: { type: 'png' },
-        html2canvas: { scale: scale, useCORS: true, logging: false, width: PDF_WIDTH },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-    }).from(container).save().then(function() {
-        wrapper.remove();
-    }).catch(function(err) {
-        console.error('PDF generation failed:', err);
-        wrapper.remove();
-    });
-}
-
-// ========================================
-// DIAGRAM TO PNG CONVERSION
-// ========================================
-var DIAGRAM_CHARS = /[─│┌┐└┘├┤┬┴┼┏┓┗┛┣┫┳┻╋═║╔╗╚╝╠╣╦╩╬▸▶◀◁△▽→←↑↓↔⇒⇐⇑⇓]/;
-var ASCII_DIAGRAM = /[\+\-\|]{4,}/;
-
-function isDiagramBlock(text) {
-    return DIAGRAM_CHARS.test(text) || (ASCII_DIAGRAM.test(text) && /\+.*\-.*\+/.test(text));
-}
-
-function preToImageDataURL(preEl) {
-    var text = preEl.textContent;
-    var lines = text.split('\n');
-    // 끝 빈줄 제거
-    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
-    if (lines.length === 0) return null;
-
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
-    var fontSize = 13;
-    var lineHeight = Math.ceil(fontSize * 1.55);
-    var font = fontSize + 'px Consolas, Monaco, "Courier New", monospace';
-    var padding = 16;
-    var dpr = 2;
-
-    // 최대 너비 측정
-    ctx.font = font;
-    var maxWidth = 0;
-    lines.forEach(function(line) {
-        var w = ctx.measureText(line).width;
-        if (w > maxWidth) maxWidth = w;
-    });
-
-    var totalW = maxWidth + padding * 2;
-    var totalH = lines.length * lineHeight + padding * 2;
-    canvas.width = totalW * dpr;
-    canvas.height = totalH * dpr;
-    ctx.scale(dpr, dpr);
-
-    // 배경
-    ctx.fillStyle = '#f4f4f5';
-    ctx.beginPath();
-    if (ctx.roundRect) {
-        ctx.roundRect(0, 0, totalW, totalH, 8);
-    } else {
-        ctx.rect(0, 0, totalW, totalH);
+    // 카테고리 내 모든 파일 수집 (직속 + 서브카테고리)
+    var files = [];
+    catData.files.forEach(function(f) { files.push(f); });
+    if (catData.subcategories) {
+        Object.keys(catData.subcategories).sort().forEach(function(sub) {
+            catData.subcategories[sub].files.forEach(function(f) { files.push(f); });
+        });
     }
-    ctx.fill();
+    if (files.length === 0) return;
 
-    // 테두리
-    ctx.strokeStyle = '#dee2e6';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    if (ctx.roundRect) {
-        ctx.roundRect(0.5, 0.5, totalW - 1, totalH - 1, 8);
-    } else {
-        ctx.rect(0.5, 0.5, totalW - 1, totalH - 1);
+    _printQueue = { files: files, idx: 0 };
+    _printNext();
+}
+
+function _printNext() {
+    if (!_printQueue || _printQueue.idx >= _printQueue.files.length) {
+        _printQueue = null;
+        return;
     }
-    ctx.stroke();
-
-    // 텍스트 렌더링
-    ctx.font = font;
-    ctx.fillStyle = '#24292e';
-    ctx.textBaseline = 'top';
-    lines.forEach(function(line, i) {
-        ctx.fillText(line, padding, padding + i * lineHeight);
-    });
-
-    return canvas.toDataURL('image/png');
+    var file = _printQueue.files[_printQueue.idx];
+    loadFile(file.path);
+    setTimeout(function() {
+        document.title = file.title;
+        window.print();
+    }, 300);
 }
 
-function convertDiagramsToImages(container) {
-    var preBlocks = container.querySelectorAll('pre');
-    preBlocks.forEach(function(pre) {
-        if (!isDiagramBlock(pre.textContent)) return;
-
-        var dataUrl = preToImageDataURL(pre);
-        if (!dataUrl) return;
-
-        var img = pre.ownerDocument.createElement('img');
-        img.src = dataUrl;
-        img.style.cssText = 'max-width:100%; height:auto; page-break-inside:avoid; display:block; margin-bottom:16px;';
-        pre.parentNode.replaceChild(img, pre);
-    });
-}
+window.addEventListener('afterprint', function() {
+    if (!_printQueue) return;
+    _printQueue.idx++;
+    if (_printQueue.idx < _printQueue.files.length) {
+        setTimeout(_printNext, 500);
+    } else {
+        _printQueue = null;
+    }
+});
 
 
 // ========================================
