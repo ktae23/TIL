@@ -285,6 +285,48 @@ body {
     display: none;
 }
 
+/* Subcategory */
+.subcategory {
+    margin-top: 4px;
+}
+
+.subcategory-title {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    padding-left: 20px;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.subcategory-title:hover {
+    color: var(--text-primary);
+}
+
+.subcategory-count {
+    margin-left: auto;
+    font-size: 0.65rem;
+    opacity: 0.7;
+}
+
+.subcategory-files {
+    display: block;
+}
+
+.subcategory-files.collapsed {
+    display: none;
+}
+
+.subcategory-files .file-item {
+    padding-left: 28px;
+}
+
 .file-item {
     display: block;
     padding: 10px 12px;

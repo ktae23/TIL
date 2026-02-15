@@ -58,9 +58,15 @@ function init() {
     // Build flat file order for arrow navigation
     buildFileOrder();
 
-    // 기본적으로 모든 카테고리를 닫힌 상태로 설정
+    // 기본적으로 모든 카테고리와 서브카테고리를 닫힌 상태로 설정
     Object.keys(TIL_DATA.categories).forEach(category => {
         state.collapsedCategories.add(category);
+        const subs = TIL_DATA.categories[category].subcategories;
+        if (subs) {
+            Object.keys(subs).forEach(sub => {
+                state.collapsedCategories.add(category + '/' + sub);
+            });
+        }
     });
 
     initFilter();
@@ -103,9 +109,17 @@ function buildFileOrder() {
     state.fileOrder = [];
     const categories = Object.keys(TIL_DATA.categories).sort();
     categories.forEach(category => {
-        TIL_DATA.categories[category].files.forEach(file => {
+        const catData = TIL_DATA.categories[category];
+        catData.files.forEach(file => {
             state.fileOrder.push(file.path);
         });
+        if (catData.subcategories) {
+            Object.keys(catData.subcategories).sort().forEach(sub => {
+                catData.subcategories[sub].files.forEach(file => {
+                    state.fileOrder.push(file.path);
+                });
+            });
+        }
     });
 }
 
@@ -139,11 +153,23 @@ function getFilteredData() {
 
     const filtered = {};
     for (const category in TIL_DATA.categories) {
-        const files = TIL_DATA.categories[category].files.filter(
+        const catData = TIL_DATA.categories[category];
+        const files = catData.files.filter(
             file => isWithinDays(file.createdAt, state.currentFilter)
         );
-        if (files.length > 0) {
-            filtered[category] = { files };
+        const subcategories = {};
+        if (catData.subcategories) {
+            for (const sub in catData.subcategories) {
+                const subFiles = catData.subcategories[sub].files.filter(
+                    file => isWithinDays(file.createdAt, state.currentFilter)
+                );
+                if (subFiles.length > 0) {
+                    subcategories[sub] = { files: subFiles };
+                }
+            }
+        }
+        if (files.length > 0 || Object.keys(subcategories).length > 0) {
+            filtered[category] = { files, subcategories };
         }
     }
     return filtered;
@@ -152,6 +178,16 @@ function getFilteredData() {
 // ========================================
 // FILE MANAGEMENT
 // ========================================
+function countCategoryFiles(categoryData) {
+    let count = categoryData.files.length;
+    if (categoryData.subcategories) {
+        for (const sub in categoryData.subcategories) {
+            count += categoryData.subcategories[sub].files.length;
+        }
+    }
+    return count;
+}
+
 function buildFileList() {
     const container = document.getElementById('file-list');
     container.innerHTML = '';
@@ -162,7 +198,7 @@ function buildFileList() {
     // 필터 적용 시 정보 표시
     if (state.currentFilter !== 'all') {
         const totalFiles = Object.values(filteredCategories)
-            .reduce((sum, cat) => sum + cat.files.length, 0);
+            .reduce((sum, cat) => sum + countCategoryFiles(cat), 0);
         const filterInfo = document.createElement('div');
         filterInfo.className = 'filter-info';
         filterInfo.textContent = `최근 ${state.currentFilter}일: ${totalFiles}개 문서`;
@@ -172,6 +208,7 @@ function buildFileList() {
     categories.forEach(category => {
         const categoryData = filteredCategories[category];
         const isCollapsed = state.collapsedCategories.has(category);
+        const totalCount = countCategoryFiles(categoryData);
 
         const categoryDiv = document.createElement('div');
         categoryDiv.className = 'category';
@@ -181,7 +218,7 @@ function buildFileList() {
         titleDiv.innerHTML = `
             <span class="category-arrow ${isCollapsed ? '' : 'expanded'}">&#9654;</span>
             <span>${category}</span>
-            <span class="category-count">(${categoryData.files.length})</span>
+            <span class="category-count">(${totalCount})</span>
         `;
         titleDiv.onclick = () => toggleCategory(category);
 
@@ -190,6 +227,7 @@ function buildFileList() {
         const fileList = document.createElement('div');
         fileList.className = `file-list ${isCollapsed ? 'collapsed' : ''}`;
 
+        // 직속 파일 렌더링
         categoryData.files.forEach(file => {
             const fileItem = document.createElement('div');
             fileItem.className = 'file-item';
@@ -203,6 +241,48 @@ function buildFileList() {
 
             fileList.appendChild(fileItem);
         });
+
+        // 서브카테고리 렌더링
+        if (categoryData.subcategories) {
+            Object.keys(categoryData.subcategories).sort().forEach(sub => {
+                const subData = categoryData.subcategories[sub];
+                const subKey = category + '/' + sub;
+                const isSubCollapsed = state.collapsedCategories.has(subKey);
+
+                const subDiv = document.createElement('div');
+                subDiv.className = 'subcategory';
+
+                const subTitle = document.createElement('div');
+                subTitle.className = 'subcategory-title';
+                subTitle.innerHTML = `
+                    <span class="category-arrow ${isSubCollapsed ? '' : 'expanded'}">&#9654;</span>
+                    <span>${sub}</span>
+                    <span class="subcategory-count">(${subData.files.length})</span>
+                `;
+                subTitle.onclick = () => toggleCategory(subKey);
+                subDiv.appendChild(subTitle);
+
+                const subFiles = document.createElement('div');
+                subFiles.className = `subcategory-files ${isSubCollapsed ? 'collapsed' : ''}`;
+
+                subData.files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.textContent = file.title;
+                    fileItem.title = file.createdAt ? `${file.title} (${file.createdAt})` : file.title;
+                    fileItem.onclick = () => loadFile(file.path);
+
+                    if (state.currentFile === file.path) {
+                        fileItem.classList.add('active');
+                    }
+
+                    subFiles.appendChild(fileItem);
+                });
+
+                subDiv.appendChild(subFiles);
+                fileList.appendChild(subDiv);
+            });
+        }
 
         categoryDiv.appendChild(fileList);
         container.appendChild(categoryDiv);
@@ -220,8 +300,15 @@ function toggleCategory(category) {
 
 function findFileByPath(path) {
     for (const category in TIL_DATA.categories) {
-        const file = TIL_DATA.categories[category].files.find(f => f.path === path);
+        const catData = TIL_DATA.categories[category];
+        const file = catData.files.find(f => f.path === path);
         if (file) return file;
+        if (catData.subcategories) {
+            for (const sub in catData.subcategories) {
+                const subFile = catData.subcategories[sub].files.find(f => f.path === path);
+                if (subFile) return subFile;
+            }
+        }
     }
     return null;
 }
@@ -238,10 +325,17 @@ function loadFile(filePath, options = {}) {
         updateHash(filePath);
     }
 
-    // 해당 카테고리 자동 펼치기
-    const category = filePath.split('/')[0];
+    // 해당 카테고리 + 서브카테고리 자동 펼치기
+    const pathParts = filePath.split('/');
+    const category = pathParts[0];
     if (state.collapsedCategories.has(category)) {
         state.collapsedCategories.delete(category);
+    }
+    if (pathParts.length >= 3) {
+        const subKey = pathParts[0] + '/' + pathParts[1];
+        if (state.collapsedCategories.has(subKey)) {
+            state.collapsedCategories.delete(subKey);
+        }
     }
 
     // Render markdown
@@ -296,15 +390,31 @@ function initSearch() {
     const searchItems = [];
 
     for (const category in TIL_DATA.categories) {
-        TIL_DATA.categories[category].files.forEach(file => {
+        const catData = TIL_DATA.categories[category];
+        catData.files.forEach(file => {
             searchItems.push({
                 path: file.path,
                 title: file.title,
                 filename: file.filename,
                 category: category,
+                subcategory: null,
                 content: file.content
             });
         });
+        if (catData.subcategories) {
+            for (const sub in catData.subcategories) {
+                catData.subcategories[sub].files.forEach(file => {
+                    searchItems.push({
+                        path: file.path,
+                        title: file.title,
+                        filename: file.filename,
+                        category: category,
+                        subcategory: sub,
+                        content: file.content
+                    });
+                });
+            }
+        }
     }
 
     state.searchIndex = new Fuse(searchItems, {
@@ -371,7 +481,9 @@ function performSearch(query) {
 
         const metaDiv = document.createElement('div');
         metaDiv.className = 'search-result-meta';
-        metaDiv.textContent = `${item.category} / ${item.filename}`;
+        metaDiv.textContent = item.subcategory
+            ? `${item.category} / ${item.subcategory} / ${item.filename}`
+            : `${item.category} / ${item.filename}`;
 
         resultDiv.appendChild(titleDiv);
         resultDiv.appendChild(metaDiv);
@@ -552,6 +664,35 @@ function downloadPDF() {
     });
 }
 
+function shrinkOverflowElements(container) {
+    var maxW = container.offsetWidth;
+    // 표: 넘치면 transform scale로 축소
+    container.querySelectorAll('table').forEach(function(table) {
+        if (table.scrollWidth > maxW) {
+            var ratio = maxW / table.scrollWidth;
+            table.style.transformOrigin = 'top left';
+            table.style.transform = 'scale(' + ratio + ')';
+            table.style.marginBottom = '-' + (table.offsetHeight * (1 - ratio)) + 'px';
+        }
+    });
+    // pre: overflow 측정 → font-size 축소로 한 줄 유지
+    container.querySelectorAll('pre').forEach(function(pre) {
+        // pre-wrap 해제하고 자연 너비 측정
+        pre.style.whiteSpace = 'pre';
+        pre.style.overflowX = 'visible';
+        var natural = pre.scrollWidth;
+        if (natural > maxW) {
+            var ratio = maxW / natural;
+            pre.style.fontSize = Math.max(ratio * 100, 50) + '%';
+        }
+        // 축소 후에도 넘치면 pre-wrap으로 fallback
+        if (pre.scrollWidth > maxW + 2) {
+            pre.style.whiteSpace = 'pre-wrap';
+            pre.style.wordBreak = 'break-all';
+        }
+    });
+}
+
 function generatePDF(file) {
     // A4 비율 viewport (794px = 210mm × 96/25.4) + 높은 scale로 선명한 PDF 생성
     // 좁은 viewport → pixel budget 절약 → scale 3x 가능 → 288 DPI
@@ -573,14 +714,13 @@ function generatePDF(file) {
     var style = document.createElement('style');
     style.textContent = getPrintCSS() +
         '#pdf-render-wrapper{position:fixed;left:0;top:0;width:' + PDF_WIDTH + 'px;height:100vh;overflow:auto;background:#fff;z-index:99999;opacity:0;pointer-events:none;padding:15mm;}' +
-        '#pdf-render-wrapper .content-inner{padding:0;margin:0;}' +
-        '#pdf-render-wrapper pre{white-space:pre-wrap;word-break:break-all;}' +
-        '#pdf-render-wrapper pre code.hljs{white-space:pre-wrap;}' +
-        '#pdf-render-wrapper table{width:100%;table-layout:fixed;}' +
-        '#pdf-render-wrapper td,#pdf-render-wrapper th{word-break:break-word;overflow-wrap:break-word;}';
+        '#pdf-render-wrapper .content-inner{padding:0;margin:0;}';
     wrapper.appendChild(style);
     wrapper.appendChild(container);
     document.body.appendChild(wrapper);
+
+    // 넓은 표/pre를 컨테이너에 맞게 자동 축소
+    shrinkOverflowElements(container);
 
     var h = container.scrollHeight || 600;
     var rawScale = Math.sqrt(MAX_CANVAS_PX / (PDF_WIDTH * h));

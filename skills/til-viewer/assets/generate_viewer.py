@@ -56,6 +56,7 @@ def main():
 
         category = parts[0]
         filename = parts[-1]
+        subcategory = parts[1] if len(parts) >= 3 else None
 
         with open(md_file, "r", encoding="utf-8") as f:
             content = f.read()
@@ -70,7 +71,7 @@ def main():
         total_lines += lines
 
         if category not in categories:
-            categories[category] = {"files": []}
+            categories[category] = {"files": [], "subcategories": {}}
 
         # 파일 생성일 가져오기
         file_stat = os.stat(md_file)
@@ -80,7 +81,7 @@ def main():
             created_ts = file_stat.st_mtime
         created_at = datetime.fromtimestamp(created_ts).strftime("%Y-%m-%d")
 
-        categories[category]["files"].append({
+        file_entry = {
             "filename": filename,
             "title": title,
             "path": rel_path,
@@ -88,13 +89,23 @@ def main():
             "size": len(content.encode("utf-8")),
             "lines": lines,
             "createdAt": created_at
-        })
+        }
+
+        if subcategory:
+            if subcategory not in categories[category]["subcategories"]:
+                categories[category]["subcategories"][subcategory] = {"files": []}
+            categories[category]["subcategories"][subcategory]["files"].append(file_entry)
+        else:
+            categories[category]["files"].append(file_entry)
 
     # 2. JSON 데이터 생성
     til_data = {
         "categories": categories,
         "metadata": {
-            "totalFiles": sum(len(cat["files"]) for cat in categories.values()),
+            "totalFiles": sum(
+                len(cat["files"]) + sum(len(sub["files"]) for sub in cat.get("subcategories", {}).values())
+                for cat in categories.values()
+            ),
             "totalCategories": len(categories),
             "totalLines": total_lines,
             "generatedAt": datetime.now().isoformat()
