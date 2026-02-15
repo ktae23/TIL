@@ -666,29 +666,23 @@ function downloadPDF() {
 
 function shrinkOverflowElements(container) {
     var maxW = container.offsetWidth;
-    // 표: 넘치면 transform scale로 축소
-    container.querySelectorAll('table').forEach(function(table) {
-        if (table.scrollWidth > maxW) {
-            var ratio = maxW / table.scrollWidth;
-            table.style.transformOrigin = 'top left';
-            table.style.transform = 'scale(' + ratio + ')';
-            table.style.marginBottom = '-' + (table.offsetHeight * (1 - ratio)) + 'px';
+    // table/pre 공통: 넘치면 transform scale로 축소 (padding 포함 전체 축소)
+    container.querySelectorAll('table, pre').forEach(function(el) {
+        // pre는 자연 너비 측정을 위해 wrapping 해제
+        if (el.tagName === 'PRE') {
+            el.style.whiteSpace = 'pre';
+            el.style.overflowX = 'visible';
+            el.style.width = 'max-content';
+            void el.offsetWidth;
         }
-    });
-    // pre: overflow 측정 → font-size 축소로 한 줄 유지
-    container.querySelectorAll('pre').forEach(function(pre) {
-        // pre-wrap 해제하고 자연 너비 측정
-        pre.style.whiteSpace = 'pre';
-        pre.style.overflowX = 'visible';
-        var natural = pre.scrollWidth;
-        if (natural > maxW) {
+        var natural = el.tagName === 'PRE' ? el.offsetWidth : el.scrollWidth;
+        if (el.tagName === 'PRE') el.style.width = '';
+        if (natural > maxW + 2) {
             var ratio = maxW / natural;
-            pre.style.fontSize = Math.max(ratio * 100, 50) + '%';
-        }
-        // 축소 후에도 넘치면 pre-wrap으로 fallback
-        if (pre.scrollWidth > maxW + 2) {
-            pre.style.whiteSpace = 'pre-wrap';
-            pre.style.wordBreak = 'break-all';
+            el.style.transformOrigin = 'top left';
+            el.style.transform = 'scale(' + ratio + ')';
+            el.style.marginBottom = '-' + (el.offsetHeight * (1 - ratio)) + 'px';
+            if (el.tagName === 'PRE') el.style.overflowX = 'hidden';
         }
     });
 }
