@@ -15,6 +15,14 @@ const state = {
     fileOrder: []  // flat list of all file paths for arrow nav
 };
 
+function sortSubcategories(keys) {
+    return keys.sort((a, b) => {
+        if (a === 'main') return -1;
+        if (b === 'main') return 1;
+        return a.localeCompare(b);
+    });
+}
+
 // ========================================
 // INITIALIZATION
 // ========================================
@@ -80,7 +88,7 @@ function buildFileOrder() {
             state.fileOrder.push(file.path);
         });
         if (catData.subcategories) {
-            Object.keys(catData.subcategories).sort().forEach(sub => {
+            sortSubcategories(Object.keys(catData.subcategories)).forEach(sub => {
                 catData.subcategories[sub].files.forEach(file => {
                     state.fileOrder.push(file.path);
                 });
@@ -218,7 +226,7 @@ function buildFileList() {
 
         // 서브카테고리 렌더링
         if (categoryData.subcategories) {
-            Object.keys(categoryData.subcategories).sort().forEach(sub => {
+            sortSubcategories(Object.keys(categoryData.subcategories)).forEach(sub => {
                 const subData = categoryData.subcategories[sub];
                 const subKey = category + '/' + sub;
                 const isSubCollapsed = state.collapsedCategories.has(subKey);
@@ -645,7 +653,7 @@ function printCategory(category) {
     var files = [];
     catData.files.forEach(function(f) { files.push(f); });
     if (catData.subcategories) {
-        Object.keys(catData.subcategories).sort().forEach(function(sub) {
+        sortSubcategories(Object.keys(catData.subcategories)).forEach(function(sub) {
             catData.subcategories[sub].files.forEach(function(f) { files.push(f); });
         });
     }
