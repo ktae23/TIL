@@ -621,7 +621,7 @@ verify(mock).method(argCaptor.capture());
 assertThat(argCaptor.getValue()).isEqualTo(expected);
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: Mock과 Stub의 차이점은?**
    - A: Stub은 미리 정해진 응답 반환(상태 검증), Mock은 기대 행위 설정 후 검증(행위 검증). Mockito에서는 when으로 Stub, verify로 Mock 패턴 구현

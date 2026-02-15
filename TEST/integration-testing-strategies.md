@@ -604,7 +604,7 @@ class TransactionalTest {
 □ 병렬 실행 가능 여부 확인
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: @SpringBootTest와 @WebMvcTest의 차이점은?**
    - A: @SpringBootTest는 전체 컨텍스트 로드, @WebMvcTest는 Web 레이어만. 속도는 @WebMvcTest가 빠르고, 전체 흐름 테스트는 @SpringBootTest

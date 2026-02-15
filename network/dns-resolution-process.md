@@ -376,7 +376,7 @@ resource "aws_route53_record" "failover_secondary" {
 | DR 구성 | Failover |
 | 고가용성 + 헬스 체크 | Multivalue Answer |
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: DNS 질의 과정을 설명해주세요**
    - A: 브라우저 캐시 → OS 캐시 → Local DNS → (Root → TLD → Authoritative) 순서로 질의하며, Local DNS가 반복 질의 수행

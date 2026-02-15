@@ -516,7 +516,7 @@ public class OrderEventPublisher {
 □ 커스텀 Span 필요 시 추가
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: TraceId와 SpanId의 차이점은?**
    - A: TraceId는 전체 요청 흐름을 식별하는 고유 ID (모든 서비스에서 동일). SpanId는 Trace 내 개별 작업 단위 식별. ParentSpanId로 계층 구조 표현

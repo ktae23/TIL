@@ -596,7 +596,7 @@ public class SagaMonitoringService {
 □ 보상 불가능한 액션 마지막 배치
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: Saga 패턴이 필요한 이유는?**
    - A: MSA에서 2PC(Two-Phase Commit)는 블로킹, 단일 장애점 문제. Saga는 로컬 트랜잭션 + 보상으로 최종 일관성 달성, 높은 가용성 유지

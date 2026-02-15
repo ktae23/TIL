@@ -479,7 +479,7 @@ ls -la /proc/12345/fd | wc -l
 | 간헐적 오류 | mtr | tcpdump -w | 로그 분석 |
 | 느린 응답 | curl 시간 | tcpdump | 애플리케이션 로그 |
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: CLOSE_WAIT 상태가 많을 때 원인과 해결 방법은?**
    - A: 애플리케이션에서 소켓을 close()하지 않음. 코드에서 try-with-resources 사용, 커넥션 풀 반환 로직 확인

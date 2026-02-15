@@ -682,7 +682,7 @@ class RandomOrderTest {
 | @EnumSource | Enum 값 |
 | @ArgumentsSource | 커스텀 Provider |
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: JUnit 4와 JUnit 5의 주요 차이점은?**
    - A: JUnit 5는 모듈화(Platform, Jupiter, Vintage), 람다 지원, @Nested, @DisplayName, @ParameterizedTest, Extension 모델 등 추가. @Before→@BeforeEach, @RunWith→@ExtendWith

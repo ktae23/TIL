@@ -52,7 +52,7 @@ Kubernetes의 핵심 개념부터 Spring Boot 배포, Helm, 스케일링, AWS EK
   - [8.2 로그 수집](#82-로그-수집)
   - [8.3 Pod 디버깅](#83-pod-디버깅)
 - [핵심 정리](#핵심-정리)
-- [면접 대비 핵심 질문](#면접-대비-핵심-질문)
+- [실무 기반 핵심 질문](#실무-기반-핵심-질문)
 
 ---
 
@@ -2691,7 +2691,7 @@ kubectl logs -n kube-system -l k8s-app=kube-proxy --tail=50
 
 ---
 
-## 면접 대비 핵심 질문
+## 실무 기반 핵심 질문
 
 ### Q1. Pod, Container, Node의 관계를 설명해주세요.
 

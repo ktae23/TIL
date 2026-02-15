@@ -252,7 +252,7 @@ sysctl -w net.ipv4.tcp_congestion_control=bbr
 | 결정자 | 수신자 | 송신자 |
 | 실제 윈도우 | min(rwnd, cwnd) | - |
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: 왜 연결 종료에는 4-way가 필요한가?**
    - A: 양방향 스트림이므로 각 방향별로 FIN/ACK가 필요. 한쪽이 종료해도 다른 쪽은 데이터 전송 가능 (Half-Close)

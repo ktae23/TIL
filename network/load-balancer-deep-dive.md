@@ -506,7 +506,7 @@ resource "aws_lb_listener_rule" "admin" {
   → No: 다른 알고리즘 고려
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: L4와 L7 로드 밸런서의 차이점은?**
    - A: L4는 TCP/UDP 레벨에서 IP, Port 기반 라우팅. L7은 HTTP 레벨에서 URL, 헤더, 쿠키 기반 라우팅. L4가 더 빠르고, L7이 더 유연함

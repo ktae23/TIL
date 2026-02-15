@@ -646,7 +646,7 @@ public class AsyncService {
 □ 예외 처리 후 롤백이 필요하면 예외를 다시 던지는가?
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: @Transactional의 동작 원리는?**
    - A: Spring AOP 기반 프록시로 동작. 메서드 호출 시 프록시가 트랜잭션을 시작하고, 정상 종료 시 커밋, RuntimeException 시 롤백

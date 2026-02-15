@@ -629,7 +629,7 @@ public class OrderService {
 5. TimeLimiter: 전체 타임아웃
 ```
 
-### 면접 대비 핵심 질문
+### 실무 기반 핵심 질문
 
 1. **Q: 서킷 브레이커의 상태와 전이 조건을 설명해주세요**
    - A: CLOSED(정상) → 실패율 초과 → OPEN(차단) → 대기 시간 후 → HALF-OPEN(테스트) → 성공 시 CLOSED, 실패 시 OPEN
