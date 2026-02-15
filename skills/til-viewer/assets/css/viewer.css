@@ -725,6 +725,23 @@ body {
         display: block;
     }
 
+    .menu-toggle, .menu-button {
+        display: block;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 60px;
+        height: calc(100vh - 60px);
+        z-index: 50;
+        transition: left 0.3s;
+    }
+
+    .sidebar.open {
+        left: 0;
+    }
+
     .toc-panel {
         position: fixed;
         right: -260px;
@@ -743,25 +760,8 @@ body {
 }
 
 @media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        left: -280px;
-        top: 60px;
-        height: calc(100vh - 60px);
-        z-index: 50;
-        transition: left 0.3s;
-    }
-
-    .sidebar.open {
-        left: 0;
-    }
-
     .content-area {
         padding: 24px;
-    }
-
-    .menu-toggle, .menu-button {
-        display: block;
     }
 
     .header h1 {
