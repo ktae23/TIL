@@ -191,6 +191,10 @@ body {
     transition: opacity 0.2s;
 }
 
+.special-link + .special-link {
+    margin-top: 8px;
+}
+
 .special-link:hover {
     opacity: 0.9;
 }
@@ -744,6 +748,10 @@ body {
 
     .search-container {
         max-width: 200px;
+    }
+
+    .category-print-btn {
+        opacity: 0.5;
     }
 
     .quick-actions {
