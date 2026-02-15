@@ -1,1 +1,0 @@
-../spring/jpa-basics.md

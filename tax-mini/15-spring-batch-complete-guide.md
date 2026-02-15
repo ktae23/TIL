@@ -1,1 +1,0 @@
-../spring/spring-batch-complete-guide.md

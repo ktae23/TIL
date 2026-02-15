@@ -1,1 +1,0 @@
-../security/jwt-jwk-oauth-comparison.md

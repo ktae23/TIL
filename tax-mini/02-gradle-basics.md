@@ -1,1 +1,0 @@
-../build-tool/gradle-basics.md

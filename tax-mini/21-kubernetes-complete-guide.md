@@ -1,1 +1,0 @@
-../cloud/kubernetes-complete-guide.md

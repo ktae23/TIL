@@ -1,1 +1,0 @@
-../MSA/kafka-complete-guide.md

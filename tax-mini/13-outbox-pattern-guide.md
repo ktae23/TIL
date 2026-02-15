@@ -1,1 +1,0 @@
-../MSA/outbox-pattern-guide.md
