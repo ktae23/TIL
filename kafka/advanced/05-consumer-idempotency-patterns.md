@@ -474,6 +474,271 @@ public class IdempotentConsumerConfig {
 }
 ```
 
+### 4.3 DLT 수동 재처리 Admin API
+
+DLT에 쌓인 메시지는 자동으로 사라지지 않는다. 운영팀이 개별 메시지를 검토하고, 문제를 수정한 후 원본 토픽에 재투입하거나, 의도적으로 폐기하는 Admin API가 필요하다.
+
+#### DLT 메시지 상태 관리
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING : DLT 메시지 수신
+    PENDING --> REVIEWING : 운영자 검토 시작
+    REVIEWING --> RETRIED : 원본 토픽에 재투입
+    REVIEWING --> DISCARDED : 의도적 폐기
+    RETRIED --> [*]
+    DISCARDED --> [*]
+```
+
+```java
+public enum DltMessageStatus {
+    PENDING,     // DLT에 수신되어 대기 중
+    REVIEWING,   // 운영자가 검토 중
+    RETRIED,     // 원본 토픽에 재투입 완료
+    DISCARDED    // 의도적으로 폐기됨
+}
+```
+
+#### DLT 메시지 엔티티
+
+```java
+@Entity
+@Table(name = "dlt_messages")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class DltMessage {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "original_topic", nullable = false)
+    private String originalTopic;
+
+    @Column(name = "original_partition", nullable = false)
+    private int originalPartition;
+
+    @Column(name = "original_offset", nullable = false)
+    private long originalOffset;
+
+    @Column(name = "message_key")
+    private String key;
+
+    @Column(name = "payload", nullable = false, columnDefinition = "TEXT")
+    private String payload;
+
+    @Column(name = "error_message")
+    private String errorMessage;
+
+    @Column(name = "error_stack_trace", columnDefinition = "TEXT")
+    private String errorStackTrace;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private DltMessageStatus status;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
+
+    @Column(name = "reviewed_by")
+    private String reviewedBy;
+
+    @Column(name = "discard_reason")
+    private String discardReason;
+
+    public static DltMessage create(String originalTopic, int originalPartition,
+                                     long originalOffset, String key,
+                                     String payload, String errorMessage,
+                                     String errorStackTrace) {
+        DltMessage msg = new DltMessage();
+        msg.originalTopic = originalTopic;
+        msg.originalPartition = originalPartition;
+        msg.originalOffset = originalOffset;
+        msg.key = key;
+        msg.payload = payload;
+        msg.errorMessage = errorMessage;
+        msg.errorStackTrace = errorStackTrace;
+        msg.status = DltMessageStatus.PENDING;
+        msg.createdAt = LocalDateTime.now();
+        return msg;
+    }
+
+    public void markReviewing(String reviewer) {
+        this.status = DltMessageStatus.REVIEWING;
+        this.reviewedAt = LocalDateTime.now();
+        this.reviewedBy = reviewer;
+    }
+
+    public void markRetried() {
+        this.status = DltMessageStatus.RETRIED;
+    }
+
+    public void markDiscarded(String reason) {
+        this.status = DltMessageStatus.DISCARDED;
+        this.discardReason = reason;
+    }
+}
+```
+
+#### DLT 메시지 Repository
+
+```java
+public interface DltMessageRepository extends JpaRepository<DltMessage, Long> {
+
+    Page<DltMessage> findByStatus(DltMessageStatus status, Pageable pageable);
+
+    long countByStatus(DltMessageStatus status);
+
+    @Query("SELECT d.status, COUNT(d) FROM DltMessage d GROUP BY d.status")
+    List<Object[]> countByStatusGrouped();
+
+    @Query("SELECT CAST(d.createdAt AS date), COUNT(d) FROM DltMessage d " +
+           "WHERE d.createdAt >= :since GROUP BY CAST(d.createdAt AS date) ORDER BY 1")
+    List<Object[]> countDailyDltMessages(@Param("since") LocalDateTime since);
+}
+```
+
+#### DLT Consumer: DLT 토픽 메시지를 DB에 수집
+
+```java
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class DltMessageCollector {
+
+    private final DltMessageRepository dltMessageRepository;
+
+    @KafkaListener(topics = "payment.completed.DLT", groupId = "dlt-collector")
+    public void collectDltMessage(ConsumerRecord<String, String> record,
+                                   @Header(KafkaHeaders.DLT_ORIGINAL_TOPIC) String originalTopic,
+                                   @Header(KafkaHeaders.DLT_ORIGINAL_PARTITION) int originalPartition,
+                                   @Header(KafkaHeaders.DLT_ORIGINAL_OFFSET) long originalOffset,
+                                   @Header(KafkaHeaders.DLT_EXCEPTION_MESSAGE) String errorMessage,
+                                   @Header(value = KafkaHeaders.DLT_EXCEPTION_STACKTRACE,
+                                           required = false) String errorStackTrace) {
+
+        DltMessage dltMessage = DltMessage.create(
+                originalTopic, originalPartition, originalOffset,
+                record.key(), record.value(),
+                errorMessage, errorStackTrace);
+
+        dltMessageRepository.save(dltMessage);
+        log.info("DLT 메시지 수집 완료 - originalTopic: {}, originalOffset: {}",
+                originalTopic, originalOffset);
+    }
+}
+```
+
+#### Admin REST API
+
+```java
+@RestController
+@RequestMapping("/api/admin/dlt")
+@RequiredArgsConstructor
+@Slf4j
+public class DltAdminController {
+
+    private final DltMessageRepository dltMessageRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    /**
+     * DLT 메시지 목록 조회 (상태별 필터)
+     * GET /api/admin/dlt/messages?status=PENDING&page=0&size=20
+     */
+    @GetMapping("/messages")
+    public Page<DltMessage> getMessages(
+            @RequestParam(required = false) DltMessageStatus status,
+            Pageable pageable) {
+        if (status != null) {
+            return dltMessageRepository.findByStatus(status, pageable);
+        }
+        return dltMessageRepository.findAll(pageable);
+    }
+
+    /**
+     * DLT 메시지 상태를 REVIEWING으로 변경
+     * PUT /api/admin/dlt/messages/{id}/review
+     */
+    @PutMapping("/messages/{id}/review")
+    @Transactional
+    public DltMessage reviewMessage(@PathVariable Long id,
+                                     @RequestParam String reviewer) {
+        DltMessage msg = dltMessageRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "DLT 메시지를 찾을 수 없습니다: " + id));
+
+        if (msg.getStatus() != DltMessageStatus.PENDING) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "PENDING 상태의 메시지만 검토할 수 있습니다.");
+        }
+
+        msg.markReviewing(reviewer);
+        return dltMessageRepository.save(msg);
+    }
+
+    /**
+     * 원본 토픽에 재투입 (핵심: 원본 eventId를 유지하여 멱등성 보장)
+     * POST /api/admin/dlt/messages/{id}/retry
+     */
+    @PostMapping("/messages/{id}/retry")
+    @Transactional
+    public DltMessage retryMessage(@PathVariable Long id) {
+        DltMessage msg = dltMessageRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "DLT 메시지를 찾을 수 없습니다: " + id));
+
+        if (msg.getStatus() != DltMessageStatus.REVIEWING) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "REVIEWING 상태의 메시지만 재투입할 수 있습니다.");
+        }
+
+        // 원본 eventId를 그대로 사용 → Consumer의 멱등성 로직이 중복 방지
+        kafkaTemplate.send(msg.getOriginalTopic(), msg.getKey(), msg.getPayload());
+        msg.markRetried();
+
+        log.info("DLT 메시지 재투입 완료 - id: {}, originalTopic: {}", id, msg.getOriginalTopic());
+        return dltMessageRepository.save(msg);
+    }
+
+    /**
+     * 의도적 폐기 (사유 기록)
+     * POST /api/admin/dlt/messages/{id}/discard
+     */
+    @PostMapping("/messages/{id}/discard")
+    @Transactional
+    public DltMessage discardMessage(@PathVariable Long id,
+                                      @RequestParam String reason) {
+        DltMessage msg = dltMessageRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "DLT 메시지를 찾을 수 없습니다: " + id));
+
+        if (msg.getStatus() != DltMessageStatus.REVIEWING) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "REVIEWING 상태의 메시지만 폐기할 수 있습니다.");
+        }
+
+        msg.markDiscarded(reason);
+
+        log.info("DLT 메시지 폐기 - id: {}, reason: {}", id, reason);
+        return dltMessageRepository.save(msg);
+    }
+}
+```
+
+#### 대시보드 UI 기본 사양
+
+DLT 관리 대시보드는 다음 기능을 제공한다:
+
+| 구성요소 | 설명 |
+|---------|------|
+| DLT 메시지 목록 | 상태별 필터 (PENDING / REVIEWING / RETRIED / DISCARDED) |
+| 메시지 상세 보기 | payload 원문 + errorStackTrace 확인 |
+| 재투입/폐기 버튼 | 검토 후 원본 토픽 재투입 또는 사유 기입 후 폐기 |
+| DLT 발생 추이 차트 | 일간/주간 DLT 발생 건수 추이 시각화 |
+
 ## 5. 정리
 
 | 항목 | 설명 |
@@ -486,6 +751,7 @@ public class IdempotentConsumerConfig {
 | Redis 중복 검사 | DB 조회 비용 절감, TTL 기반 시간 윈도우 적용, SETNX로 원자적 확인 |
 | Bloom Filter | 대규모 환경에서 메모리 효율적 중복 검사, false positive에 대한 2차 확인 필요 |
 | 실전 권장 조합 | Redis(1차 빠른 필터) + DB Unique Constraint(2차 확실한 보장) + DLT(실패 처리) |
+| DLT 재처리 | Admin API로 DLT 메시지 검토/재투입/폐기 관리, 원본 eventId 유지로 멱등성 보장 |
 
 ---
 *참고: Apache Kafka 3.x / Spring Boot 3.x 기준*

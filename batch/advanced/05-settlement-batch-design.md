@@ -163,6 +163,132 @@ public Tasklet validationTasklet(
 - 허용 오차(tolerance)를 0.01%로 설정하여 소수점 반올림 차이를 허용
 - 검증 결과를 `ExecutionContext`에 저장하여 후속 Step에서 참조
 
+### Cut-off 전략: 정산 대상 스냅샷 고정
+
+정산 집계 중에 새로운 거래가 추가되면 SUM 결과가 달라져 금액 오차가 발생한다. 예를 들어 집계 쿼리 실행 시점에 따라 동일 정산 기간의 총매출이 100만원에서 102만원으로 바뀔 수 있다. 이를 방지하려면 **정산 대상 거래를 스냅샷으로 고정**해야 한다.
+
+`settled_batch_id` 컬럼을 사용하여 정산 대상을 마킹하면, 이후 집계 Step은 해당 배치 ID로 마킹된 거래만 조회하므로 일관된 결과를 보장한다.
+
+#### Cut-off SQL
+
+```sql
+-- 정산 대상 거래를 배치 ID로 마킹 (스냅샷 고정)
+UPDATE transactions
+SET settled_batch_id = :batchId
+WHERE settled_batch_id IS NULL
+  AND status = 'COMPLETED'
+  AND completed_at BETWEEN :start AND :end;
+```
+
+동시에 여러 정산 배치가 실행될 수 있는 환경에서는 `FOR UPDATE SKIP LOCKED` 패턴으로 충돌을 방지한다:
+
+```sql
+-- 동시 실행 배치 간 충돌 방지
+SELECT id FROM transactions
+WHERE settled_batch_id IS NULL
+  AND status = 'COMPLETED'
+  AND completed_at BETWEEN :start AND :end
+FOR UPDATE SKIP LOCKED;
+```
+
+#### Cut-off Tasklet 구현
+
+```java
+/**
+ * Best Practice: 정산 대상 스냅샷 고정
+ * - 집계 전에 대상 거래를 배치 ID로 마킹
+ * - 이후 모든 집계 쿼리는 settled_batch_id = :batchId 조건으로 조회
+ * - 동시 실행 배치 간 데이터 충돌 방지
+ */
+@Bean
+@StepScope
+public Tasklet cutoffTasklet(
+        @Value("#{jobParameters['periodStart']}") String periodStart,
+        @Value("#{jobParameters['periodEnd']}") String periodEnd) {
+
+    return (contribution, chunkContext) -> {
+        // 유니크한 배치 ID 생성
+        String batchId = String.format("SETTLE_%s_%s_%d",
+                periodStart, periodEnd, System.currentTimeMillis());
+
+        // 정산 대상 거래를 배치 ID로 마킹 (스냅샷 고정)
+        int markedCount = jdbcTemplate.update(
+                "UPDATE transactions SET settled_batch_id = ? " +
+                "WHERE settled_batch_id IS NULL " +
+                "AND status = 'COMPLETED' " +
+                "AND completed_at BETWEEN ? AND ?",
+                batchId, periodStart, periodEnd);
+
+        log.info("정산 대상 마킹 완료 - batchId: {}, 건수: {}", batchId, markedCount);
+
+        // 후속 Step에서 사용할 수 있도록 ExecutionContext에 저장
+        chunkContext.getStepContext().getStepExecution()
+                .getJobExecution().getExecutionContext()
+                .put("settleBatchId", batchId);
+
+        return RepeatStatus.FINISHED;
+    };
+}
+```
+
+이후 집계 Step은 `settled_batch_id = :batchId` 조건으로만 조회하여 일관된 스냅샷 기반 집계를 수행한다.
+
+### 금액 이중 검증 (Cross-Check)
+
+정산에서 가장 위험한 것은 **잘못된 금액이 지급되는 것**이다. 집계 결과를 무조건 신뢰하지 말고, 건별 합산과 집계 결과를 이중으로 검증한다.
+
+**검증 공식:** `SUM(건별 netAmount) == 집계 총 netAmount`
+
+```java
+/**
+ * Best Practice: 금액 이중 검증 (Cross-Check)
+ * - 건별 합산 vs 집계 결과 비교
+ * - 불일치 시 배치 즉시 중단 + 알림
+ * - 정산은 "의심스러우면 멈추는 것"이 원칙
+ */
+@Bean
+@StepScope
+public Tasklet crossCheckTasklet(
+        @Value("#{jobExecution.executionContext['settleBatchId']}") String batchId) {
+
+    return (contribution, chunkContext) -> {
+        // 1. 건별 netAmount 합산
+        BigDecimal itemLevelSum = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(amount - platform_fee - pg_fee), 0) " +
+                "FROM transactions WHERE settled_batch_id = ?",
+                BigDecimal.class, batchId);
+
+        // 2. 집계 테이블의 총 netAmount
+        BigDecimal aggregatedSum = jdbcTemplate.queryForObject(
+                "SELECT COALESCE(SUM(net_amount), 0) " +
+                "FROM settlements WHERE batch_id = ?",
+                BigDecimal.class, batchId);
+
+        // 3. 비교 검증
+        if (itemLevelSum.compareTo(aggregatedSum) != 0) {
+            BigDecimal diff = itemLevelSum.subtract(aggregatedSum).abs();
+            log.error("금액 이중 검증 실패 - 건별합산: {}, 집계결과: {}, 차이: {}",
+                    itemLevelSum, aggregatedSum, diff);
+
+            // Slack/알림 발송
+            alertService.sendSettlementAlert(
+                    String.format("[정산 검증 실패] batchId=%s, 차이=%s원", batchId, diff));
+
+            // 배치 즉시 중단
+            contribution.setExitStatus(ExitStatus.FAILED);
+            throw new SettlementVerificationException(
+                    String.format("금액 불일치 - 건별: %s, 집계: %s, 차이: %s",
+                            itemLevelSum, aggregatedSum, diff));
+        }
+
+        log.info("금액 이중 검증 통과 - batchId: {}, 검증금액: {}", batchId, itemLevelSum);
+        return RepeatStatus.FINISHED;
+    };
+}
+```
+
+> **실무 팁:** 정산은 "의심스러우면 멈추는 것"이 원칙이다. 잘못된 금액이 판매자에게 지급되면 회수가 사실상 불가능하다. 1원이라도 차이가 나면 배치를 중단하고 원인을 조사해야 한다.
+
 ### 집계 Processor
 
 판매자별 거래를 집계하고 수수료와 세금을 계산하는 핵심 로직이다.

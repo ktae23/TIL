@@ -290,6 +290,140 @@ public class CacheWarmer implements ApplicationRunner {
 }
 ```
 
+### 3.9 캐시 직렬화와 버전 호환
+
+배포 시 엔티티의 필드를 추가하거나 삭제하면, Redis에 저장된 기존 캐시 데이터가 역직렬화에 실패하여 장애가 발생할 수 있다. 특히 무중단 배포(Rolling Update) 환경에서 구버전과 신버전 서버가 동시에 캐시를 읽고 쓰는 상황이 가장 위험하다.
+
+**주요 장애 시나리오**:
+
+| 시나리오 | 원인 | 증상 |
+|---------|------|------|
+| Jackson 역직렬화 실패 | 새 필드 추가 후 엄격 모드에서 `UnrecognizedPropertyException` 발생 | 캐시 히트인데 500 에러 |
+| `@class` 타입 문제 | `GenericJackson2JsonRedisSerializer` 사용 시 패키지 리네이밍하면 역직렬화 불가 | 클래스 로딩 실패 |
+| `serialVersionUID` 불일치 | Java Serialization 사용 시 필드 변경으로 UID가 바뀌면 `InvalidClassException` | 전체 캐시 무효화 필요 |
+
+**해결 전략 1: Jackson Lenient 설정**
+
+```java
+@Configuration
+public class RedisCacheConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+
+        ObjectMapper mapper = new ObjectMapper();
+        // 알 수 없는 필드 무시 (신규 필드가 추가되어도 구버전에서 에러 없이 역직렬화)
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.registerModule(new JavaTimeModule());
+
+        GenericJackson2JsonRedisSerializer serializer =
+            new GenericJackson2JsonRedisSerializer(mapper);
+
+        template.setValueSerializer(serializer);
+        template.setHashValueSerializer(serializer);
+        template.setKeySerializer(new StringRedisSerializer());
+        return template;
+    }
+}
+```
+
+DTO 레벨에서도 방어:
+
+```java
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record ProductCacheDto(
+    Long id,
+    String name,
+    BigDecimal price
+    // 새 필드가 추가되어도 구버전 캐시 데이터 역직렬화 성공
+) {}
+```
+
+**해결 전략 2: 캐시 키 버전 프리픽스**
+
+스키마가 크게 변경(필드 타입 변경, 필드 제거 등)되는 경우, 캐시 키에 버전을 포함하여 구버전 캐시와 자연스럽게 분리한다.
+
+```java
+@Component
+public class VersionedCacheKeyGenerator implements KeyGenerator {
+
+    // 스키마 변경 시 버전을 올린다 (application.yml 또는 상수 관리)
+    private static final String CACHE_VERSION = "v2";
+
+    @Override
+    public Object generate(Object target, Method method, Object... params) {
+        return CACHE_VERSION + ":" + method.getName() + ":" +
+               Arrays.stream(params).map(Object::toString).collect(Collectors.joining(":"));
+    }
+
+    /**
+     * 직접 캐시 키를 생성할 때 사용
+     * 예: "v2:product:123"
+     */
+    public static String key(String prefix, Object id) {
+        return CACHE_VERSION + ":" + prefix + ":" + id;
+    }
+}
+```
+
+**해결 전략 3: 배포 시 캐시 무효화**
+
+메이저 스키마 변경 시 배포 직후 해당 프리픽스의 캐시를 일괄 삭제한다. **KEYS 명령은 절대 사용하지 않고 SCAN을 사용**한다.
+
+```java
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class CacheEvictionRunner implements ApplicationRunner {
+
+    private final StringRedisTemplate redisTemplate;
+
+    // 배포 시 무효화할 프리픽스 목록 (환경변수 또는 설정으로 관리)
+    @Value("${cache.evict-prefixes:}")
+    private List<String> evictPrefixes;
+
+    @Override
+    public void run(ApplicationArguments args) {
+        if (evictPrefixes.isEmpty()) return;
+
+        for (String prefix : evictPrefixes) {
+            long deleted = evictByPrefix(prefix);
+            log.info("캐시 무효화 완료: prefix={}, 삭제={}건", prefix, deleted);
+        }
+    }
+
+    private long evictByPrefix(String prefix) {
+        long deletedCount = 0;
+        ScanOptions options = ScanOptions.scanOptions()
+            .match(prefix + "*")
+            .count(100)
+            .build();
+
+        try (Cursor<byte[]> cursor = redisTemplate.getConnectionFactory()
+                .getConnection().scan(options)) {
+            List<String> keysToDelete = new ArrayList<>();
+            while (cursor.hasNext()) {
+                keysToDelete.add(new String(cursor.next()));
+                if (keysToDelete.size() >= 100) {
+                    redisTemplate.delete(keysToDelete);
+                    deletedCount += keysToDelete.size();
+                    keysToDelete.clear();
+                }
+            }
+            if (!keysToDelete.isEmpty()) {
+                redisTemplate.delete(keysToDelete);
+                deletedCount += keysToDelete.size();
+            }
+        }
+        return deletedCount;
+    }
+}
+```
+
+**실무 권장 조합**: Jackson lenient 설정(기본 방어) + 키 버전 프리픽스(메이저 변경 시) + 배포 후 선택적 무효화. 대부분의 마이너 필드 추가는 lenient 설정만으로 충분하고, 필드 타입 변경이나 삭제 같은 호환 불가능한 변경 시에만 키 버전을 올린다.
+
 ## 4. 실전 예제
 
 ### 4.1 전자상거래 서비스에서 패턴 선택 가이드

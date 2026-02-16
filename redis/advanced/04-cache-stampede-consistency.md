@@ -206,7 +206,94 @@ public class DistributedLockCacheService {
 }
 ```
 
-### 3.4 해결 전략 3: 논리적 만료 (Logical Expiration)
+### 3.4 해결 전략 3: Singleflight 패턴
+
+Go의 `singleflight` 패키지에서 유래한 패턴으로, **동일 키에 대한 동시 요청을 하나로 합쳐** 실제 DB 조회는 첫 번째 요청만 수행하고 나머지 요청은 같은 결과를 공유한다.
+
+**핵심 원리**: `ConcurrentHashMap<String, CompletableFuture<V>>`를 사용하여 첫 번째 요청이 `computeIfAbsent`로 Future를 등록하면, 동시에 들어온 나머지 요청은 동일한 Future의 완료를 기다린다.
+
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class SingleflightCacheService {
+
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ProductRepository productRepository;
+    private final ConcurrentHashMap<String, CompletableFuture<Product>> inFlightRequests =
+        new ConcurrentHashMap<>();
+
+    public Product findById(Long id) {
+        String cacheKey = "product:" + id;
+
+        // 1. 캐시 히트 시 즉시 반환
+        Product cached = (Product) redisTemplate.opsForValue().get(cacheKey);
+        if (cached != null) return cached;
+
+        // 2. Singleflight: 동일 키에 대해 하나의 요청만 DB 조회 수행
+        CompletableFuture<Product> future = inFlightRequests.computeIfAbsent(cacheKey, key -> {
+            return CompletableFuture.supplyAsync(() -> {
+                try {
+                    Product product = productRepository.findById(id)
+                        .orElseThrow(() -> new NotFoundException("Not found"));
+                    redisTemplate.opsForValue().set(cacheKey, product, Duration.ofHours(1));
+                    return product;
+                } finally {
+                    // 완료 후 반드시 제거하여 메모리 누수 방지
+                    inFlightRequests.remove(cacheKey);
+                }
+            });
+        });
+
+        try {
+            return future.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            inFlightRequests.remove(cacheKey); // 예외 시에도 정리
+            throw new RuntimeException("캐시 조회 실패", e);
+        }
+    }
+}
+```
+
+**분산 락과의 차이**:
+
+| 항목 | Singleflight | 분산 락 |
+|------|-------------|---------|
+| 범위 | 단일 JVM (로컬) | 전체 클러스터 (글로벌) |
+| 오버헤드 | ConcurrentHashMap만 사용 | Redis 네트워크 왕복 필요 |
+| 적용 시점 | 1차 방어선 (가볍고 빠름) | 2차 방어선 (확실하지만 무거움) |
+
+**1차 + 2차 방어선 조합 전략**: Singleflight로 로컬 JVM 내 중복 요청을 먼저 걸러내고, 여러 JVM 간 동시 요청은 분산 락으로 방어한다.
+
+```java
+public Product findByIdWithLayeredDefense(Long id) {
+    String cacheKey = "product:" + id;
+
+    Product cached = (Product) redisTemplate.opsForValue().get(cacheKey);
+    if (cached != null) return cached;
+
+    // 1차 방어선: Singleflight (로컬 JVM 내 중복 제거)
+    CompletableFuture<Product> future = inFlightRequests.computeIfAbsent(cacheKey, key ->
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                // 2차 방어선: 분산 락 (클러스터 레벨 중복 제거)
+                return executeWithDistributedLock(cacheKey, id);
+            } finally {
+                inFlightRequests.remove(cacheKey);
+            }
+        })
+    );
+
+    try {
+        return future.get(5, TimeUnit.SECONDS);
+    } catch (Exception e) {
+        inFlightRequests.remove(cacheKey);
+        throw new RuntimeException("캐시 조회 실패", e);
+    }
+}
+```
+
+### 3.5 해결 전략 4: 논리적 만료 (Logical Expiration)
 
 물리적 TTL을 설정하지 않고, 캐시 값 내부에 만료 시각을 저장한다. 만료된 데이터는 이전 값을 즉시 반환하면서 백그라운드에서 갱신한다.
 
@@ -226,7 +313,7 @@ public class CacheWrapper<T> implements Serializable {
 
 핵심 동작: 물리적 TTL은 논리적 TTL보다 훨씬 길게 설정(예: 7일)하여 데이터가 Redis에서 삭제되지 않도록 한다. `isLogicallyExpired()`가 true이면 stale 데이터를 즉시 반환하고, 분산 락을 획득한 하나의 스레드만 백그라운드에서 갱신한다.
 
-### 3.5 Cache-DB 일관성 패턴
+### 3.6 Cache-DB 일관성 패턴
 
 #### Cache Invalidation vs Cache Update
 
@@ -252,7 +339,7 @@ public Product update(UpdateCommand command) {
 // 결과: DB=2000, 캐시=1000 (불일치!)
 ```
 
-### 3.6 이벤트 기반 캐시 무효화 (CDC)
+### 3.7 이벤트 기반 캐시 무효화 (CDC)
 
 ```mermaid
 graph LR

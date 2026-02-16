@@ -322,6 +322,160 @@ stateDiagram-v2
 | 잔액 부족 | skip + 로그 기록 | 다음 날 재시도 |
 | 3회 연속 실패 | 구독 일시정지 + 알림 | 수동 조치 후 |
 
+### 4.5 PG사별 에러 코드 매핑과 재시도 분류
+
+PG사마다 에러 코드 체계가 완전히 다르다. 토스페이먼츠는 문자열 코드(`PROVIDER_ERROR`), 나이스페이는 숫자 코드(`1001`)를 사용한다. 이 차이를 코드에 하드코딩하면 **PG사 추가/변경 시 즉시 장애**로 이어진다.
+
+재시도 분류를 잘못하면 두 가지 심각한 문제가 발생한다:
+- **재시도 가능 에러(PG_TIMEOUT)를 skip하면**: 결제가 실제로는 성공 가능한데 건너뛰어 **매출 누락** 발생
+- **재시도 불가 에러(CARD_EXPIRED, STOLEN_CARD)를 재시도하면**: 이미 거절된 결제를 반복 호출하여 **이중 과금** 위험 또는 PG사 차단
+
+#### 에러 코드 매핑 테이블 DDL
+
+```sql
+CREATE TABLE pg_error_codes (
+    pg_company      VARCHAR(50)   NOT NULL,
+    pg_error_code   VARCHAR(100)  NOT NULL,
+    error_category  ENUM('RETRYABLE', 'NON_RETRYABLE', 'REQUIRES_ACTION') NOT NULL,
+    description     VARCHAR(500),
+    created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (pg_company, pg_error_code)
+);
+```
+
+#### ErrorClassifier 인터페이스와 구현
+
+```java
+/**
+ * Best Practice: PG사 에러 코드를 DB 기반으로 분류
+ * - 하드코딩 대신 DB 조회로 PG사 추가/변경에 무중단 대응
+ * - 미등록 코드는 NON_RETRYABLE로 기본 처리 (안전 우선)
+ */
+public interface ErrorClassifier {
+    ErrorCategory classify(String pgCompany, String pgErrorCode);
+}
+
+public enum ErrorCategory {
+    RETRYABLE,        // 재시도 가능 (PG 인프라 오류, 일시적 장애)
+    NON_RETRYABLE,    // 재시도 불가 (카드 만료, 도난 카드 등)
+    REQUIRES_ACTION   // 사용자 조치 필요 (한도 초과, 결제수단 변경 등)
+}
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class DbErrorClassifier implements ErrorClassifier {
+
+    private final PgErrorCodeRepository pgErrorCodeRepository;
+
+    @Override
+    public ErrorCategory classify(String pgCompany, String pgErrorCode) {
+        return pgErrorCodeRepository
+                .findByPgCompanyAndPgErrorCode(pgCompany, pgErrorCode)
+                .map(PgErrorCode::getErrorCategory)
+                .orElseGet(() -> {
+                    // 미등록 코드는 안전 우선으로 NON_RETRYABLE 처리
+                    log.warn("미등록 PG 에러 코드 - pgCompany: {}, pgErrorCode: {}",
+                            pgCompany, pgErrorCode);
+                    return ErrorCategory.NON_RETRYABLE;
+                });
+    }
+}
+
+@Repository
+public interface PgErrorCodeRepository extends JpaRepository<PgErrorCode, PgErrorCodeId> {
+    Optional<PgErrorCode> findByPgCompanyAndPgErrorCode(String pgCompany, String pgErrorCode);
+}
+```
+
+#### PG사별 에러 코드 매핑 예시
+
+| PG사 | PG 에러 코드 | 분류 | 설명 |
+|------|-------------|------|------|
+| 토스페이먼츠 | `PROVIDER_ERROR` | RETRYABLE | PG 내부 오류 (일시적) |
+| 토스페이먼츠 | `CARD_COMPANY_NOT_AVAILABLE` | RETRYABLE | 카드사 점검 중 |
+| 토스페이먼츠 | `NOT_AVAILABLE_CARD` | NON_RETRYABLE | 사용 불가 카드 |
+| 토스페이먼츠 | `STOLEN_CARD` | NON_RETRYABLE | 도난 신고 카드 |
+| 나이스페이 | `1001` | RETRYABLE | 통신 오류 |
+| 나이스페이 | `3001` | NON_RETRYABLE | 카드 유효기간 만료 |
+| 나이스페이 | `3002` | NON_RETRYABLE | 분실/도난 카드 |
+
+#### ErrorClassifier를 통합한 PaymentProcessor 개선
+
+```java
+/**
+ * Best Practice: ErrorClassifier 기반 재시도/skip 분기
+ * - RETRYABLE: PgRetryableException → 상위에서 retry 처리
+ * - NON_RETRYABLE: PaymentDeclinedException → skip 처리
+ * - REQUIRES_ACTION: 사용자 알림 후 skip
+ */
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class PaymentProcessor implements ItemProcessor<Subscription, PaymentResult> {
+
+    private final PaymentGateway paymentGateway;
+    private final PaymentLogRepository paymentLogRepository;
+    private final ErrorClassifier errorClassifier;
+
+    @Override
+    public PaymentResult process(Subscription subscription) throws Exception {
+        String idempotencyKey = generateIdempotencyKey(subscription);
+
+        Optional<PaymentLog> existingLog = paymentLogRepository
+                .findByIdempotencyKey(idempotencyKey);
+
+        if (existingLog.isPresent()) {
+            log.info("이미 처리된 결제 - subscriptionId: {}", subscription.getId());
+            return PaymentResult.alreadyProcessed(existingLog.get());
+        }
+
+        try {
+            PgResponse response = paymentGateway.charge(
+                    PaymentRequest.builder()
+                            .amount(subscription.getAmount())
+                            .paymentMethodId(subscription.getPaymentMethodId())
+                            .idempotencyKey(idempotencyKey)
+                            .build()
+            );
+            return PaymentResult.success(subscription, response.getTransactionId());
+
+        } catch (PgException e) {
+            // DB 기반 에러 분류로 재시도 여부 결정
+            ErrorCategory category = errorClassifier.classify(
+                    e.getPgCompany(), e.getErrorCode());
+
+            switch (category) {
+                case RETRYABLE:
+                    log.warn("재시도 가능 에러 - pgCompany: {}, errorCode: {}",
+                            e.getPgCompany(), e.getErrorCode());
+                    throw new PgRetryableException(e);
+
+                case NON_RETRYABLE:
+                    log.info("재시도 불가 에러 - pgCompany: {}, errorCode: {}",
+                            e.getPgCompany(), e.getErrorCode());
+                    throw new PaymentDeclinedException(e.getErrorCode());
+
+                case REQUIRES_ACTION:
+                    log.info("사용자 조치 필요 - subscriptionId: {}, errorCode: {}",
+                            subscription.getId(), e.getErrorCode());
+                    throw new PaymentDeclinedException(e.getErrorCode());
+
+                default:
+                    throw new PaymentDeclinedException(e.getErrorCode());
+            }
+        }
+    }
+
+    private String generateIdempotencyKey(Subscription subscription) {
+        return String.format("billing_%d_%s",
+                subscription.getId(), subscription.getNextBillingDate());
+    }
+}
+```
+
+> **핵심 요약:** 하드코딩된 에러 분류는 PG사 변경 시 즉시 장애로 이어진다. DB 기반 에러 코드 매핑으로 운영 중 PG사 추가/변경에 무중단 대응한다.
+
 ---
 
 ## 5. 정리

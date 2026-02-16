@@ -141,6 +141,55 @@ return false;
 
 - 장점: 불필요한 폴링 제거, 효율적인 리소스 사용
 
+#### 스핀락 재시도 시 지수 백오프 + Jitter
+
+스핀락에서 고정 `sleep(100ms)`를 사용하면 **"thundering herd of retries"** 문제가 발생한다. 락이 해제되는 시점에 대기 중인 모든 클라이언트가 동시에 재시도하여 Redis에 순간적인 부하가 급증한다.
+
+AWS의 "Exponential Backoff And Jitter" 블로그에서 권장하는 3가지 전략:
+
+| 전략 | 수식 | 특징 |
+|------|------|------|
+| Full Jitter | `sleep = random(0, min(cap, base * 2^attempt))` | 가장 넓은 분산, 충돌 최소화 |
+| Equal Jitter | `temp = min(cap, base * 2^attempt); sleep = temp/2 + random(0, temp/2)` | 최소 대기 보장 + 적당한 분산 |
+| Decorrelated Jitter | `sleep = min(cap, random(base, sleep * 3))` | 이전 sleep 값 기반, 연속적 분산 |
+
+**Full Jitter 구현** (기존 `tryLock` 메서드의 고정 `retryInterval`을 backoff + jitter로 교체):
+
+```java
+public Optional<LockHandle> tryLockWithBackoff(String key, Duration ttl,
+                                                Duration waitTimeout, int maxRetries) {
+    long base = 50;   // 초기 대기 50ms
+    long cap = 5000;  // 최대 대기 5초
+
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
+        Optional<LockHandle> handle = tryLock(key, ttl);
+        if (handle.isPresent()) return handle;
+
+        // Full Jitter: 지수적으로 증가하는 상한 내에서 랜덤 대기
+        long expBackoff = Math.min(cap, base * (1L << attempt));
+        long sleepMs = ThreadLocalRandom.current().nextLong(0, expBackoff);
+
+        try {
+            Thread.sleep(sleepMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Optional.empty();
+        }
+    }
+    return Optional.empty();
+}
+```
+
+**기존 `tryLock` 메서드와의 비교**:
+
+| 항목 | 고정 100ms 재시도 | Full Jitter 백오프 |
+|------|------------------|-------------------|
+| 1회차 대기 | 100ms | 0~50ms (랜덤) |
+| 5회차 대기 | 100ms | 0~800ms (랜덤) |
+| 10회차 대기 | 100ms | 0~5000ms (랜덤) |
+| 동시 재시도 충돌 | 모든 클라이언트가 동일 시점에 재시도 | 클라이언트별로 다른 시점에 재시도 |
+| Redis 부하 패턴 | 주기적 스파이크 | 균등 분산 |
+
 ### 3.5 Fencing Token 개념
 
 Martin Kleppmann이 제안한 안전 장치로, 락 만료 후 뒤늦게 도착하는 쓰기 요청을 방어한다.
