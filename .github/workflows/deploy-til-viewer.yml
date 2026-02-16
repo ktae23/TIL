@@ -29,10 +29,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install Python dependencies
+        run: pip install markdown
+
       - name: Build TIL Viewer
         run: |
           python3 skills/til-viewer/assets/generate_viewer_pages.py . ./dist
           python3 skills/til-viewer/assets/generate_algorithm_practice.py . ./dist
+          python3 skills/til-viewer/assets/generate_static_pages.py . ./dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
