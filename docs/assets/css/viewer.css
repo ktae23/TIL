@@ -546,6 +546,43 @@ body {
     cursor: pointer;
 }
 
+/* DOCUMENT NAVIGATION (Prev/Next) */
+.doc-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.doc-nav-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    max-width: 48%;
+    min-width: 0;
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.doc-nav-btn:hover {
+    border-color: var(--accent-color);
+    background: var(--bg-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.doc-nav-next { align-items: flex-end; margin-left: auto; text-align: right; }
+.doc-nav-arrow { font-size: 1.2rem; color: var(--accent-color); font-weight: 600; }
+.doc-nav-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.doc-nav-title { font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+
 /* ========================================
    TOC PANEL
    ======================================== */
@@ -825,6 +862,9 @@ body {
         font-size: 1.1rem;
         padding: 4px 8px;
     }
+
+    .doc-nav { flex-direction: column; gap: 12px; margin-top: 32px; }
+    .doc-nav-btn { max-width: 100%; }
 }
 
 /* ========================================
@@ -903,7 +943,7 @@ body {
 @media print {
     .header, .sidebar, .toc-panel, .quick-actions,
     .overlay, .search-container, .progress-bar,
-    .shortcuts-modal { display: none !important; }
+    .shortcuts-modal, .doc-nav { display: none !important; }
     .content-area { padding: 0 !important; overflow: visible !important; }
     .content-inner { max-width: 100% !important; }
     .container, .main-container { display: block !important; }

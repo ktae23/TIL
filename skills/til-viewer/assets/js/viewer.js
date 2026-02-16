@@ -340,6 +340,7 @@ function loadFile(filePath, options = {}) {
 
     // Init checkboxes
     initCheckboxes();
+    updateDocNav();
 
     // Show PDF download button
     const pdfBtn = document.getElementById('pdf-download-btn');
@@ -363,6 +364,53 @@ function navigateFile(direction) {
     if (newIndex >= 0 && newIndex < state.fileOrder.length) {
         loadFile(state.fileOrder[newIndex]);
     }
+}
+
+function updateDocNav() {
+    const existing = document.getElementById('doc-nav');
+    if (existing) existing.remove();
+    if (!state.currentFile) return;
+
+    const idx = state.fileOrder.indexOf(state.currentFile);
+    if (idx === -1) return;
+
+    const prevPath = idx > 0 ? state.fileOrder[idx - 1] : null;
+    const nextPath = idx < state.fileOrder.length - 1 ? state.fileOrder[idx + 1] : null;
+    if (!prevPath && !nextPath) return;
+
+    const nav = document.createElement('nav');
+    nav.className = 'doc-nav';
+    nav.id = 'doc-nav';
+
+    if (prevPath) {
+        const prev = findFileByPath(prevPath);
+        const btn = document.createElement('a');
+        btn.className = 'doc-nav-btn doc-nav-prev';
+        btn.onclick = () => navigateFile(-1);
+        btn.innerHTML = '<span class="doc-nav-arrow">&#8592;</span>'
+            + '<span class="doc-nav-label">이전</span>'
+            + '<span class="doc-nav-title">' + escapeHtml(prev.title) + '</span>';
+        nav.appendChild(btn);
+    }
+
+    if (nextPath) {
+        const next = findFileByPath(nextPath);
+        const btn = document.createElement('a');
+        btn.className = 'doc-nav-btn doc-nav-next';
+        btn.onclick = () => navigateFile(1);
+        btn.innerHTML = '<span class="doc-nav-label">다음</span>'
+            + '<span class="doc-nav-arrow">&#8594;</span>'
+            + '<span class="doc-nav-title">' + escapeHtml(next.title) + '</span>';
+        nav.appendChild(btn);
+    }
+
+    document.getElementById('content').appendChild(nav);
+}
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
 }
 
 // ========================================
