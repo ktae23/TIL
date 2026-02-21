@@ -28,6 +28,7 @@ function sortSubcategories(keys) {
 // ========================================
 function init() {
     applyTheme(state.currentTheme);
+    initMermaid();
 
     // Build flat file order for arrow navigation
     buildFileOrder();
@@ -324,10 +325,15 @@ function loadFile(filePath, options = {}) {
     const contentDiv = document.getElementById('content');
     contentDiv.innerHTML = marked.parse(file.content);
 
-    // Highlight code blocks
+    // Highlight code blocks (skip mermaid)
     contentDiv.querySelectorAll('pre code').forEach(block => {
-        hljs.highlightElement(block);
+        if (!block.classList.contains('language-mermaid')) {
+            hljs.highlightElement(block);
+        }
     });
+
+    // Render Mermaid diagrams
+    renderMermaid(contentDiv);
 
     // Generate TOC
     generateTOC();
@@ -580,11 +586,45 @@ function applyTheme(theme) {
     const hljsDark = document.getElementById('hljs-dark');
     if (hljsLight) hljsLight.disabled = (theme === 'dark');
     if (hljsDark) hljsDark.disabled = (theme === 'light');
+
+    // Re-render Mermaid with new theme
+    if (typeof mermaid !== 'undefined') {
+        mermaid.initialize({ startOnLoad: false, theme: theme === 'dark' ? 'dark' : 'default' });
+        if (state.currentFile) loadFile(state.currentFile);
+    }
 }
 
 function toggleTheme() {
     const newTheme = state.currentTheme === 'light' ? 'dark' : 'light';
     applyTheme(newTheme);
+}
+
+// ========================================
+// MERMAID DIAGRAM RENDERING
+// ========================================
+function initMermaid() {
+    if (typeof mermaid === 'undefined') return;
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: state.currentTheme === 'dark' ? 'dark' : 'default'
+    });
+}
+
+function renderMermaid(container) {
+    if (typeof mermaid === 'undefined') return;
+
+    const mermaidBlocks = container.querySelectorAll('pre code.language-mermaid');
+    if (mermaidBlocks.length === 0) return;
+
+    mermaidBlocks.forEach(block => {
+        const pre = block.parentElement;
+        const div = document.createElement('div');
+        div.className = 'mermaid';
+        div.textContent = block.textContent;
+        pre.replaceWith(div);
+    });
+
+    mermaid.run();
 }
 
 // ========================================

@@ -150,6 +150,7 @@ def main():
         <div class="shortcut-item"><span>닫기</span><span class="shortcut-key">Esc</span></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="assets/lib/marked.min.js"></script>
     <script src="assets/lib/fuse.min.js"></script>
     <script src="assets/lib/highlight/highlight.min.js"></script>
