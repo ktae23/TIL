@@ -26,6 +26,55 @@ Repository 인터페이스에 선언된 메서드를 호출하면, Spring Data J
 | **USE_DECLARED_QUERY** | `Key.USE_DECLARED_QUERY` | `@Query`, Named Query 등 명시적 선언만 사용 |
 | **CREATE_IF_NOT_FOUND** | `Key.CREATE_IF_NOT_FOUND` | 선언된 쿼리를 먼저 찾고, 없으면 메서드명으로 생성 (기본값) |
 
+### 쿼리 생성자 vs 쿼리 선택자
+
+세 가지 전략은 결국 두 가지 역할로 나뉜다:
+
+| 역할 | 전략 | 하는 일 |
+|------|------|---------|
+| **쿼리 생성자 (Query Creator)** | `CREATE` | 메서드 이름을 파싱해서 쿼리를 **만든다** |
+| **쿼리 선택자 (Query Selector)** | `USE_DECLARED_QUERY` | 이미 선언된 쿼리를 **찾아서 고른다** |
+
+- **쿼리 생성자**는 `findByNameAndAgeGreaterThan` 같은 메서드명의 키워드(`findBy`, `And`, `GreaterThan`)를 분석하여 JPQL을 자동으로 만들어낸다. `@Query`가 붙어 있어도 무시하고 오직 메서드명만 본다.
+- **쿼리 선택자**는 `@Query`, `@NamedQuery`, properties 파일 등에서 미리 선언된 쿼리를 탐색한다. 메서드명은 쿼리 생성에 관여하지 않으므로 자유롭게 네이밍할 수 있다. 선언된 쿼리를 찾지 못하면 예외가 발생한다.
+
+기본 전략 `CREATE_IF_NOT_FOUND`는 이 두 역할을 조합한 것이다:
+
+```
+Repository 메서드 호출
+        │
+        ▼
+  ┌─────────────────────────┐
+  │ 선언된 쿼리가 있는가?    │
+  │ (@Query, @NamedQuery 등) │
+  └────────────┬────────────┘
+          ┌────┴────┐
+          │         │
+        있다       없다
+          │         │
+          ▼         ▼
+    쿼리 선택자    쿼리 생성자
+    (선언된 쿼리   (메서드명 파싱
+     그대로 실행)   → JPQL 자동 생성)
+```
+
+따라서 하나의 Repository 안에서 두 방식을 자연스럽게 섞어 쓸 수 있다:
+
+```java
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    // 쿼리 생성자: @Query 없음 → 메서드명 파싱으로 JPQL 자동 생성
+    User findByEmail(String email);
+
+    // 쿼리 선택자: @Query 있음 → 선언된 쿼리를 그대로 사용
+    @Query("SELECT u FROM User u JOIN u.orders o "
+         + "GROUP BY u HAVING COUNT(o) > :min")
+    List<User> findActiveCustomers(@Param("min") long minOrders);
+}
+```
+
+**실무 기준**: 조건 2~3개 이하의 단순 조회는 쿼리 생성자(메서드 네이밍)를, JOIN/서브쿼리/GROUP BY 등 복잡한 쿼리는 쿼리 선택자(`@Query`)를 사용한다. 메서드명이 `findByNameAndStatusAndDepartmentAndAgeBetween`처럼 길어지기 시작하면 `@Query`로 전환할 타이밍이다.
+
 ### 쿼리 소스 종류
 
 | 소스 | 예시 |
@@ -425,3 +474,4 @@ WARN: Query method findByStatus is annotated with both, a query and a query name
 
 ---
 *참고: Spring Data JPA 3.x / Hibernate 6.x 기준*
+*마지막 업데이트: 2026년 02월*
