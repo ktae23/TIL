@@ -178,9 +178,11 @@ private static boolean isDirty(Type types, Object state, Object newState) {
 ```mermaid
 flowchart LR
     A[dirtyCheck 완료] --> B[dirtyProperties 배열]
-    B --> C{@DynamicUpdate?}
-    C -->|Yes| D[변경 컬럼만 포함한<br/>UPDATE SQL 동적 생성]
-    C -->|No| E[모든 컬럼 포함한<br/>정적 UPDATE SQL 사용]
+    B --> C{"@DynamicUpdate?"}
+    C -->|Yes| D["변경 컬럼만 포함한
+    UPDATE SQL 동적 생성"]
+    C -->|No| E["모든 컬럼 포함한
+    정적 UPDATE SQL 사용"]
     D --> F[EntityUpdateAction]
     E --> F
 ```
