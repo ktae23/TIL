@@ -15,6 +15,27 @@ const state = {
     fileOrder: []  // flat list of all file paths for arrow nav
 };
 
+// ========================================
+// COLLAPSED STATE PERSISTENCE
+// ========================================
+const COLLAPSED_STORAGE_KEY = 'til-collapsed-state';
+
+function saveCollapsedState() {
+    localStorage.setItem(COLLAPSED_STORAGE_KEY,
+        JSON.stringify(Array.from(state.collapsedCategories)));
+}
+
+function loadCollapsedState() {
+    const saved = localStorage.getItem(COLLAPSED_STORAGE_KEY);
+    if (saved) {
+        try {
+            state.collapsedCategories = new Set(JSON.parse(saved));
+            return true;
+        } catch (e) { /* 파싱 실패 시 기본값 */ }
+    }
+    return false;
+}
+
 function sortSubcategories(keys) {
     return keys.sort((a, b) => {
         if (a === 'main') return -1;
@@ -33,16 +54,24 @@ function init() {
     // Build flat file order for arrow navigation
     buildFileOrder();
 
-    // 기본적으로 모든 카테고리와 서브카테고리를 닫힌 상태로 설정
-    Object.keys(TIL_DATA.categories).forEach(category => {
-        state.collapsedCategories.add(category);
-        const subs = TIL_DATA.categories[category].subcategories;
-        if (subs) {
-            Object.keys(subs).forEach(sub => {
-                state.collapsedCategories.add(category + '/' + sub);
-            });
+    // localStorage에서 접기/펼치기 상태 복원, 없으면 기본값 설정
+    const restored = loadCollapsedState();
+    if (!restored) {
+        // 그룹 기본 닫힘
+        if (TIL_DATA.groups) {
+            TIL_DATA.groups.forEach(g => state.collapsedCategories.add('group:' + g.id));
         }
-    });
+        // 카테고리/서브카테고리 기본 닫힘
+        Object.keys(TIL_DATA.categories).forEach(category => {
+            state.collapsedCategories.add(category);
+            const subs = TIL_DATA.categories[category].subcategories;
+            if (subs) {
+                Object.keys(subs).forEach(sub => {
+                    state.collapsedCategories.add(category + '/' + sub);
+                });
+            }
+        });
+    }
 
     initFilter();
     buildFileList();
@@ -82,9 +111,10 @@ function updateStats() {
 // ========================================
 function buildFileOrder() {
     state.fileOrder = [];
-    const categories = Object.keys(TIL_DATA.categories).sort();
-    categories.forEach(category => {
-        const catData = TIL_DATA.categories[category];
+
+    function addCategoryFiles(catName) {
+        const catData = TIL_DATA.categories[catName];
+        if (!catData) return;
         catData.files.forEach(file => {
             state.fileOrder.push(file.path);
         });
@@ -95,7 +125,19 @@ function buildFileOrder() {
                 });
             });
         }
-    });
+    }
+
+    if (TIL_DATA.groups) {
+        [...TIL_DATA.groups].sort((a, b) => a.order - b.order).forEach(group => {
+            group.categories.sort().forEach(catName => {
+                addCategoryFiles(catName);
+            });
+        });
+    } else {
+        Object.keys(TIL_DATA.categories).sort().forEach(catName => {
+            addCategoryFiles(catName);
+        });
+    }
 }
 
 // ========================================
@@ -163,12 +205,147 @@ function countCategoryFiles(categoryData) {
     return count;
 }
 
+function getCategoryDisplayName(category) {
+    return (TIL_DATA.categoryDisplayNames && TIL_DATA.categoryDisplayNames[category]) || category;
+}
+
+function renderCategory(container, category, categoryData) {
+    const isCollapsed = state.collapsedCategories.has(category);
+    const totalCount = countCategoryFiles(categoryData);
+    const displayName = getCategoryDisplayName(category);
+
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'category';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'category-title';
+    titleDiv.innerHTML = `
+        <span class="category-arrow ${isCollapsed ? '' : 'expanded'}">&#9654;</span>
+        <span>${displayName}</span>
+        <span class="category-count">(${totalCount})</span>
+        <span class="category-print-btn" title="${category} 전체 인쇄">&#128424;</span>
+    `;
+    titleDiv.onclick = (e) => {
+        if (e.target.classList.contains('category-print-btn')) {
+            e.stopPropagation();
+            printCategory(category);
+            return;
+        }
+        toggleCategory(category);
+    };
+
+    categoryDiv.appendChild(titleDiv);
+
+    const fileList = document.createElement('div');
+    fileList.className = `file-list ${isCollapsed ? 'collapsed' : ''}`;
+
+    // 직속 파일 렌더링
+    categoryData.files.forEach(file => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.textContent = file.title;
+        fileItem.title = file.createdAt ? `${file.title} (${file.createdAt})` : file.title;
+        fileItem.onclick = () => loadFile(file.path);
+
+        if (state.currentFile === file.path) {
+            fileItem.classList.add('active');
+        }
+
+        fileList.appendChild(fileItem);
+    });
+
+    // 서브카테고리 렌더링
+    if (categoryData.subcategories) {
+        sortSubcategories(Object.keys(categoryData.subcategories)).forEach(sub => {
+            const subData = categoryData.subcategories[sub];
+            const subKey = category + '/' + sub;
+            const isSubCollapsed = state.collapsedCategories.has(subKey);
+
+            const subDiv = document.createElement('div');
+            subDiv.className = 'subcategory';
+
+            const subTitle = document.createElement('div');
+            subTitle.className = 'subcategory-title';
+            subTitle.innerHTML = `
+                <span class="category-arrow ${isSubCollapsed ? '' : 'expanded'}">&#9654;</span>
+                <span>${sub}</span>
+                <span class="subcategory-count">(${subData.files.length})</span>
+            `;
+            subTitle.onclick = () => toggleCategory(subKey);
+            subDiv.appendChild(subTitle);
+
+            const subFiles = document.createElement('div');
+            subFiles.className = `subcategory-files ${isSubCollapsed ? 'collapsed' : ''}`;
+
+            subData.files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.textContent = file.title;
+                fileItem.title = file.createdAt ? `${file.title} (${file.createdAt})` : file.title;
+                fileItem.onclick = () => loadFile(file.path);
+
+                if (state.currentFile === file.path) {
+                    fileItem.classList.add('active');
+                }
+
+                subFiles.appendChild(fileItem);
+            });
+
+            subDiv.appendChild(subFiles);
+            fileList.appendChild(subDiv);
+        });
+    }
+
+    categoryDiv.appendChild(fileList);
+    container.appendChild(categoryDiv);
+}
+
+function renderGroup(container, group, filteredCategories) {
+    // 그룹 내 카테고리 중 필터 후 남은 것만 수집
+    const validCategories = group.categories
+        .filter(c => filteredCategories[c])
+        .sort();
+
+    // 빈 그룹은 숨김
+    if (validCategories.length === 0) return;
+
+    const groupKey = 'group:' + group.id;
+    const isCollapsed = state.collapsedCategories.has(groupKey);
+
+    // 그룹 내 총 파일 수
+    const totalFiles = validCategories.reduce(
+        (sum, c) => sum + countCategoryFiles(filteredCategories[c]), 0);
+
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'group';
+
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'group-header';
+    headerDiv.innerHTML = `
+        <span class="group-arrow ${isCollapsed ? '' : 'expanded'}">&#9654;</span>
+        <span class="group-icon">${group.icon || ''}</span>
+        <span class="group-label">${group.label}</span>
+        <span class="group-count">${totalFiles}</span>
+    `;
+    headerDiv.onclick = () => toggleGroup(group.id);
+    groupDiv.appendChild(headerDiv);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = `group-content ${isCollapsed ? 'collapsed' : ''}`;
+
+    validCategories.forEach(catName => {
+        renderCategory(contentDiv, catName, filteredCategories[catName]);
+    });
+
+    groupDiv.appendChild(contentDiv);
+    container.appendChild(groupDiv);
+}
+
 function buildFileList() {
     const container = document.getElementById('file-list');
     container.innerHTML = '';
 
     const filteredCategories = getFilteredData();
-    const categories = Object.keys(filteredCategories).sort();
 
     // 필터 적용 시 정보 표시
     if (state.currentFilter !== 'all') {
@@ -180,96 +357,17 @@ function buildFileList() {
         container.appendChild(filterInfo);
     }
 
-    categories.forEach(category => {
-        const categoryData = filteredCategories[category];
-        const isCollapsed = state.collapsedCategories.has(category);
-        const totalCount = countCategoryFiles(categoryData);
-
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'category';
-
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'category-title';
-        titleDiv.innerHTML = `
-            <span class="category-arrow ${isCollapsed ? '' : 'expanded'}">&#9654;</span>
-            <span>${category}</span>
-            <span class="category-count">(${totalCount})</span>
-            <span class="category-print-btn" title="${category} 전체 인쇄">&#128424;</span>
-        `;
-        titleDiv.onclick = (e) => {
-            if (e.target.classList.contains('category-print-btn')) {
-                e.stopPropagation();
-                printCategory(category);
-                return;
-            }
-            toggleCategory(category);
-        };
-
-        categoryDiv.appendChild(titleDiv);
-
-        const fileList = document.createElement('div');
-        fileList.className = `file-list ${isCollapsed ? 'collapsed' : ''}`;
-
-        // 직속 파일 렌더링
-        categoryData.files.forEach(file => {
-            const fileItem = document.createElement('div');
-            fileItem.className = 'file-item';
-            fileItem.textContent = file.title;
-            fileItem.title = file.createdAt ? `${file.title} (${file.createdAt})` : file.title;
-            fileItem.onclick = () => loadFile(file.path);
-
-            if (state.currentFile === file.path) {
-                fileItem.classList.add('active');
-            }
-
-            fileList.appendChild(fileItem);
+    if (TIL_DATA.groups) {
+        // 그룹 기반 렌더링
+        [...TIL_DATA.groups].sort((a, b) => a.order - b.order).forEach(group => {
+            renderGroup(container, group, filteredCategories);
         });
-
-        // 서브카테고리 렌더링
-        if (categoryData.subcategories) {
-            sortSubcategories(Object.keys(categoryData.subcategories)).forEach(sub => {
-                const subData = categoryData.subcategories[sub];
-                const subKey = category + '/' + sub;
-                const isSubCollapsed = state.collapsedCategories.has(subKey);
-
-                const subDiv = document.createElement('div');
-                subDiv.className = 'subcategory';
-
-                const subTitle = document.createElement('div');
-                subTitle.className = 'subcategory-title';
-                subTitle.innerHTML = `
-                    <span class="category-arrow ${isSubCollapsed ? '' : 'expanded'}">&#9654;</span>
-                    <span>${sub}</span>
-                    <span class="subcategory-count">(${subData.files.length})</span>
-                `;
-                subTitle.onclick = () => toggleCategory(subKey);
-                subDiv.appendChild(subTitle);
-
-                const subFiles = document.createElement('div');
-                subFiles.className = `subcategory-files ${isSubCollapsed ? 'collapsed' : ''}`;
-
-                subData.files.forEach(file => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-                    fileItem.textContent = file.title;
-                    fileItem.title = file.createdAt ? `${file.title} (${file.createdAt})` : file.title;
-                    fileItem.onclick = () => loadFile(file.path);
-
-                    if (state.currentFile === file.path) {
-                        fileItem.classList.add('active');
-                    }
-
-                    subFiles.appendChild(fileItem);
-                });
-
-                subDiv.appendChild(subFiles);
-                fileList.appendChild(subDiv);
-            });
-        }
-
-        categoryDiv.appendChild(fileList);
-        container.appendChild(categoryDiv);
-    });
+    } else {
+        // 기존 알파벳순 렌더링 (하위 호환)
+        Object.keys(filteredCategories).sort().forEach(category => {
+            renderCategory(container, category, filteredCategories[category]);
+        });
+    }
 }
 
 function toggleCategory(category) {
@@ -278,6 +376,18 @@ function toggleCategory(category) {
     } else {
         state.collapsedCategories.add(category);
     }
+    saveCollapsedState();
+    buildFileList();
+}
+
+function toggleGroup(groupId) {
+    const key = 'group:' + groupId;
+    if (state.collapsedCategories.has(key)) {
+        state.collapsedCategories.delete(key);
+    } else {
+        state.collapsedCategories.add(key);
+    }
+    saveCollapsedState();
     buildFileList();
 }
 
@@ -308,9 +418,18 @@ function loadFile(filePath, options = {}) {
         updateHash(filePath);
     }
 
-    // 해당 카테고리 + 서브카테고리 자동 펼치기
+    // 해당 그룹 + 카테고리 + 서브카테고리 자동 펼치기
     const pathParts = filePath.split('/');
     const category = pathParts[0];
+
+    // 그룹 자동 펼치기
+    if (TIL_DATA.groups) {
+        const parentGroup = TIL_DATA.groups.find(g => g.categories.includes(category));
+        if (parentGroup) {
+            state.collapsedCategories.delete('group:' + parentGroup.id);
+        }
+    }
+
     if (state.collapsedCategories.has(category)) {
         state.collapsedCategories.delete(category);
     }
@@ -320,6 +439,7 @@ function loadFile(filePath, options = {}) {
             state.collapsedCategories.delete(subKey);
         }
     }
+    saveCollapsedState();
 
     // Render markdown
     const contentDiv = document.getElementById('content');
@@ -517,9 +637,10 @@ function performSearch(query) {
 
         const metaDiv = document.createElement('div');
         metaDiv.className = 'search-result-meta';
+        const catDisplay = getCategoryDisplayName(item.category);
         metaDiv.textContent = item.subcategory
-            ? `${item.category} / ${item.subcategory} / ${item.filename}`
-            : `${item.category} / ${item.filename}`;
+            ? `${catDisplay} / ${item.subcategory} / ${item.filename}`
+            : `${catDisplay} / ${item.filename}`;
 
         resultDiv.appendChild(titleDiv);
         resultDiv.appendChild(metaDiv);

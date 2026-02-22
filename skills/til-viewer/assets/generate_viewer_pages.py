@@ -73,9 +73,30 @@ def main():
         else:
             categories[category]["files"].append(file_entry)
 
-    # 2. JSON 데이터 생성
+    # 2. category-groups.json 로드
+    groups_file = os.path.join(TIL_PATH, "category-groups.json")
+    groups_config = None
+    if os.path.exists(groups_file):
+        with open(groups_file, "r", encoding="utf-8") as f:
+            groups_config = json.load(f)
+
+    # 그룹에 없는 카테고리 자동 수집 -> "기타" 그룹 추가
+    if groups_config:
+        grouped = set()
+        for g in groups_config["groups"]:
+            grouped.update(g["categories"])
+        ungrouped = sorted([c for c in categories if c not in grouped])
+        if ungrouped:
+            groups_config["groups"].append({
+                "id": "ungrouped", "label": "기타", "icon": "📁",
+                "order": 999, "categories": ungrouped
+            })
+
+    # 3. JSON 데이터 생성
     til_data = {
         "categories": categories,
+        "groups": groups_config["groups"] if groups_config else None,
+        "categoryDisplayNames": groups_config.get("categoryDisplayNames", {}) if groups_config else {},
         "metadata": {
             "totalFiles": sum(
                 len(cat["files"]) + sum(len(sub["files"]) for sub in cat.get("subcategories", {}).values())

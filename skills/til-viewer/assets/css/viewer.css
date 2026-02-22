@@ -241,6 +241,70 @@ body {
     border-radius: 8px;
 }
 
+/* ========================================
+   GROUP (대분류)
+   ======================================== */
+.group {
+    margin-bottom: 4px;
+}
+
+.group-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 10px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.group-header:hover {
+    background: var(--bg-secondary);
+}
+
+.group-arrow {
+    font-size: 10px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+
+.group-arrow.expanded {
+    transform: rotate(90deg);
+}
+
+.group-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.group-label {
+    flex: 1;
+}
+
+.group-count {
+    font-size: 0.7rem;
+    opacity: 0.6;
+    font-weight: 400;
+}
+
+.group-content {
+    display: block;
+    padding-left: 4px;
+}
+
+.group-content.collapsed {
+    display: none;
+}
+
+.group-content .category-title {
+    padding-left: 12px;
+}
+
 /* Category & Files */
 .category {
     margin-bottom: 16px;

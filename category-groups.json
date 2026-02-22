@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "backend-framework",
+      "label": "Backend Framework",
+      "icon": "🖥️",
+      "order": 1,
+      "categories": ["spring", "spring-data-jdbc", "hibernate", "jpa", "batch", "build-tool"]
+    },
+    {
+      "id": "language",
+      "label": "Language & Runtime",
+      "icon": "💻",
+      "order": 2,
+      "categories": ["java", "kotlin", "python"]
+    },
+    {
+      "id": "data-messaging",
+      "label": "Data & Messaging",
+      "icon": "🗄️",
+      "order": 3,
+      "categories": ["DB", "redis", "kafka", "cache"]
+    },
+    {
+      "id": "infrastructure",
+      "label": "Infrastructure",
+      "icon": "☁️",
+      "order": 4,
+      "categories": ["cloud", "devops", "observability-prometheus-grafana"]
+    },
+    {
+      "id": "architecture",
+      "label": "Architecture & Design",
+      "icon": "🏗️",
+      "order": 5,
+      "categories": ["MSA", "backend-roadmap", "domain", "network"]
+    },
+    {
+      "id": "quality",
+      "label": "Quality & Testing",
+      "icon": "✅",
+      "order": 6,
+      "categories": ["TEST", "security"]
+    },
+    {
+      "id": "general",
+      "label": "General",
+      "icon": "📚",
+      "order": 7,
+      "categories": ["web", "seo", "english", "AI", "CS", "home", "algorithm"]
+    }
+  ],
+  "categoryDisplayNames": {
+    "observability-prometheus-grafana": "Observability",
+    "spring-data-jdbc": "Spring Data JDBC",
+    "backend-roadmap": "Backend Roadmap",
+    "build-tool": "Build Tool",
+    "TEST": "Testing",
+    "DB": "Database",
+    "CS": "Computer Science",
+    "AI": "AI / ML"
+  },
+  "defaultCollapsed": true
+}
