@@ -44,9 +44,6 @@ Bash로 두 개의 Python 스크립트를 실행합니다:
 ```bash
 # TIL Viewer 생성
 python3 "{SKILL_DIR}/assets/generate_viewer.py" "{TIL_PATH}" "{SKILL_DIR}/assets"
-
-# Algorithm Practice 뷰어 생성
-python3 "{SKILL_DIR}/assets/generate_algorithm_practice.py" "{TIL_PATH}" "{SKILL_DIR}/assets"
 ```
 
 **경로 치환 예시:**
@@ -55,7 +52,6 @@ python3 "{SKILL_DIR}/assets/generate_algorithm_practice.py" "{TIL_PATH}" "{SKILL
 
 ```bash
 python3 "/Users/username/.claude/skills/til-viewer/assets/generate_viewer.py" "/Users/username/til" "/Users/username/.claude/skills/til-viewer/assets"
-python3 "/Users/username/.claude/skills/til-viewer/assets/generate_algorithm_practice.py" "/Users/username/til" "/Users/username/.claude/skills/til-viewer/assets"
 ```
 
 ### Step 3. 브라우저 열기
@@ -93,4 +89,3 @@ TIL Viewer를 생성했습니다.
 ## 생성 파일
 
 - `til-viewer.html`: TIL 메인 뷰어
-- `algorithm-practice.html`: 알고리즘 실습 뷰어 (algorithm/practice 폴더 기반)

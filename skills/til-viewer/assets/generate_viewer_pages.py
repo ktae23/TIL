@@ -139,7 +139,6 @@ def main():
     <div class="main-container">
         <div class="sidebar" id="sidebar">
             <div class="special-links">
-                <a href="algorithm-practice.html" class="special-link">📚 Algorithm Practice</a>
                 <a href="https://www.linkedin.com/in/ktae23" class="special-link" target="_blank">🔗 LinkedIn</a>
             </div>
             <div id="file-list"></div>

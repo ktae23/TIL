@@ -35,7 +35,6 @@ jobs:
       - name: Build TIL Viewer
         run: |
           python3 skills/til-viewer/assets/generate_viewer_pages.py . ./dist
-          python3 skills/til-viewer/assets/generate_algorithm_practice.py . ./dist
           python3 skills/til-viewer/assets/generate_static_pages.py . ./dist
 
       - name: Setup Pages
