@@ -20,7 +20,7 @@
       "label": "Data & Messaging",
       "icon": "🗄️",
       "order": 3,
-      "categories": ["DB", "redis", "kafka", "cache"]
+      "categories": ["MYSQL", "redis", "kafka", "cache"]
     },
     {
       "id": "infrastructure",
@@ -57,7 +57,7 @@
     "backend-roadmap": "Backend Roadmap",
     "build-tool": "Build Tool",
     "TEST": "Testing",
-    "DB": "Database",
+    "MYSQL": "MySQL",
     "CS": "Computer Science",
     "AI": "AI / ML"
   },
