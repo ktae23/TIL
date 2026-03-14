@@ -20,7 +20,7 @@
       "label": "Data & Messaging",
       "icon": "🗄️",
       "order": 3,
-      "categories": ["MYSQL", "redis", "kafka", "cache"]
+      "categories": ["MYSQL", "redis", "kafka", "cache", "data & messaging"]
     },
     {
       "id": "infrastructure",
@@ -59,7 +59,8 @@
     "TEST": "Testing",
     "MYSQL": "MySQL",
     "CS": "Computer Science",
-    "AI": "AI / ML"
+    "AI": "AI / ML",
+    "data & messaging": "Data & Messaging"
   },
   "defaultCollapsed": true
 }
