@@ -187,7 +187,83 @@ Quicklist 구조 (list-max-listpack-size = 3 예시):
                             compress=1 → 양 끝 1개씩 비압축
 ```
 
-### 3.4 Quicklist 설정 파라미터
+### 3.4 Quicklist 심화: Node 구조와 LZF 압축
+
+#### Quicklist 전체 구조
+
+Quicklist는 **이중 연결 리스트의 각 노드가 Listpack(구 Ziplist)을 내부 저장소로 사용**하는 하이브리드 자료구조다. 이중 연결 리스트만 사용하면 노드마다 포인터 오버헤드(prev/next)가 발생하고, Listpack만 사용하면 큰 리스트에서 삽입/삭제 시 전체를 재할당해야 한다. Quicklist는 두 구조의 장점을 결합하여 이 문제를 해결한다.
+
+```
+[ Quicklist 전체 구조 ]
+  Head (LPOP)                                           Tail (RPUSH)
+   |                                                     |
+   ▼        [Node 1]          [Node 2]          [Node 3] ▼
+  [ ] <---> [ Uncom- ] <---> [ Com-   ] <---> [ Uncom- ] [ ]
+  [ ]       [ pressed]       [ pressed]       [ pressed] [ ]
+   |        [Listpck]        [Listpck]        [Listpck]  |
+   |            |                |                |       |
+   |            |                |                |       |
+   +------------+----------------+----------------+-------+
+                |                |
+                |        [ Node 내부 상세: Listpack ]
+                |        +-----------------------------------+
+                +------> | Entry 1 | Entry 2 | ... | Entry N |
+                         +-----------------------------------+
+                         (데이터들이 포인터 없이 빈틈없이 붙어 있음)
+```
+
+#### Node 구조 상세
+
+각 `quicklistNode`는 다음 요소로 구성된다:
+
+| 필드 | 크기 | 설명 |
+|------|------|------|
+| `prev` / `next` | 각 8바이트 (64bit) | 이중 연결 리스트 포인터 |
+| `*entry` | 8바이트 | Listpack 데이터 포인터 |
+| `sz` | 8바이트 | Listpack의 바이트 크기 (압축 전 원본 크기) |
+| `count` | 16비트 | Listpack 내 엔트리 수 (최대 65535) |
+| `encoding` | 2비트 | `RAW(1)` = 비압축, `LZF(2)` = LZF 압축 |
+| `container` | 2비트 | 저장 형식 — 현재 항상 `PACKED(2)` (Listpack) |
+| `recompress` | 1비트 | 읽기 위해 임시 해제된 압축을 재압축해야 하는지 표시 |
+
+노드의 `encoding` 필드가 핵심이다. `RAW`이면 `*entry`가 Listpack 원본 데이터를 직접 가리키고, `LZF`이면 압축된 바이트 배열을 가리킨다.
+
+#### LZF 압축 동작 방식
+
+Redis는 `list-compress-depth` 설정에 따라 **양 끝 N개 노드를 제외한 중간 노드들을 LZF 알고리즘으로 압축**한다. 접근 빈도가 높은 양 끝은 비압축 상태로 유지하고, 상대적으로 접근이 드문 중간 노드의 메모리를 절약하는 전략이다.
+
+```
+list-compress-depth 에 따른 압축 범위:
+
+depth=0: [비압축][비압축][비압축][비압축][비압축]  ← 전부 비압축 (기본값)
+depth=1: [비압축][  LZF ][  LZF ][  LZF ][비압축]  ← 양 끝 1개씩 유지
+depth=2: [비압축][비압축][  LZF ][비압축][비압축]  ← 양 끝 2개씩 유지
+depth=3: [비압축][비압축][비압축][비압축][비압축]  ← 5개면 전부 비압축
+```
+
+**압축 노드 접근 시 동작 흐름:**
+
+1. 압축된 노드의 데이터를 읽어야 할 때 LZF 해제(decompress) 수행
+2. `recompress` 플래그를 `1`로 설정
+3. 데이터 읽기/수정 완료
+4. 다음 명령 처리 전에 `recompress=1`인 노드를 다시 압축
+
+이 방식으로 중간 노드 접근(`LINDEX`, `LRANGE`) 시에는 압축 해제/재압축 비용이 발생하므로, 양 끝 연산(`LPUSH`/`RPUSH`/`LPOP`/`RPOP`) 위주로 사용할 때 가장 효율적이다.
+
+#### Listpack vs Ziplist (Redis 7.x 변경 사항)
+
+Redis 7.0부터 Ziplist는 Listpack으로 완전히 대체되었다. Ziplist의 **연쇄 업데이트(cascade update)** 문제가 핵심 이유다.
+
+| 비교 항목 | Ziplist (구버전) | Listpack (7.x) |
+|----------|-----------------|----------------|
+| 이전 엔트리 길이 저장 | `prevlen` 필드 (1 or 5바이트) | 저장하지 않음 |
+| 연쇄 업데이트 | 발생 가능 — 최악 O(N^2) | 발생하지 않음 |
+| 역방향 순회 | `prevlen`으로 이전 엔트리 위치 계산 | 현재 엔트리 끝에 자체 길이를 역순 인코딩하여 저장 |
+| 메모리 레이아웃 | 연속 메모리, 포인터 없음 | 동일 — 연속 메모리, 포인터 없음 |
+
+Ziplist에서는 중간 엔트리의 크기가 변경되면 뒤따르는 엔트리들의 `prevlen` 필드가 연쇄적으로 업데이트될 수 있었다. Listpack은 이 필드를 제거하여 문제를 근본적으로 해결했다.
+
+### 3.5 Quicklist 설정 파라미터
 
 ```conf
 # redis.conf
@@ -206,7 +282,7 @@ list-compress-depth 0
 | `-5` | 노드당 최대 64KB | 대용량 요소 |
 | `128` (양수) | 노드당 최대 128개 엔트리 | 엔트리 수 기반 제어 |
 
-### 3.5 List 명령어 시간 복잡도
+### 3.6 List 명령어 시간 복잡도
 
 | 명령어 | 시간 복잡도 | 설명 |
 |--------|------------|------|
@@ -244,26 +320,36 @@ public class DistributedCounterService {
 
     /**
      * 일일 카운터: 자정에 자동 만료.
-     * INCR + EXPIRE를 파이프라인으로 묶어 네트워크 왕복을 줄인다.
+     * Lua 스크립트로 INCR + 조건부 EXPIREAT를 원자적으로 실행한다.
+     * INCR 결과가 1(새 키)일 때만 만료 시간을 설정하여
+     * 이미 존재하는 키의 TTL이 재설정되는 문제를 방지한다.
+     *
+     * ⚠ 기존 파이프라인 방식의 문제점:
+     *   파이프라인은 모든 명령을 한번에 전송하므로 INCR 결과에 따른
+     *   조건 분기가 불가능하다. EXPIRE가 매 호출마다 실행되어
+     *   TTL이 계속 갱신되므로, 자정 만료가 보장되지 않는다.
      */
+    private static final RedisScript<Long> DAILY_INCR_SCRIPT = RedisScript.of(
+        "local count = redis.call('INCR', KEYS[1]) " +
+        "if count == 1 then " +
+        "  redis.call('EXPIREAT', KEYS[1], ARGV[1]) " +
+        "end " +
+        "return count",
+        Long.class
+    );
+
     public long incrementDaily(String name) {
         String key = COUNTER_PREFIX + "daily:" + LocalDate.now() + ":" + name;
+        long midnightEpoch = LocalDate.now().plusDays(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toEpochSecond();
 
-        List<Object> results = redisTemplate.executePipelined(
-            (RedisCallback<Object>) connection -> {
-                byte[] rawKey = key.getBytes();
-                connection.stringCommands().incr(rawKey);
-                // 키가 새로 생성된 경우에만 TTL 설정
-                connection.keyCommands().expire(rawKey,
-                    Duration.between(
-                        LocalDateTime.now(),
-                        LocalDate.now().plusDays(1).atStartOfDay()
-                    ).getSeconds());
-                return null;
-            }
+        Long result = redisTemplate.execute(
+            DAILY_INCR_SCRIPT,
+            List.of(key),
+            String.valueOf(midnightEpoch)
         );
-
-        return (Long) results.get(0);
+        return result != null ? result : 0L;
     }
 
     /**
