@@ -140,6 +140,27 @@ SPARSE 인코딩: 대부분의 레지스터가 0일 때 RLE 압축으로 메모�
 DENSE 인코딩:  레지스터 값이 많아지면 16384*6bit = 12KB 고정
 ```
 
+**카디널리티 추정 수식:**
+
+HyperLogLog의 추정값은 레지스터들의 **조화평균(harmonic mean)** 에 기반한다.
+
+```
+         α_m · m²
+E = ─────────────────
+     Σ(j=1→m) 2^(-M[j])
+
+  m     = 레지스터 수 (Redis: 16384)
+  M[j]  = j번째 레지스터 값 (관측된 최대 선행 0 개수 + 1)
+  α_m   = 보정 상수 (m=16384일 때 α ≈ 0.7213 / (1 + 1.079/m))
+
+예시:
+  registers = [3, 1, 4, 2, ...]  (16384개)
+  → 각 레지스터의 2^(-M[j]): [0.125, 0.5, 0.0625, 0.25, ...]
+  → 조화평균의 역수를 합산 → 보정 상수 적용 → 추정 카디널리티
+```
+
+조화평균은 산술평균보다 **큰 값의 영향을 줄여주므로**, 해시 충돌로 인한 비정상적으로 큰 레지스터 값이 전체 추정에 미치는 왜곡을 최소화한다. Redis는 여기에 더해 소규모(Linear Counting 전환)와 대규모(2^32 근접 보정)에서의 편향을 추가로 보정한다.
+
 ```bash
 # HyperLogLog 사용 예시
 127.0.0.1:6379> PFADD visitors:2025-01-15 "user1" "user2" "user3"
@@ -245,6 +266,39 @@ flowchart TD
 
 Geospatial은 내부적으로 **Sorted Set** 위에 구현된다. 좌표를 Geohash로 변환하여 score로 저장하므로, Sorted Set의 모든 장점(O(log N) 삽입/조회)을 그대로 활용한다.
 
+**Geohash 인코딩 원리:**
+
+Geohash는 2차원 좌표(경도, 위도)를 1차원 정수로 변환하는 알고리즘이다. 경도와 위도를 각각 이진수로 표현한 후, 비트를 번갈아 끼워넣어(interleave) 하나의 52비트 정수를 만든다.
+
+```
+GEOADD stores 126.978 37.566 "강남점" 의 내부 동작:
+
+① 경도(longitude) 이진 인코딩 (범위: -180 ~ +180)
+   126.978 → 이진 분할 반복 → 11011010110...  (26비트)
+
+② 위도(latitude) 이진 인코딩 (범위: -90 ~ +90)
+   37.566  → 이진 분할 반복 → 10110001010...  (26비트)
+
+③ 비트 인터리빙 (경도·위도 교대 배치)
+   경도: 1 1 0 1 1 0 1 0 1 1 0 ...
+   위도: 1 0 1 1 0 0 0 1 0 1 0 ...
+         ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
+   결합: 11 10 01 11 10 00 01 10 01 11 00 ...
+
+④ 52비트 정수 → Sorted Set의 score로 저장
+   ZADD stores <geohash_52bit_integer> "강남점"
+```
+
+이 인코딩의 핵심 특성은 **지리적으로 가까운 좌표가 비슷한 정수값을 갖는다**는 점이다. 따라서 Sorted Set의 범위 쿼리(`ZRANGEBYSCORE`)로 근접 좌표를 효율적으로 검색할 수 있다.
+
+| Geohash 비트 수 | 정밀도 | 셀 크기 |
+|----------------|--------|---------|
+| 26비트 (13+13) | 낮음 | ~630km × ~630km |
+| 32비트 (16+16) | 중간 | ~39km × ~20km |
+| 52비트 (26+26) | Redis 사용 | ~0.6m × ~0.6m |
+
+> **주의**: Geohash는 지구를 평면으로 근사하므로, 극지방이나 날짜변경선 부근에서는 오차가 커진다. 또한 Geohash 셀 경계 근처의 두 점은 실제로 가깝지만 다른 셀에 속할 수 있어, `GEOSEARCH`는 내부적으로 인접 셀까지 함께 검색한다.
+
 ```bash
 # 위치 추가
 127.0.0.1:6379> GEOADD stores 126.9780 37.5665 "강남점"
@@ -313,15 +367,26 @@ public class AttendanceService {
 
     /**
      * 연속 출석 일수를 계산한다.
-     * 각 날짜의 Bitmap을 AND 연산하여 연속 출석자를 구한다.
+     * 파이프라인으로 N일치의 GETBIT를 한 번에 조회하여
+     * 개별 호출 N회 대신 네트워크 왕복 1회로 처리한다.
      */
     public long getConsecutiveAttendance(
             LocalDate startDate, int days, long userId) {
 
+        List<Object> results = redisTemplate.executePipelined(
+            (RedisCallback<Object>) connection -> {
+                for (int i = 0; i < days; i++) {
+                    String key = ATTENDANCE_PREFIX + startDate.minusDays(i);
+                    connection.stringCommands().getBit(
+                        key.getBytes(), userId);
+                }
+                return null;
+            }
+        );
+
         int count = 0;
-        for (int i = 0; i < days; i++) {
-            LocalDate date = startDate.minusDays(i);
-            if (isCheckedIn(date, userId)) {
+        for (Object result : results) {
+            if (Boolean.TRUE.equals(result)) {
                 count++;
             } else {
                 break;
@@ -339,7 +404,7 @@ public class AttendanceService {
 
         String key1 = ATTENDANCE_PREFIX + date1;
         String key2 = ATTENDANCE_PREFIX + date2;
-        String destKey = "attendance:temp:and";
+        String destKey = "attendance:temp:and:" + UUID.randomUUID();
 
         redisTemplate.execute((RedisCallback<Long>) connection -> {
             connection.stringCommands().bitOp(
@@ -430,14 +495,31 @@ public class UniqueVisitorService {
 
     /**
      * 주간 UV 트렌드를 조회한다.
+     * 파이프라인으로 7일치 PFCOUNT를 한 번에 조회하여
+     * 네트워크 왕복을 7회에서 1회로 줄인다.
      */
     public Map<LocalDate, Long> getWeeklyTrend(String page) {
-        Map<LocalDate, Long> trend = new LinkedHashMap<>();
         LocalDate today = LocalDate.now();
-
+        List<LocalDate> dates = new ArrayList<>();
         for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            trend.put(date, getDailyUV(date, page));
+            dates.add(today.minusDays(i));
+        }
+
+        List<Object> results = redisTemplate.executePipelined(
+            (RedisCallback<Object>) connection -> {
+                for (LocalDate date : dates) {
+                    String key = UV_PREFIX + "daily:" + date + ":" + page;
+                    connection.hyperLogLogCommands()
+                        .pfCount(key.getBytes());
+                }
+                return null;
+            }
+        );
+
+        Map<LocalDate, Long> trend = new LinkedHashMap<>();
+        for (int i = 0; i < dates.size(); i++) {
+            Long count = (Long) results.get(i);
+            trend.put(dates.get(i), count != null ? count : 0L);
         }
         return trend;
     }
@@ -463,6 +545,11 @@ public class EventStreamService {
      * XADD는 O(1)로 메시지를 추가하며, 자동으로 고유 ID를 생성한다.
      * MAXLEN ~으로 Stream 크기를 제한하여 메모리를 관리한다.
      */
+    /**
+     * 이벤트를 Stream에 발행한다 (Producer).
+     * XADD의 MAXLEN ~ 옵션으로 추가와 트리밍을 단일 명령으로 처리한다.
+     * (~는 정확히 maxLen이 아닌 근사값으로 트리밍하여 성능을 최적화한다)
+     */
     public String publishEvent(OrderEvent event) {
         Map<String, String> fields = new LinkedHashMap<>();
         fields.put("type", event.type());
@@ -471,16 +558,14 @@ public class EventStreamService {
         fields.put("timestamp", Instant.now().toString());
 
         try {
-            // MAXLEN ~10000: 약 10000개로 제한 (~ = 성능 최적화)
             StringRecord record = StreamRecords.string(fields)
                 .withStreamKey(STREAM_KEY);
 
+            // XADD + MAXLEN ~10000을 단일 명령으로 실행
             RecordId recordId = redisTemplate.opsForStream()
-                .add(record);
-
-            // Stream 크기 제한 (트리밍)
-            redisTemplate.opsForStream()
-                .trim(STREAM_KEY, 10000, true);
+                .add(record, StreamAddOptions.makeNoStream(false)
+                    .approximateTrimming(true)
+                    .maxLen(10000));
 
             return recordId != null ? recordId.getValue() : null;
         } catch (Exception e) {
@@ -567,6 +652,89 @@ public class EventStreamService {
         double amount,
         Instant timestamp
     ) {}
+}
+```
+
+### 4.4 주변 매장 검색 (Geospatial)
+
+```java
+@Service
+@RequiredArgsConstructor
+public class NearbyStoreService {
+
+    private final StringRedisTemplate redisTemplate;
+    private static final String STORES_KEY = "geo:stores";
+
+    /**
+     * 매장 위치를 등록한다.
+     * GEOADD는 내부적으로 Sorted Set의 ZADD를 실행하므로 O(log N).
+     * Geohash로 변환된 52비트 정수가 score로 저장된다.
+     */
+    public void registerStore(String storeId, double lng, double lat) {
+        redisTemplate.opsForGeo().add(STORES_KEY,
+            new Point(lng, lat), storeId);
+    }
+
+    /** 여러 매장을 파이프라인으로 일괄 등록 */
+    public void registerStores(List<StoreLocation> stores) {
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (StoreLocation store : stores) {
+                connection.geoCommands().geoAdd(
+                    STORES_KEY.getBytes(),
+                    new Point(store.lng(), store.lat()),
+                    store.id().getBytes());
+            }
+            return null;
+        });
+    }
+
+    /**
+     * 현재 위치에서 반경 내 매장을 거리순으로 검색한다.
+     * GEOSEARCH는 내부적으로:
+     *   1. 현재 좌표의 Geohash를 계산
+     *   2. 해당 Geohash 범위 + 인접 8개 셀을 Sorted Set에서 범위 조회
+     *   3. 각 후보의 실제 거리를 계산하여 반경 필터링
+     *
+     * 시간 복잡도: O(N+log M) — N=결과 수, M=전체 매장 수
+     */
+    public List<StoreDistance> findNearbyStores(
+            double lng, double lat, double radiusKm, int limit) {
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> results =
+            redisTemplate.opsForGeo().search(STORES_KEY,
+                GeoReference.fromCoordinate(lng, lat),
+                new Distance(radiusKm, Metrics.KILOMETERS),
+                RedisGeoCommands.GeoSearchCommandArgs.newArgs()
+                    .sortAscending()
+                    .limit(limit)
+                    .includeDistance()
+                    .includeCoordinates());
+
+        if (results == null) return List.of();
+
+        return results.getContent().stream()
+            .map(r -> new StoreDistance(
+                r.getContent().getName(),
+                r.getDistance().getValue(),
+                r.getContent().getPoint().getX(),
+                r.getContent().getPoint().getY()))
+            .toList();
+    }
+
+    /**
+     * 두 매장 사이의 거리를 계산한다.
+     * GEODIST는 Haversine 공식으로 대원 거리를 구한다. O(1).
+     */
+    public double getDistanceBetween(String storeId1, String storeId2) {
+        Distance distance = redisTemplate.opsForGeo()
+            .distance(STORES_KEY, storeId1, storeId2,
+                Metrics.KILOMETERS);
+        return distance != null ? distance.getValue() : 0.0;
+    }
+
+    public record StoreLocation(String id, double lng, double lat) {}
+    public record StoreDistance(String id, double distanceKm,
+                                double lng, double lat) {}
 }
 ```
 

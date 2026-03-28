@@ -142,6 +142,31 @@ void saddCommand(client *c) {
 }
 ```
 
+**Progressive Rehashing (점진적 리해싱):**
+
+Set과 Hash가 Hashtable 인코딩을 사용할 때, 해시 테이블 확장/축소 시 Redis는 모든 엔트리를 한 번에 옮기지 않는다. 이는 O(N) 블로킹을 유발하므로, 대신 **두 개의 해시 테이블(ht[0], ht[1])을 동시에 유지하며 점진적으로 마이그레이션**한다.
+
+```
+Progressive Rehashing 과정:
+
+단계 1: 확장 필요 (load factor > 1)
+  ht[0]: [A][B][C][D]  (4 buckets, 가득 참)
+  ht[1]: [ ][ ][ ][ ][ ][ ][ ][ ]  (8 buckets, 새로 할당)
+  rehashidx = 0  ← 마이그레이션 시작 위치
+
+단계 2: 명령 실행할 때마다 1개 bucket씩 이동
+  ht[0]: [ ][B][C][D]  → bucket[0]의 A를 ht[1]으로 이동
+  ht[1]: [ ][ ][A][ ][ ][ ][ ][ ]
+  rehashidx = 1
+
+단계 3: 모든 bucket 이동 완료
+  ht[0]: (해제)
+  ht[1] → ht[0]: [D][ ][A][ ][B][ ][C][ ]
+  rehashidx = -1  ← 리해싱 완료
+```
+
+리해싱 진행 중에는 **조회 시 ht[0]과 ht[1]을 모두 검색**하고, **삽입은 항상 ht[1]에** 수행한다. 이로써 단일 명령의 지연 없이 백그라운드에서 테이블 확장이 진행된다.
+
 ### 3.4 Hash 내부 구현
 
 Hash의 Listpack 인코딩에서는 `[field1][value1][field2][value2]...` 형태로 필드-값 쌍이 연속 저장된다.
@@ -221,6 +246,53 @@ Level 1:  HEAD → A(100) → B(200) → C(300) → D(400) → NULL
   ZSCORE "C" → dict에서 O(1)으로 score 직접 조회
 ```
 
+**Skiplist의 확률적 레벨 생성:**
+
+Skiplist는 균형 이진 트리(AVL, Red-Black Tree)와 달리 **회전(rotation) 없이 확률적으로 균형을 유지**한다. 새 노드의 레벨은 동전 던지기처럼 결정된다.
+
+```c
+// t_zset.c - 레벨 생성 알고리즘
+int zslRandomLevel(void) {
+    int level = 1;
+    // ZSKIPLIST_P = 0.25 (25% 확률로 레벨 상승)
+    while ((random() & 0xFFFF) < (ZSKIPLIST_P * 0xFFFF))
+        level += 1;
+    return (level < ZSKIPLIST_MAXLEVEL) ? level : ZSKIPLIST_MAXLEVEL;
+    // ZSKIPLIST_MAXLEVEL = 32
+}
+```
+
+```
+레벨별 노드 분포 (확률 p=0.25):
+  Level 1: 100%  의 노드  ← 모든 노드
+  Level 2: 25%   의 노드
+  Level 3: 6.25% 의 노드
+  Level 4: 1.56% 의 노드
+  ...
+  Level 32: 거의 0  ← 이론상 최대
+
+예시 (10개 노드 삽입 후):
+  L4: HEAD ──────────────────────────────→ G ─────────→ NULL
+  L3: HEAD ──────────→ C ────────────────→ G ─────────→ NULL
+  L2: HEAD ─→ A ─────→ C ────→ E ────────→ G ────→ I → NULL
+  L1: HEAD → A → B → C → D → E → F → G → H → I → J → NULL
+
+  "E"를 찾을 때:
+  L4에서 → G보다 작으므로 L3으로 내려감
+  L3에서 → C 다음이 G, G보다 작으므로 C에서 L2로 내려감
+  L2에서 → C 다음이 E → 발견! (3번만에 도달)
+```
+
+**Redis가 균형 트리 대신 Skiplist를 선택한 이유:**
+
+| 비교 항목 | Skiplist | Red-Black Tree |
+|----------|----------|----------------|
+| 범위 쿼리 (`ZRANGE`) | 시작점 찾은 후 순차 탐색 — 자연스럽고 빠름 | 중위 순회 필요 — 포인터 따라가며 이동 |
+| 구현 복잡도 | 간단 (삽입/삭제가 포인터 조작만) | 복잡 (회전, 색상 규칙 유지) |
+| 동시성 | 부분 잠금 가능 (레벨별 독립) | 회전 시 넓은 범위 잠금 필요 |
+| 메모리 | 평균 노드당 1.33개 포인터 (p=0.25) | 노드당 2개 포인터 + 색상 비트 |
+| span 기반 순위 | O(log N) 순위 계산 (span 합산) | 별도 서브트리 크기 관리 필요 |
+
 **이중 구조를 사용하는 이유:**
 
 | 연산 | Skiplist만 | Hashtable만 | 이중 구조 |
@@ -295,15 +367,26 @@ public class UserProfileCacheService {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String PREFIX = "user:profile:";
 
-    /** 사용자 프로필을 Hash로 캐싱한다. 개별 필드 단위 읽기/쓰기 가능. */
+    /**
+     * 사용자 프로필을 Hash로 캐싱한다. 개별 필드 단위 읽기/쓰기 가능.
+     * putAll과 expire를 파이프라인으로 묶어 원자성을 보장한다.
+     * (별도 실행 시 중간 실패로 TTL 없는 키가 남을 수 있다)
+     */
     public void cacheProfile(UserProfile profile) {
         String key = PREFIX + profile.getId();
         Map<String, Object> fields = Map.of(
             "name", profile.getName(), "email", profile.getEmail(),
             "age", String.valueOf(profile.getAge()),
             "loginCount", String.valueOf(profile.getLoginCount()));
-        redisTemplate.opsForHash().putAll(key, fields);
-        redisTemplate.expire(key, Duration.ofHours(2));
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            byte[] rawKey = key.getBytes();
+            fields.forEach((field, value) ->
+                connection.hashCommands().hSet(rawKey,
+                    field.getBytes(), String.valueOf(value).getBytes()));
+            connection.keyCommands().expire(rawKey,
+                Duration.ofHours(2).getSeconds());
+            return null;
+        });
     }
 
     /** HINCRBY로 로그인 횟수를 원자적으로 증가. 전체 프로필 재기록 불필요. */
@@ -336,7 +419,8 @@ public class LeaderboardService {
 
     /** ZINCRBY로 원자적 점수 증가 */
     public double addScore(String playerId, double delta) {
-        return redisTemplate.opsForZSet().incrementScore(KEY, playerId, delta);
+        Double score = redisTemplate.opsForZSet().incrementScore(KEY, playerId, delta);
+        return score != null ? score : 0.0;
     }
 
     /** ZREVRANGE로 상위 N명 조회 (내림차순). O(log N + M) */
@@ -364,6 +448,212 @@ public class LeaderboardService {
 
     public record RankEntry(int rank, String playerId, double score) {}
 }
+```
+
+### 4.4 좋아요 시스템과 공통 친구 추천 (Set)
+
+```java
+@Service
+@RequiredArgsConstructor
+public class SocialService {
+
+    private final StringRedisTemplate redisTemplate;
+
+    // ── 좋아요 ──
+
+    /** SADD로 좋아요 추가. Set은 중복을 자동 제거하므로 이중 좋아요가 불가능하다. */
+    public void like(Long postId, Long userId) {
+        redisTemplate.opsForSet()
+            .add("post:likes:" + postId, String.valueOf(userId));
+    }
+
+    /** SREM으로 좋아요 취소 */
+    public void unlike(Long postId, Long userId) {
+        redisTemplate.opsForSet()
+            .remove("post:likes:" + postId, String.valueOf(userId));
+    }
+
+    /** SISMEMBER로 좋아요 여부 확인. O(1) */
+    public boolean isLiked(Long postId, Long userId) {
+        return Boolean.TRUE.equals(redisTemplate.opsForSet()
+            .isMember("post:likes:" + postId, String.valueOf(userId)));
+    }
+
+    /** SCARD로 좋아요 수 조회. O(1) — 전체 순회 없이 카운트 반환 */
+    public long getLikeCount(Long postId) {
+        Long count = redisTemplate.opsForSet().size("post:likes:" + postId);
+        return count != null ? count : 0L;
+    }
+
+    // ── 공통 친구 ──
+
+    /** SADD로 친구 관계 추가 (양방향) */
+    public void addFriend(Long userId, Long friendId) {
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            connection.setCommands().sAdd(
+                ("user:friends:" + userId).getBytes(),
+                String.valueOf(friendId).getBytes());
+            connection.setCommands().sAdd(
+                ("user:friends:" + friendId).getBytes(),
+                String.valueOf(userId).getBytes());
+            return null;
+        });
+    }
+
+    /**
+     * SINTER로 공통 친구를 조회한다.
+     * A의 친구 Set과 B의 친구 Set의 교집합 = 공통 친구.
+     * O(N*M)이므로 팔로워 수가 매우 많으면 SINTERCARD로 개수만 먼저 확인한다.
+     */
+    public Set<String> getCommonFriends(Long userId1, Long userId2) {
+        return redisTemplate.opsForSet().intersect(
+            "user:friends:" + userId1,
+            "user:friends:" + userId2);
+    }
+
+    /**
+     * SDIFF로 친구 추천: "B의 친구 중 A의 친구가 아닌 사람"
+     * = B의 친구 Set - A의 친구 Set (차집합)
+     */
+    public Set<String> recommendFriends(Long userId, Long viaFriendId) {
+        return redisTemplate.opsForSet().difference(
+            "user:friends:" + viaFriendId,
+            "user:friends:" + userId);
+    }
+}
+```
+
+### 4.5 장바구니 (Hash)
+
+```java
+@Service
+@RequiredArgsConstructor
+public class CartService {
+
+    private final StringRedisTemplate redisTemplate;
+    private static final String CART_PREFIX = "cart:";
+
+    /**
+     * Hash의 field=상품ID, value=수량으로 장바구니를 모델링한다.
+     * HINCRBY로 수량을 원자적으로 변경할 수 있어,
+     * 동시에 같은 상품을 담아도 정합성이 보장된다.
+     */
+    public long addItem(Long userId, String productId, int quantity) {
+        String key = CART_PREFIX + userId;
+        Long newQty = redisTemplate.opsForHash()
+            .increment(key, productId, quantity);
+        redisTemplate.expire(key, Duration.ofDays(7));
+        return newQty != null ? newQty : 0L;
+    }
+
+    /** HDEL로 상품 제거 */
+    public void removeItem(Long userId, String productId) {
+        redisTemplate.opsForHash().delete(CART_PREFIX + userId, productId);
+    }
+
+    /**
+     * HGETALL로 장바구니 전체 조회.
+     * Hash 필드 수가 적으므로 (상품 수십 개) O(N)이어도 문제없다.
+     * 필드 수가 128개 이하이면 Listpack 인코딩으로 메모리 효율도 좋다.
+     */
+    public Map<String, Integer> getCart(Long userId) {
+        Map<Object, Object> entries = redisTemplate.opsForHash()
+            .entries(CART_PREFIX + userId);
+
+        Map<String, Integer> cart = new LinkedHashMap<>();
+        entries.forEach((k, v) ->
+            cart.put((String) k, Integer.parseInt((String) v)));
+        return cart;
+    }
+
+    /** HLEN으로 장바구니 상품 종류 수 조회. O(1) */
+    public long getItemCount(Long userId) {
+        return redisTemplate.opsForHash().size(CART_PREFIX + userId);
+    }
+
+    /** 장바구니 비우기 — 키 자체를 삭제하면 모든 필드가 제거된다 */
+    public void clearCart(Long userId) {
+        redisTemplate.delete(CART_PREFIX + userId);
+    }
+}
+```
+
+### 4.6 슬라이딩 윈도우 Rate Limiter (Sorted Set)
+
+```java
+@Service
+@RequiredArgsConstructor
+public class RateLimiterService {
+
+    private final StringRedisTemplate redisTemplate;
+
+    /**
+     * Sorted Set을 활용한 슬라이딩 윈도우 Rate Limiter.
+     *
+     * 구조: ZADD rate:{key} {timestamp} {unique_id}
+     *   - score = 요청 시각 (밀리초)
+     *   - member = 고유 식별자 (중복 방지)
+     *
+     * 동작 원리:
+     *   1. ZREMRANGEBYSCORE로 윈도우 밖의 오래된 요청을 제거
+     *   2. ZCARD로 현재 윈도우 내 요청 수를 확인
+     *   3. 제한 이하이면 ZADD로 새 요청을 기록
+     *
+     * 고정 윈도우(fixed window) 방식과 달리 윈도우 경계에서의
+     * 버스트를 방지한다.
+     *
+     * 예: 분당 100회 제한일 때
+     *   고정 윈도우: 00:59에 100회 + 01:00에 100회 = 2초간 200회 가능
+     *   슬라이딩:    어떤 60초 구간에서든 최대 100회 보장
+     */
+    public boolean isAllowed(String clientId, int maxRequests,
+                             Duration window) {
+        String key = "rate:" + clientId;
+        long now = System.currentTimeMillis();
+        long windowStart = now - window.toMillis();
+
+        List<Object> results = redisTemplate.executePipelined(
+            (RedisCallback<Object>) connection -> {
+                byte[] rawKey = key.getBytes();
+                // ① 윈도우 밖 요청 제거
+                connection.zSetCommands()
+                    .zRemRangeByScore(rawKey, 0, windowStart);
+                // ② 현재 윈도우 내 요청 수 확인
+                connection.zSetCommands().zCard(rawKey);
+                // ③ 새 요청 추가 (member에 나노초로 고유성 보장)
+                connection.zSetCommands().zAdd(rawKey, now,
+                    (now + "-" + System.nanoTime()).getBytes());
+                // ④ 키 만료 설정 (윈도우 크기 + 여유)
+                connection.keyCommands()
+                    .expire(rawKey, window.getSeconds() + 1);
+                return null;
+            }
+        );
+
+        long currentCount = (Long) results.get(1);
+        if (currentCount >= maxRequests) {
+            // 제한 초과 — 방금 추가한 요청도 제거
+            redisTemplate.opsForZSet()
+                .removeRangeByScore(key, now, now);
+            return false;
+        }
+        return true;
+    }
+}
+```
+
+```
+슬라이딩 윈도우 vs 고정 윈도우 비교:
+
+고정 윈도우 (분당 5회 제한):
+  |--- 00:00 ---||--- 01:00 ---|
+  [  ] [  ] [xx] [xx] [xx] [  ]
+                  ↑ 경계에서 xx 5회 연속 가능 (버스트)
+
+슬라이딩 윈도우 (분당 5회 제한):
+        |------ 60초 윈도우 ------|
+  [ ] [x] [x] [x] [x] [x] [거부]
+                              ↑ 어느 60초에서든 최대 5회
 ```
 
 ## 5. 정리
