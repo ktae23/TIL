@@ -420,6 +420,229 @@ public class RecentActivityService {
 }
 ```
 
+### 4.3 타임라인 피드 구현 (List + Fan-out 패턴)
+
+소셜 서비스에서 "내 피드에 팔로잉의 게시글을 시간순으로 보여주는" 타임라인 구현은 크게 두 가지 전략이 있다.
+
+#### Fan-out on Write (Push 모델)
+
+게시글 작성 시점에 모든 팔로워의 타임라인 List에 미리 배달한다. **읽기가 O(1)로 매우 빠르지만, 팔로워가 많을수록 쓰기 비용이 폭증**한다.
+
+```
+유저 A가 게시글 작성 (follower: B, C, D)
+
+  POST 생성
+    │
+    ▼
+  ┌─────────────────────────────┐
+  │ LPUSH timeline:B  post:123  │
+  │ LPUSH timeline:C  post:123  │  ← 팔로워 수만큼 LPUSH
+  │ LPUSH timeline:D  post:123  │
+  │ LTRIM timeline:B  0 999    │  ← 최대 1000개 유지
+  │ LTRIM timeline:C  0 999    │
+  │ LTRIM timeline:D  0 999    │
+  └─────────────────────────────┘
+
+타임라인 조회 (B가 피드 열기):
+  LRANGE timeline:B 0 19  → 끝. O(1)에 가까움
+```
+
+```java
+@Service
+@RequiredArgsConstructor
+public class TimelineService {
+
+    private final StringRedisTemplate redisTemplate;
+    private static final int TIMELINE_MAX_SIZE = 1000;
+    private static final String TIMELINE_PREFIX = "timeline:";
+
+    /**
+     * Fan-out on Write: 게시글 작성 시 팔로워들의 타임라인에 배달.
+     * 팔로워가 많으면 비동기로 처리해야 한다.
+     */
+    public void fanOutToFollowers(Long authorId, Long postId) {
+        List<Long> followerIds = getFollowerIds(authorId);
+
+        // 파이프라인으로 네트워크 왕복을 1회로 줄임
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (Long followerId : followerIds) {
+                byte[] key = (TIMELINE_PREFIX + followerId).getBytes();
+                byte[] value = String.valueOf(postId).getBytes();
+                connection.listCommands().lPush(key, value);
+                connection.listCommands().lTrim(key, 0, TIMELINE_MAX_SIZE - 1);
+            }
+            return null;
+        });
+    }
+
+    /** 타임라인 조회 — LRANGE 한 번이면 끝 */
+    public List<Long> getTimeline(Long userId, int page, int size) {
+        String key = TIMELINE_PREFIX + userId;
+        List<String> postIds = redisTemplate.opsForList()
+            .range(key, (long) page * size, (long) page * size + size - 1);
+
+        return postIds != null
+            ? postIds.stream().map(Long::parseLong).toList()
+            : List.of();
+    }
+}
+```
+
+**문제: 팔로워 100만 명이면?** 동기 처리 시 게시글 작성 API 응답이 수 초 이상 걸린다. 비동기 + 청크 분할로 해결한다.
+
+```java
+@Service
+@RequiredArgsConstructor
+public class AsyncFanOutService {
+
+    private final StringRedisTemplate redisTemplate;
+    private static final int CHUNK_SIZE = 1000;
+    private static final int TIMELINE_MAX_SIZE = 1000;
+    private static final String TIMELINE_PREFIX = "timeline:";
+
+    /**
+     * 대량 팔로워 비동기 처리.
+     * 1000명씩 청크로 나누어 파이프라인 1회로 처리한다.
+     */
+    @Async
+    public void fanOutAsync(Long authorId, Long postId) {
+        List<Long> followerIds = getFollowerIds(authorId);
+
+        for (int i = 0; i < followerIds.size(); i += CHUNK_SIZE) {
+            List<Long> chunk = followerIds.subList(
+                i, Math.min(i + CHUNK_SIZE, followerIds.size()));
+
+            redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+                for (Long followerId : chunk) {
+                    byte[] key = (TIMELINE_PREFIX + followerId).getBytes();
+                    byte[] value = String.valueOf(postId).getBytes();
+                    connection.listCommands().lPush(key, value);
+                    connection.listCommands().lTrim(key, 0, TIMELINE_MAX_SIZE - 1);
+                }
+                return null;
+            });
+        }
+    }
+}
+```
+
+#### Fan-out on Read (Pull 모델)
+
+타임라인에 미리 배달하지 않고, **조회 시점에 팔로잉 목록의 게시글을 합쳐서** 보여준다. 쓰기는 O(1)이지만 읽기에 비용이 몰린다.
+
+```
+유저 A가 게시글 작성:
+  LPUSH posts:A post:123   ← 자기 게시글 리스트에만 추가. 끝.
+
+유저 B가 피드 조회:
+  following = [A, C, D]
+  LRANGE posts:A 0 19  ─┐
+  LRANGE posts:C 0 19  ─┼─→ 병합 + 시간순 정렬 → 상위 20개 반환
+  LRANGE posts:D 0 19  ─┘
+```
+
+```java
+/**
+ * Fan-out on Read: 조회 시점에 팔로잉들의 게시글을 합친다.
+ * 쓰기는 O(1), 읽기에 비용이 몰린다.
+ */
+public List<Long> getTimelinePull(Long userId) {
+    List<Long> followingIds = getFollowingIds(userId);
+
+    List<Object> results = redisTemplate.executePipelined(
+        (RedisCallback<Object>) connection -> {
+            for (Long followingId : followingIds) {
+                byte[] key = ("posts:" + followingId).getBytes();
+                connection.listCommands().lRange(key, 0, 19);
+            }
+            return null;
+        }
+    );
+
+    return results.stream()
+        .flatMap(r -> ((List<byte[]>) r).stream())
+        .map(b -> Long.parseLong(new String(b)))
+        .sorted(Comparator.reverseOrder())
+        .limit(20)
+        .toList();
+}
+```
+
+#### 두 방식 비교
+
+| | Fan-out on Write | Fan-out on Read |
+|---|---|---|
+| **쓰기 비용** | O(팔로워 수) | O(1) |
+| **읽기 비용** | O(1) — LRANGE 한 번 | O(팔로잉 수) — 여러 LRANGE + 병합 |
+| **메모리** | 팔로워마다 타임라인 복제 | 게시글 1벌만 저장 |
+| **셀럽 문제** | 팔로워 100만 → 쓰기 폭발 | 없음 |
+| **비활성 유저** | 안 보는 타임라인에도 배달 → 낭비 | 조회 안 하면 비용 0 |
+| **실시간성** | 즉시 반영 | 조회 시 최신 보장 |
+
+#### 실무: 하이브리드 (Twitter/X 방식)
+
+실제 대규모 서비스는 두 방식을 **팔로워 수 임계값 기준으로 혼합**한다.
+
+```
+게시글 작성 시 분기:
+
+  팔로워 수 < 임계값 (예: 5,000명)
+    → Fan-out on Write (일반 유저)
+
+  팔로워 수 >= 임계값
+    → Fan-out on Read (셀럽)
+
+타임라인 조회 시:
+  ① LRANGE timeline:{userId}  ← Write로 받은 일반 게시글
+  ② 팔로잉 중 셀럽 목록 조회 → LRANGE posts:{셀럽ID}  ← Pull
+  ③ ①+② 병합, 시간순 정렬, 상위 N개 반환
+```
+
+```java
+@Service
+@RequiredArgsConstructor
+public class HybridTimelineService {
+
+    private final StringRedisTemplate redisTemplate;
+    private static final int CELEB_THRESHOLD = 5_000;
+    private static final String TIMELINE_PREFIX = "timeline:";
+
+    /** 쓰기: 일반 유저만 fan-out, 셀럽은 skip */
+    @Async
+    public void onPostCreated(Long authorId, Long postId) {
+        int followerCount = getFollowerCount(authorId);
+
+        if (followerCount < CELEB_THRESHOLD) {
+            fanOutToFollowers(authorId, postId);
+        }
+        // 셀럽 → 자기 posts 리스트에만 저장 (이미 완료)
+    }
+
+    /** 읽기: push된 타임라인 + 셀럽 게시글 병합 */
+    public List<Long> getTimeline(Long userId, int page, int size) {
+        List<Long> followingCelebs = getFollowingCelebs(userId);
+
+        // ① push된 타임라인
+        List<String> pushed = redisTemplate.opsForList()
+            .range(TIMELINE_PREFIX + userId, 0, 199);
+
+        // ② 셀럽 게시글 pull
+        List<Object> celebPosts = redisTemplate.executePipelined(
+            (RedisCallback<Object>) connection -> {
+                for (Long celebId : followingCelebs) {
+                    connection.listCommands()
+                        .lRange(("posts:" + celebId).getBytes(), 0, 19);
+                }
+                return null;
+            }
+        );
+
+        // ③ 병합 + 정렬 + 페이징
+        return merge(pushed, celebPosts, page, size);
+    }
+}
+```
+
 ## 5. 정리
 
 | 항목 | String | List |
