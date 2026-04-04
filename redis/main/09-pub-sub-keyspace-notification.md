@@ -1,6 +1,6 @@
 # Pub/Sub과 Keyspace Notification: 실시간 메시징의 내부 동작
 
-Redis Pub/Sub은 발행-구독 패턴을 통해 클라이언트 간 실시간 메시지를 전달하며, Keyspace Notification은 키의 상태 변화를 이벤트로 감지할 수 있게 해준다. 이 문서에서는 Pub/Sub의 내부 구현 구조, 메시지 전달 보장 수준, Keyspace Notification 설정과 활용, 그리고 Stream과의 비교를 분석한다.
+Redis Pub/Sub은 발행-구독 패턴을 통해 클라이언트 간 실시간 메시지를 전달하며, Keyspace Notification은 키의 상태 변화를 이벤트로 감지할 수 있게 해준다. 이 문서에서는 Pub/Sub의 내부 구현 구조, 메시지 전달 보장 수준, 클러스터 모드별 동작 차이, Keyspace Notification 설정과 활용, 그리고 Stream과의 비교를 분석한다.
 
 ## 목차
 
@@ -166,7 +166,180 @@ sequenceDiagram
     Redis-->>Pub: (integer) 2
 ```
 
-### 3.6 Pub/Sub vs Stream 비교
+### 3.6 클러스터 모드별 Pub/Sub 동작 비교
+
+Redis의 배포 형태(Standalone, Sentinel, Cluster)에 따라 Pub/Sub의 메시지 전파 범위와 동작 방식이 크게 달라진다. 특히 Redis Cluster에서는 메시지 브로드캐스팅으로 인한 네트워크 오버헤드가 발생하므로 이를 이해하고 적절한 방식을 선택해야 한다.
+
+#### 모드별 비교표
+
+| 비교 항목 | Standalone | Sentinel | Cluster |
+|----------|-----------|----------|---------|
+| **메시지 전파 범위** | 단일 노드 내 | 단일 마스터 노드 내 | **모든 노드에 브로드캐스트** |
+| **PUBLISH 네트워크 비용** | O(N) 구독자 수 | O(N) 구독자 수 | O(N) 구독자 + **노드 간 전파 비용** |
+| **구독자 연결 위치** | 단일 서버 | 마스터 노드 | **어떤 노드든 가능** (메시지가 전파되므로) |
+| **Failover 시 동작** | 서비스 중단 | 자동 승격, 재구독 필요 | 슬롯 마이그레이션, 재구독 필요 |
+| **Keyspace Notification** | 정상 동작 | 정상 동작 | **해당 키가 위치한 노드에서만 발생** |
+| **Sharded Pub/Sub** | 해당 없음 | 해당 없음 | Redis 7.0+ 지원 (SSUBSCRIBE) |
+
+#### Standalone 모드
+
+가장 단순한 구조로, 모든 Publisher와 Subscriber가 동일 노드에 연결된다. `PUBLISH` 시 해당 노드의 `pubsub_channels`만 검색하면 되므로 추가 네트워크 비용이 없다.
+
+```
+┌─────────────────────────────┐
+│        Redis Server         │
+│  pubsub_channels dict       │
+│  ┌─────────┬────────────┐   │
+│  │ channel │ subscribers│   │
+│  └─────────┴────────────┘   │
+│  Publisher → 채널 → 구독자   │
+└─────────────────────────────┘
+```
+
+#### Sentinel 모드
+
+Pub/Sub은 **마스터 노드에서만** 동작한다. Replica는 Pub/Sub 메시지를 전달하지 않는다. Sentinel 자체가 내부적으로 `__sentinel__:hello` 채널을 사용해 Sentinel 인스턴스 간 상태를 교환한다.
+
+**Failover 시 주의사항:**
+- 마스터가 교체되면 기존 Pub/Sub 연결이 끊어진다
+- 클라이언트는 새 마스터에 **재구독**해야 한다
+- Failover 동안 발행된 메시지는 **유실**된다 (At-most-once 특성)
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐
+│Sentinel 1│    │Sentinel 2│    │Sentinel 3│
+└────┬─────┘    └────┬─────┘    └────┬─────┘
+     │   __sentinel__:hello 채널     │
+     └──────────────┼────────────────┘
+                    │
+              ┌─────┴─────┐
+              │  Master    │ ← Pub/Sub 처리
+              │  (Active)  │
+              └─────┬─────┘
+           ┌────────┴────────┐
+      ┌────┴────┐      ┌────┴────┐
+      │Replica 1│      │Replica 2│  ← Pub/Sub 미지원
+      └─────────┘      └─────────┘
+```
+
+#### Cluster 모드 — 일반 Pub/Sub (PUBLISH/SUBSCRIBE)
+
+Redis Cluster에서 `PUBLISH`를 실행하면, 해당 노드가 **클러스터 내 모든 노드에 메시지를 전파(broadcast)**한다. 구독자가 어떤 노드에 연결되어 있든 메시지를 수신할 수 있지만, 이로 인해 노드 수에 비례하는 네트워크 오버헤드가 발생한다.
+
+```mermaid
+graph TD
+    P["Publisher"] -->|"PUBLISH ch1 msg"| N1["Node 1 (slot 0-5460)"]
+    N1 -->|"클러스터 버스 전파"| N2["Node 2 (slot 5461-10922)"]
+    N1 -->|"클러스터 버스 전파"| N3["Node 3 (slot 10923-16383)"]
+
+    N1 --> S1["Subscriber A"]
+    N2 --> S2["Subscriber B"]
+    N3 --> S3["Subscriber C"]
+
+    style N1 fill:#e1f5fe
+    style N2 fill:#e1f5fe
+    style N3 fill:#e1f5fe
+    style P fill:#fff3e0
+    style S1 fill:#e8f5e9
+    style S2 fill:#e8f5e9
+    style S3 fill:#e8f5e9
+```
+
+**문제점:** 노드가 N개일 때, 하나의 `PUBLISH`가 N-1번의 클러스터 버스 메시지를 추가로 발생시킨다. 대규모 클러스터에서 Pub/Sub 트래픽이 많으면 클러스터 버스가 병목이 될 수 있다.
+
+#### Cluster 모드 — Sharded Pub/Sub (Redis 7.0+)
+
+Redis 7.0에서 도입된 **Sharded Pub/Sub**은 채널명을 해시 슬롯에 매핑하여, 해당 슬롯을 소유한 노드(와 그 Replica)에서만 메시지를 처리한다. 브로드캐스트가 발생하지 않으므로 네트워크 효율이 크게 향상된다.
+
+| 비교 항목 | 일반 Pub/Sub (PUBLISH) | Sharded Pub/Sub (SPUBLISH) |
+|----------|----------------------|---------------------------|
+| **명령어** | SUBSCRIBE / PUBLISH | SSUBSCRIBE / SPUBLISH |
+| **메시지 전파** | 모든 노드에 브로드캐스트 | 해당 슬롯의 노드에만 전달 |
+| **네트워크 비용** | O(클러스터 노드 수) | O(1) — 슬롯 소유 노드만 |
+| **구독자 연결 위치** | 아무 노드 | 해당 슬롯을 소유한 노드(또는 Replica) |
+| **패턴 구독** | PSUBSCRIBE 지원 | 미지원 |
+| **슬롯 마이그레이션** | 영향 없음 | 구독자가 새 노드로 재연결 필요 |
+
+```bash
+# Sharded Pub/Sub 사용 예시
+# 채널 "order:events"는 CRC16("order:events") % 16384 슬롯에 매핑
+
+# 구독 (해당 슬롯 노드에 연결해야 함)
+SSUBSCRIBE order:events
+
+# 발행 (해당 슬롯 노드에서만 처리)
+SPUBLISH order:events '{"orderId": 1, "status": "created"}'
+```
+
+#### Cluster에서의 Keyspace Notification 주의사항
+
+Keyspace Notification은 키가 저장된 노드에서만 발생한다. Cluster 모드에서는 키가 해시 슬롯에 따라 분산되므로:
+
+- 특정 키의 만료 이벤트를 감지하려면 **해당 키가 위치한 노드에 구독**해야 한다
+- 모든 키의 이벤트를 수신하려면 **모든 마스터 노드에 각각 구독**해야 한다
+- Keyspace Notification은 클러스터 버스를 통해 전파되지 **않는다**
+
+```java
+// Cluster 환경에서 모든 노드의 Keyspace Notification 구독
+@Configuration
+public class ClusterKeyspaceNotificationConfig {
+
+    @Bean
+    public List<RedisMessageListenerContainer> keyspaceListenerContainers(
+            RedisClusterConnection clusterConnection,
+            RedisConnectionFactory connectionFactory,
+            CacheExpirationHandler handler) {
+
+        List<RedisMessageListenerContainer> containers = new ArrayList<>();
+
+        // 클러스터의 모든 마스터 노드에 대해 리스너 등록
+        for (RedisClusterNode masterNode : clusterConnection
+                .clusterGetNodes()
+                .stream()
+                .filter(n -> n.isMaster())
+                .toList()) {
+
+            // 각 노드별 ConnectionFactory 생성 후 리스너 등록
+            RedisMessageListenerContainer container =
+                new RedisMessageListenerContainer();
+            container.setConnectionFactory(
+                createNodeConnectionFactory(masterNode));
+            container.addMessageListener(
+                handler,
+                new PatternTopic("__keyevent@0__:expired"));
+            containers.add(container);
+        }
+        return containers;
+    }
+}
+```
+
+#### 배포 모드 선택 가이드
+
+```
+Pub/Sub 사용 시 배포 모드 결정 흐름:
+
+메시지 유실 허용? ──No──→ Stream 사용 고려
+       │Yes
+       ▼
+단일 노드로 충분? ──Yes──→ Standalone
+       │No
+       ▼
+HA만 필요? ──Yes──→ Sentinel (읽기 분산 불필요 시)
+       │No
+       ▼
+대규모 데이터 분산 필요? ──Yes──→ Cluster
+       │                          │
+       │                  채널 수가 많고 트래픽이 높은가?
+       │                    │Yes              │No
+       │                    ▼                 ▼
+       │            Sharded Pub/Sub     일반 Pub/Sub
+       │            (Redis 7.0+)
+       ▼
+Sentinel + 애플리케이션 레벨 샤딩
+```
+
+### 3.7 Pub/Sub vs Stream 비교
 
 | 비교 항목 | Pub/Sub | Stream |
 |----------|---------|--------|
@@ -381,6 +554,9 @@ client-output-buffer-limit pubsub 256mb 64mb 60
 | Keyspace Notification | `notify-keyspace-events` 설정으로 키 이벤트 구독 가능 |
 | 만료 감지 | `Ex` 설정 후 `__keyevent@0__:expired` 채널 구독 |
 | Stream과 차이 | Pub/Sub은 Fire-and-forget, Stream은 메시지 보존 및 Consumer Group 지원 |
+| Cluster 일반 Pub/Sub | 모든 노드에 브로드캐스트, 노드 수에 비례하는 네트워크 비용 |
+| Sharded Pub/Sub | Redis 7.0+, 채널을 해시 슬롯에 매핑하여 해당 노드에서만 처리 |
+| Cluster Keyspace | 키가 위치한 노드에서만 이벤트 발생, 전파되지 않음 |
 | Output Buffer | `client-output-buffer-limit pubsub`으로 느린 구독자 보호 |
 
 ---
