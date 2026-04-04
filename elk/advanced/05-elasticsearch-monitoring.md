@@ -491,4 +491,256 @@ $CURL "${ES_HOST}/_cat/indices?v&h=index,health,status,pri,rep,docs.count,store.
 | Pending Tasks | > 10 for 5m | > 50 for 2m |
 
 ---
+
+## 보충: Logstash 파이프라인 패턴
+
+Logstash의 Multi-pipeline 아키텍처, 조건 분기, Grok/Dissect 파싱 패턴, Dead Letter Queue, Pipeline-to-Pipeline 통신까지 실전 파이프라인 설계 패턴을 정리한다.
+
+### Logstash 파이프라인 3단계
+
+| 단계 | 역할 | 대표 플러그인 |
+|------|------|--------------|
+| Input | 데이터 수집 | beats, kafka, file, http |
+| Filter | 데이터 변환/파싱 | grok, dissect, mutate, date |
+| Output | 데이터 전송 | elasticsearch, kafka, stdout |
+
+### Multi-pipeline 아키텍처
+
+```mermaid
+graph TB
+    subgraph "Logstash Instance"
+        subgraph "Pipeline: app-logs"
+            I1[Input: Beats:5044] --> F1[Filter: Grok + Mutate]
+            F1 --> O1[Output: ES app-index]
+        end
+
+        subgraph "Pipeline: infra-logs"
+            I2[Input: Beats:5045] --> F2[Filter: Dissect]
+            F2 --> O2[Output: ES infra-index]
+        end
+
+        subgraph "Pipeline: dlq-handler"
+            I3[Input: DLQ] --> F3[Filter: Mutate]
+            F3 --> O3[Output: ES dlq-index]
+        end
+    end
+
+    DLQ[(Dead Letter Queue)]
+    O1 -.->|실패 시| DLQ
+    DLQ --> I3
+```
+
+### Pipeline-to-Pipeline 통신
+
+파이프라인 간 내부 통신을 위한 virtual input/output 플러그인이다. 네트워크 오버헤드 없이 파이프라인 간 데이터를 전달한다.
+
+```mermaid
+graph LR
+    subgraph "Upstream Pipeline"
+        IN[Input: Beats] --> FILTER[Filter]
+        FILTER --> OUT[Output: pipeline]
+    end
+
+    subgraph "Downstream Pipeline A"
+        IN_A[Input: pipeline] --> FILTER_A[Filter: app 전용]
+        FILTER_A --> OUT_A[Output: ES]
+    end
+
+    subgraph "Downstream Pipeline B"
+        IN_B[Input: pipeline] --> FILTER_B[Filter: metric 전용]
+        FILTER_B --> OUT_B[Output: ES]
+    end
+
+    OUT -->|"address: app"| IN_A
+    OUT -->|"address: metric"| IN_B
+```
+
+### Multi-pipeline 설정 (pipelines.yml)
+
+```yaml
+- pipeline.id: app-logs
+  path.config: "/etc/logstash/pipelines/app-logs.conf"
+  pipeline.workers: 4
+  pipeline.batch.size: 250
+  queue.type: persisted
+  queue.max_bytes: 4gb
+
+- pipeline.id: infra-logs
+  path.config: "/etc/logstash/pipelines/infra-logs.conf"
+  pipeline.workers: 2
+  pipeline.batch.size: 500
+  queue.type: persisted
+
+- pipeline.id: dlq-handler
+  path.config: "/etc/logstash/pipelines/dlq-handler.conf"
+  pipeline.workers: 1
+  dead_letter_queue.enable: false
+```
+
+### Conditional 분기 패턴
+
+```ruby
+input {
+  beats { port => 5044 }
+}
+
+filter {
+  if [fields][log_type] == "nginx" {
+    grok {
+      match => {
+        "message" => '%{IPORHOST:client_ip} - %{DATA:user} \[%{HTTPDATE:timestamp}\] "%{WORD:method} %{URIPATHPARAM:request} HTTP/%{NUMBER:http_version}" %{NUMBER:status:int} %{NUMBER:bytes:int} "%{DATA:referrer}" "%{DATA:user_agent}"'
+      }
+      tag_on_failure => ["_grok_nginx_failure"]
+    }
+    date {
+      match => ["timestamp", "dd/MMM/yyyy:HH:mm:ss Z"]
+      target => "@timestamp"
+      remove_field => ["timestamp"]
+    }
+    geoip {
+      source => "client_ip"
+      target => "geoip"
+    }
+  } else if [fields][log_type] == "spring" {
+    dissect {
+      mapping => {
+        "message" => "%{timestamp} %{+timestamp} %{log_level} %{pid} --- [%{thread}] %{logger} : %{log_message}"
+      }
+    }
+    date {
+      match => ["timestamp", "yyyy-MM-dd HH:mm:ss.SSS"]
+      target => "@timestamp"
+      remove_field => ["timestamp"]
+    }
+  }
+
+  mutate {
+    remove_field => ["agent", "ecs", "host.name"]
+  }
+}
+
+output {
+  if "_grok_nginx_failure" in [tags] {
+    elasticsearch {
+      hosts => ["https://es-node:9200"]
+      index => "parse-failures-%{+YYYY.MM.dd}"
+    }
+  } else {
+    elasticsearch {
+      hosts => ["https://es-node:9200"]
+      index => "%{[fields][log_type]}-%{+YYYY.MM.dd}"
+    }
+  }
+}
+```
+
+### Grok vs Dissect 성능 비교
+
+| 비교 항목 | Grok | Dissect |
+|-----------|------|---------|
+| 처리 방식 | 정규표현식 | 구분자 기반 |
+| 처리 속도 | 상대적 느림 | 약 3-5배 빠름 |
+| CPU 사용량 | 높음 | 낮음 |
+| 유연성 | 비정형 로그 처리 가능 | 고정 형식만 가능 |
+| 디버깅 | 어려움 (복잡한 정규식) | 쉬움 |
+| 권장 사용처 | Nginx/Apache 로그, 비정형 | 애플리케이션 구조화 로그 |
+
+### Dead Letter Queue 활용
+
+```yaml
+# logstash.yml - DLQ 활성화
+dead_letter_queue.enable: true
+dead_letter_queue.max_bytes: 4096mb
+dead_letter_queue.storage_policy: drop_newer
+dead_letter_queue.retain.age: 7d
+```
+
+```ruby
+# dlq-handler.conf - DLQ 재처리 파이프라인
+input {
+  dead_letter_queue {
+    path => "/var/lib/logstash/dead_letter_queue"
+    pipeline_id => "app-logs"
+    commit_offsets => true
+  }
+}
+
+filter {
+  mutate {
+    add_field => {
+      "dlq_reason" => "%{[@metadata][dead_letter_queue][reason]}"
+      "dlq_plugin_type" => "%{[@metadata][dead_letter_queue][plugin_type]}"
+      "dlq_entry_time" => "%{[@metadata][dead_letter_queue][entry_time]}"
+    }
+  }
+  if [dlq_reason] =~ /mapper_parsing_exception/ {
+    mutate {
+      convert => {
+        "status" => "integer"
+        "bytes" => "integer"
+        "duration" => "float"
+      }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["https://es-node:9200"]
+    index => "recovered-%{+YYYY.MM.dd}"
+  }
+}
+```
+
+### 커스텀 Grok 패턴 정의
+
+```ruby
+# /etc/logstash/patterns/custom_patterns
+CUSTOM_TIMESTAMP %{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:%{MINUTE}:%{SECOND}
+APP_LOG %{CUSTOM_TIMESTAMP:timestamp} \[%{DATA:service}\] %{LOGLEVEL:level} %{GREEDYDATA:message}
+DURATION_MS %{NUMBER:duration_ms:float}ms
+REQUEST_ID [a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}
+```
+
+```ruby
+filter {
+  grok {
+    patterns_dir => ["/etc/logstash/patterns"]
+    match => {
+      "message" => "%{APP_LOG} \[rid:%{REQUEST_ID:request_id}\] took %{DURATION_MS}"
+    }
+  }
+}
+```
+
+### Logstash 성능 튜닝 설정
+
+```yaml
+# logstash.yml
+pipeline.workers: 4                    # CPU 코어 수에 맞춤
+pipeline.batch.size: 250               # 배치 크기
+pipeline.batch.delay: 50               # 배치 대기 시간 (ms)
+pipeline.ordered: auto                 # 순서 보장 필요 시 true
+
+queue.type: persisted                  # 영속 큐 사용 (데이터 유실 방지)
+queue.max_bytes: 4gb                   # 큐 최대 크기
+queue.checkpoint.writes: 1024          # 체크포인트 주기
+
+config.reload.automatic: true          # 설정 자동 리로드
+config.reload.interval: 3s             # 리로드 확인 주기
+```
+
+### 파이프라인 패턴 정리
+
+| 패턴 | 적용 상황 | 핵심 이점 |
+|------|----------|----------|
+| Multi-pipeline | 서로 다른 소스/형식의 로그 처리 | 장애 격리, 독립 튜닝 |
+| Pipeline-to-Pipeline | 공통 수집 후 분기 처리 | 네트워크 오버헤드 제거, 구조화 |
+| Conditional 분기 | 단일 파이프라인 내 타입별 처리 | 간단한 구성, 빠른 설정 |
+| Grok | 비정형/가변 형식 로그 | 유연한 패턴 매칭 |
+| Dissect | 고정 형식 로그 | 높은 처리 성능 |
+| Dead Letter Queue | 처리 실패 이벤트 복구 | 데이터 유실 방지 |
+| Persistent Queue | 안정적 이벤트 전달 보장 | 장애 시 데이터 보존 |
+
+---
 *참고: Elasticsearch 8.x / Logstash 8.x / Kibana 8.x 기준*

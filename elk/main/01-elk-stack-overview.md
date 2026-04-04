@@ -438,6 +438,52 @@ GET app-logs-*/_search
 }
 ```
 
+### 보충: 각 컴포넌트의 구현 언어와 소스코드 진입점
+
+| 구성요소 | 역할 | 포트(기본) | 언어 |
+|---------|------|-----------|------|
+| Elasticsearch | 저장/검색/분석 엔진 | 9200 (HTTP), 9300 (Transport) | Java |
+| Logstash | 데이터 처리 파이프라인 | 5044 (Beats input) | Java/Ruby |
+| Kibana | 시각화/관리 UI | 5601 | Node.js |
+| Beats | 경량 데이터 수집기 | - | Go |
+| Elastic Agent | 통합 에이전트 | - | Go |
+
+Elasticsearch 소스코드에서 `Node` 클래스(`org.elasticsearch.node.Node`)가 프로세스의 진입점으로, 클러스터 내 하나의 노드를 나타낸다.
+
+### 보충: Elastic Agent와 Fleet 아키텍처
+
+```mermaid
+graph TB
+    subgraph "Fleet 관리 계층"
+        F[Fleet Server]
+        K[Kibana Fleet UI]
+        K --> F
+    end
+
+    subgraph "호스트 A"
+        A1[Elastic Agent]
+        A2[Filebeat Integration]
+        A3[Metricbeat Integration]
+        A1 --> A2
+        A1 --> A3
+    end
+
+    subgraph "호스트 B"
+        B1[Elastic Agent]
+        B2[Endpoint Security]
+        B1 --> B2
+    end
+
+    F -->|정책 배포| A1
+    F -->|정책 배포| B1
+    A1 -->|데이터 전송| ES[Elasticsearch]
+    B1 -->|데이터 전송| ES
+```
+
+### 보충: 관찰 가능성(Observability)
+
+마이크로서비스 아키텍처의 확산으로 인해 분산 시스템에서 발생하는 로그, 메트릭, 트레이스를 통합적으로 수집하고 분석하는 능력이 필수가 되었다. ELK 스택은 이 세 가지 관찰 가능성 축(Three Pillars of Observability)을 모두 지원한다.
+
 ---
 
 ## 5. 정리
@@ -449,9 +495,16 @@ GET app-logs-*/_search
 | **Kibana** | 시각화/대시보드. Discover, Dashboard, Lens, Dev Tools 제공 |
 | **Beats** | 경량 데이터 수집기. Filebeat, Metricbeat 등 목적별로 분리 |
 | **Elastic Agent** | 여러 Beat을 하나로 통합. Fleet Server로 중앙 관리 |
+| **Ingest Node** | ES 내장 전처리. Logstash 없이 간단한 변환 처리 가능 |
 | **통신 프로토콜** | HTTP/9200(REST), TCP/9300(Transport), TCP/5044(Lumberjack) |
 | **핵심 데이터 흐름** | 수집(Beats) → 변환(Logstash/Ingest) → 저장(ES) → 시각화(Kibana) |
 | **아키텍처 선택** | 데이터 규모와 변환 복잡도에 따라 소/중/대규모 패턴 선택 |
+
+**아키텍처 선택 가이드**:
+- **단순한 로그 수집**: Filebeat → Elasticsearch (Ingest Pipeline)
+- **복잡한 변환이 필요한 경우**: Beats → Logstash → Elasticsearch
+- **대규모 엔터프라이즈**: Elastic Agent (Fleet) → Elasticsearch
+- **시각화/분석**: 모든 경로에서 Kibana 사용
 
 ---
 

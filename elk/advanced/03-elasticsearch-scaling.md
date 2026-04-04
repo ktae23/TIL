@@ -578,4 +578,258 @@ curl -s "$ES_URL/_cluster/pending_tasks?pretty"
 ```
 
 ---
+
+## 보충: 쿼리 최적화
+
+Query Context와 Filter Context의 차이, Bool Query 패턴, Routing 최적화, Profile API 활용, Slow Log 분석, 캐싱 전략을 통해 검색 성능을 극대화하는 방법을 정리한다.
+
+### Query Context vs Filter Context
+
+| 구분 | Query Context | Filter Context |
+|------|---------------|----------------|
+| 목적 | "이 문서가 쿼리와 얼마나 관련되는가?" | "이 문서가 조건에 맞는가?" |
+| 점수 계산 | O (_score 계산) | X (0.0 고정) |
+| 캐싱 | X | O (자동 캐싱) |
+| 사용 위치 | `must`, `should` | `filter`, `must_not` |
+| 성능 | 상대적으로 느림 | 빠름 (비트셋 캐싱) |
+
+### Bool Query 구조
+
+| 절 | 동작 | Context |
+|----|------|---------|
+| `must` | 모두 만족해야 함, 점수에 기여 | Query |
+| `filter` | 모두 만족해야 함, 점수 무관 | Filter |
+| `should` | 하나 이상 만족 시 점수 보너스 | Query |
+| `must_not` | 만족하면 제외 | Filter |
+
+### 캐싱 메커니즘
+
+- **Node Query Cache**: Filter context 쿼리 결과를 비트셋으로 캐싱 (노드 레벨)
+- **Shard Request Cache**: 전체 검색 결과를 캐싱 (size=0인 집계 요청 등)
+- **Fielddata Cache**: text 필드의 집계/정렬 시 사용 (비권장, doc_values 사용)
+
+### 검색 실행 흐름
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Coord as Coordinating Node
+    participant Shard1 as Shard 1
+    participant Shard2 as Shard 2
+    participant Shard3 as Shard 3
+
+    Client->>Coord: Search Request
+
+    rect rgb(220, 240, 255)
+        Note over Coord: Query Phase
+        Coord->>Shard1: Query (with routing?)
+        Coord->>Shard2: Query
+        Coord->>Shard3: Query
+        Shard1-->>Coord: Top N doc IDs + scores
+        Shard2-->>Coord: Top N doc IDs + scores
+        Shard3-->>Coord: Top N doc IDs + scores
+        Note over Coord: Global Top N 결정
+    end
+
+    rect rgb(255, 240, 220)
+        Note over Coord: Fetch Phase
+        Coord->>Shard1: Fetch doc 내용
+        Coord->>Shard3: Fetch doc 내용
+        Shard1-->>Coord: Document _source
+        Shard3-->>Coord: Document _source
+    end
+
+    Coord-->>Client: Final Results
+```
+
+### Filter 캐싱 동작 원리
+
+```
+1. 첫 번째 Filter 실행:
+   Segment A: [1, 0, 1, 1, 0, 0, 1, 0]  (비트셋 생성)
+   Segment B: [0, 1, 0, 0, 1, 1, 0, 1]
+
+2. 캐시 저장 조건:
+   - 세그먼트 크기 > 10,000 문서
+   - 동일 필터가 일정 횟수 이상 실행
+   - LRU 정책으로 관리
+
+3. 이후 동일 Filter:
+   캐시에서 비트셋 즉시 반환 → 디스크 I/O 없음
+```
+
+### Routing 최적화
+
+```json
+// 인덱스 생성 시 routing 설정
+PUT tenant-data
+{
+  "settings": {
+    "number_of_shards": 5
+  },
+  "mappings": {
+    "_routing": { "required": true },
+    "properties": {
+      "tenant_id": { "type": "keyword" },
+      "data": { "type": "text" }
+    }
+  }
+}
+
+// 검색 시 routing으로 대상 샤드 제한
+GET tenant-data/_search?routing=tenant-abc
+{
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "tenant_id": "tenant-abc" } }
+      ],
+      "must": [
+        { "match": { "data": "important" } }
+      ]
+    }
+  }
+}
+```
+
+### Slow Log 설정 및 분석
+
+```json
+PUT logs-*/_settings
+{
+  "index.search.slowlog.threshold.query.warn": "5s",
+  "index.search.slowlog.threshold.query.info": "2s",
+  "index.search.slowlog.threshold.query.debug": "1s",
+  "index.search.slowlog.threshold.query.trace": "500ms",
+  "index.search.slowlog.threshold.fetch.warn": "1s",
+  "index.search.slowlog.threshold.fetch.info": "500ms",
+  "index.indexing.slowlog.threshold.index.warn": "10s",
+  "index.indexing.slowlog.threshold.index.info": "5s",
+  "index.search.slowlog.level": "info"
+}
+```
+
+### 검색 성능 패턴 모음
+
+```json
+// 1. 대량 결과 페이지네이션: search_after (deep pagination 회피)
+GET logs-*/_search
+{
+  "size": 100,
+  "query": {
+    "bool": {
+      "filter": [
+        { "range": { "@timestamp": { "gte": "now-7d" } } }
+      ]
+    }
+  },
+  "sort": [
+    { "@timestamp": "desc" },
+    { "_id": "asc" }
+  ],
+  "search_after": ["2026-03-06T23:59:59.999Z", "doc-id-12345"]
+}
+
+// 2. 카운트만 필요한 경우: size=0 + track_total_hits
+GET logs-*/_search
+{
+  "size": 0,
+  "track_total_hits": true,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "service": "auth-api" } },
+        { "term": { "level": "ERROR" } },
+        { "range": { "@timestamp": { "gte": "now-1h" } } }
+      ]
+    }
+  }
+}
+
+// 3. 존재 여부만 확인: terminate_after
+GET logs-*/_search
+{
+  "size": 1,
+  "terminate_after": 1,
+  "query": {
+    "bool": {
+      "filter": [
+        { "term": { "error_code": "CRITICAL_FAILURE" } }
+      ]
+    }
+  }
+}
+
+// 4. Wildcard 대신 Prefix 사용
+// BAD
+{ "wildcard": { "path": "*api/v2*" } }
+// GOOD
+{ "prefix": { "path": "/api/v2" } }
+
+// 5. index_prefixes로 Prefix 쿼리 가속
+PUT optimized-index
+{
+  "mappings": {
+    "properties": {
+      "url_path": {
+        "type": "text",
+        "index_prefixes": {
+          "min_chars": 2,
+          "max_chars": 10
+        }
+      }
+    }
+  }
+}
+```
+
+### 캐싱 전략 상세
+
+```json
+// Shard Request Cache 활성화
+GET logs-*/_search?request_cache=true
+{
+  "size": 0,
+  "aggs": {
+    "error_count_by_service": {
+      "terms": { "field": "service", "size": 20 }
+    }
+  }
+}
+
+// 캐시 활용 극대화 팁
+// 1. 날짜 범위를 "now-1h" 대신 라운드 처리
+//    "gte": "now-1h/h"  → 시간 단위로 라운드 → 캐시 히트율 증가
+// 2. size=0 집계는 자동으로 Shard Request Cache 대상
+// 3. 자주 사용하는 필터 조합을 표준화
+```
+
+### Multi-Search API 활용
+
+```json
+// 여러 쿼리를 한 번의 HTTP 요청으로 실행
+GET _msearch
+{"index": "logs-*"}
+{"size": 0, "query": {"bool": {"filter": [{"term": {"level": "ERROR"}}]}}, "aggs": {"by_service": {"terms": {"field": "service"}}}}
+{"index": "logs-*"}
+{"size": 0, "query": {"bool": {"filter": [{"range": {"@timestamp": {"gte": "now-1h"}}}]}}, "aggs": {"status_dist": {"terms": {"field": "status_code"}}}}
+{"index": "metrics-*"}
+{"size": 0, "aggs": {"avg_response": {"avg": {"field": "response_time_ms"}}}}
+```
+
+### 쿼리 최적화 정리
+
+| 항목 | 권장 사항 |
+|------|-----------|
+| Query vs Filter | 점수 불필요한 조건은 반드시 `filter`로 이동 |
+| Bool Query | `must`는 스코어링 필요 시에만, 나머지는 `filter`/`must_not` |
+| Routing | 멀티테넌시, 파티셔닝된 데이터에 routing 적용 |
+| 페이지네이션 | `from`+`size` 대신 `search_after` 사용 (10,000건 이상) |
+| _source | 필요한 필드만 지정하여 네트워크/파싱 비용 절감 |
+| 캐싱 | 날짜 범위 라운딩(`now-1h/h`), 표준화된 필터 조합 |
+| Wildcard | 가능한 `prefix` 또는 `index_prefixes`로 대체 |
+| Slow Log | 임계값 설정하여 느린 쿼리 자동 로깅 |
+| 집계 전용 | `size: 0`으로 Request Cache 활용 극대화 |
+
+---
 *참고: Elasticsearch 8.x 기준*

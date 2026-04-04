@@ -665,6 +665,88 @@ GET /articles/_search
 //   - multiply(기본), replace, sum, avg, max, min
 ```
 
+### 보충: SearchService — 검색의 진입점
+
+`SearchService`(`org.elasticsearch.search.SearchService`)는 검색 요청의 전체 생명주기를 관리하는 핵심 서비스다:
+
+```java
+// org.elasticsearch.search.SearchService
+public class SearchService extends AbstractLifecycleComponent
+    implements IndexEventListener {
+
+    // 검색 컨텍스트 유지 시간 (기본 5분)
+    public static final Setting<TimeValue> DEFAULT_KEEPALIVE_SETTING =
+        Setting.positiveTimeSetting("search.default_keep_alive",
+            timeValueMinutes(5), Property.NodeScope, Property.Dynamic);
+
+    // 비용이 높은 쿼리 허용 여부
+    public static final Setting<Boolean> ALLOW_EXPENSIVE_QUERIES =
+        Setting.boolSetting("search.allow_expensive_queries", true,
+            Property.NodeScope, Property.Dynamic);
+
+    // 병렬 쿼리 실행 설정
+    public static final Setting<Boolean> QUERY_PHASE_PARALLEL_COLLECTION_ENABLED =
+        Setting.boolSetting("search.query_phase_parallel_collection_enabled",
+            true, Property.NodeScope, Property.Dynamic);
+}
+```
+
+### 보충: DFS Phase — 글로벌 통계 수집
+
+`DfsPhase`(`org.elasticsearch.search.dfs.DfsPhase`)는 각 샤드에서 term 통계와 collection 통계를 수집한다:
+
+> *"DFS phase of a search request, used to make scoring 100% accurate by collecting additional info from each shard before the query phase."*
+
+검색 유형:
+- **QUERY_THEN_FETCH** (기본값): Query Phase → Fetch Phase. 각 샤드의 로컬 통계를 사용하여 스코어링
+- **DFS_QUERY_THEN_FETCH**: DFS Phase → Query Phase → Fetch Phase. 글로벌 통계를 사용하여 더 정확한 스코어링
+
+DFS가 필요한 경우:
+- 샤드 수가 많고 문서가 적어 로컬 IDF 편차가 클 때
+- 정확한 스코어 랭킹이 중요한 경우 (e.g., 검색 엔진 서비스)
+
+### 보충: QueryPhase와 FetchPhase 소스코드 구조
+
+`QueryPhase`(`org.elasticsearch.search.query.QueryPhase`)의 세부 단계:
+
+```mermaid
+graph TD
+    A[QueryPhase.execute] --> B[SuggestPhase]
+    B --> C[Query 재작성 Rewrite]
+    C --> D[Lucene Query 생성]
+    D --> E{병렬 수집 활성화?}
+    E -->|Yes| F[CollectorManager<br/>멀티 스레드]
+    E -->|No| G[단일 Collector]
+    F --> H[ContextIndexSearcher.search]
+    G --> H
+    H --> I[TopDocs 수집]
+    H --> J[Aggregation 수집]
+    I --> K[RescorePhase<br/>재스코어링]
+    K --> L[QuerySearchResult<br/>docIds + scores]
+    J --> L
+```
+
+`FetchPhase`(`org.elasticsearch.search.fetch.FetchPhase`)의 FetchSubPhase 체인:
+
+```
+FetchSourcePhase → FetchFieldsPhase → FetchScorePhase →
+HighlightPhase → FetchDocValuesPhase → ScriptFieldsPhase →
+ExplainPhase → FetchVersionPhase → SeqNoPrimaryTermPhase →
+MatchedQueriesPhase → InnerHitsPhase
+```
+
+### 보충: Query DSL 처리 흐름
+
+```mermaid
+graph TD
+    A["JSON Query DSL<br/>{match: {title: 'elasticsearch'}}"] --> B[QueryBuilder 파싱<br/>MatchQueryBuilder]
+    B --> C[QueryRewriteContext<br/>쿼리 최적화/재작성]
+    C --> D[SearchExecutionContext<br/>실행 컨텍스트 생성]
+    D --> E[QueryBuilder.toQuery<br/>Lucene Query 변환]
+    E --> F["Lucene Query<br/>BooleanQuery, TermQuery 등"]
+    F --> G[ContextIndexSearcher.search]
+```
+
 ---
 
 ## 5. 정리
@@ -672,14 +754,17 @@ GET /articles/_search
 | 항목 | 요약 |
 |------|------|
 | **Query DSL** | JSON 기반. Leaf Query(match, term, range)와 Compound Query(bool, dis_max, function_score)로 구분 |
+| **SearchService** | 검색 생명주기 관리. `DEFAULT_KEEPALIVE_SETTING`, `ALLOW_EXPENSIVE_QUERIES` 등 설정 |
+| **DFS Phase** | 글로벌 term 통계 수집. 정확한 스코어링이 필요할 때 `DFS_QUERY_THEN_FETCH` 사용 |
 | **Query Context** | `bool.must`, `bool.should`에서 실행. `_score`를 계산하여 관련도 순위 결정 |
 | **Filter Context** | `bool.filter`, `bool.must_not`에서 실행. 스코어 없이 Yes/No 판정. 자동 캐싱으로 성능 우수 |
 | **BM25** | TF-IDF 개선 모델. Term Frequency 포화(`k1`)와 문서 길이 정규화(`b`) 파라미터 |
 | **Query Phase** | 모든 관련 샤드에서 로컬 Top N(doc_id + _score)을 추출. 문서 본문 없이 ID만 반환 |
-| **Fetch Phase** | Coordinating Node가 글로벌 Top N을 결정한 후, 해당 문서의 _source를 보유 샤드에서 조회 |
+| **Fetch Phase** | Coordinating Node가 글로벌 Top N을 결정한 후, 해당 문서의 _source를 보유 샤드에서 조회. FetchSubPhase 체인으로 처리 |
 | **결과 병합** | Priority Queue(Min-Heap)로 from+size개의 글로벌 Top 결과를 정렬 |
 | **Deep Pagination** | from/size는 10,000 제한(기본). PIT + search_after로 효율적 페이징 |
 | **bool 실행 순서** | filter → must_not → must → should 순으로 문서 집합을 축소 후 스코어링 |
+| **Query DSL 파싱** | JSON → QueryBuilder → QueryRewriteContext → Lucene Query 변환 |
 | **성능 최적화** | 정확한 값은 filter, Profile API로 병목 분석, search_after로 페이징 |
 
 ---

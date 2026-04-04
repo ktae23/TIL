@@ -529,4 +529,391 @@ echo "========== Check Complete =========="
 5. **정기 진단 스크립트를 cron에 등록** — 장애는 예방이 최선
 
 ---
+
+## 보충: Docker & Kubernetes 배포
+
+> 이 섹션은 infrastructure/ELK 문서에서 통합된 보충 자료로, Docker Compose 및 ECK Operator를 활용한 ELK 컨테이너 배포 실전 구성을 다룬다.
+
+### 컨테이너 배포 방식 비교
+
+| 방식 | 사용 환경 | 복잡도 | 운영 자동화 |
+|------|----------|--------|------------|
+| **Docker Compose** | 개발/테스트, 소규모 프로덕션 | 낮음 | 수동 |
+| **ECK Operator** | 프로덕션 Kubernetes | 중간 | CRD 기반 자동화 |
+| **Helm Chart** | Kubernetes (ECK 미사용) | 중간 | Helm 릴리스 관리 |
+
+### ECK Operator 아키텍처
+
+```mermaid
+flowchart TD
+    User[User/GitOps] -->|kubectl apply| API[Kubernetes API Server]
+
+    subgraph ControlPlane["ECK Operator"]
+        Reconciler[Reconciliation Loop]
+        CertMgr[Certificate Manager]
+        NodeMgr[Node Manager]
+    end
+
+    API --> Reconciler
+
+    Reconciler --> StatefulSet[StatefulSet<br/>ES Nodes]
+    Reconciler --> Service[Service<br/>HTTP/Transport]
+    Reconciler --> Secret[Secrets<br/>Credentials + TLS]
+    Reconciler --> ConfigMap[ConfigMap<br/>elasticsearch.yml]
+    Reconciler --> PDB[PodDisruptionBudget]
+
+    CertMgr --> Secret
+    NodeMgr --> StatefulSet
+
+    StatefulSet --> Pod1[ES Pod 1<br/>master + data_hot]
+    StatefulSet --> Pod2[ES Pod 2<br/>master + data_hot]
+    StatefulSet --> Pod3[ES Pod 3<br/>master + data_warm]
+
+    Pod1 --> PVC1[PVC 1<br/>100Gi]
+    Pod2 --> PVC2[PVC 2<br/>100Gi]
+    Pod3 --> PVC3[PVC 3<br/>500Gi]
+```
+
+### Docker Compose 전체 구성
+
+```yaml
+version: "3.8"
+
+services:
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: elasticsearch
+    environment:
+      - node.name=es-node-01
+      - cluster.name=elk-docker
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elk
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD:-changeme} http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.17.0
+    container_name: logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    networks:
+      - elk
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD:-changeme}
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # Filebeat
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.17.0
+    container_name: filebeat
+    user: root
+    command: filebeat -e --strict.perms=false
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elk
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  es-data:
+    driver: local
+
+networks:
+  elk:
+    driver: bridge
+```
+
+### ECK Operator 설치 및 Elasticsearch CRD
+
+```bash
+# CRD 및 Operator 설치
+kubectl create -f https://download.elastic.co/downloads/eck/2.14.0/crds.yaml
+kubectl apply -f https://download.elastic.co/downloads/eck/2.14.0/operator.yaml
+```
+
+```yaml
+# elasticsearch-cluster.yaml
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: production
+  namespace: elastic
+spec:
+  version: 8.17.0
+  nodeSets:
+    # Master 노드
+    - name: master
+      count: 3
+      config:
+        node.roles: ["master"]
+        xpack.ml.enabled: false
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              resources:
+                requests:
+                  memory: 4Gi
+                  cpu: 2
+                limits:
+                  memory: 4Gi
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms2g -Xmx2g"
+          affinity:
+            podAntiAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                - labelSelector:
+                    matchLabels:
+                      elasticsearch.k8s.elastic.co/cluster-name: production
+                      elasticsearch.k8s.elastic.co/statefulset-name: production-es-master
+                  topologyKey: kubernetes.io/hostname
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: fast-ssd
+            resources:
+              requests:
+                storage: 10Gi
+
+    # Hot Data 노드
+    - name: hot
+      count: 3
+      config:
+        node.roles: ["data_hot", "data_content", "ingest"]
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              resources:
+                requests:
+                  memory: 32Gi
+                  cpu: 8
+                limits:
+                  memory: 32Gi
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms16g -Xmx16g"
+          nodeSelector:
+            node-type: high-performance
+          tolerations:
+            - key: "dedicated"
+              operator: "Equal"
+              value: "elasticsearch"
+              effect: "NoSchedule"
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: fast-nvme
+            resources:
+              requests:
+                storage: 500Gi
+
+    # Warm Data 노드
+    - name: warm
+      count: 2
+      config:
+        node.roles: ["data_warm"]
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              resources:
+                requests:
+                  memory: 32Gi
+                  cpu: 4
+                limits:
+                  memory: 32Gi
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms16g -Xmx16g"
+          nodeSelector:
+            node-type: storage-optimized
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            storageClassName: standard-hdd
+            resources:
+              requests:
+                storage: 2Ti
+```
+
+### Filebeat DaemonSet (ECK CRD)
+
+```yaml
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: filebeat
+  namespace: elastic
+spec:
+  type: filebeat
+  version: 8.17.0
+  elasticsearchRef:
+    name: production
+  config:
+    filebeat.autodiscover:
+      providers:
+        - type: kubernetes
+          node: ${NODE_NAME}
+          hints.enabled: true
+          hints.default_config:
+            type: container
+            paths:
+              - /var/log/containers/*${data.kubernetes.container.id}.log
+    processors:
+      - add_kubernetes_metadata:
+          host: ${NODE_NAME}
+          matchers:
+            - logs_path:
+                logs_path: /var/log/containers/
+  daemonSet:
+    podTemplate:
+      spec:
+        serviceAccountName: filebeat
+        automountServiceAccountToken: true
+        dnsPolicy: ClusterFirstWithHostNet
+        hostNetwork: true
+        containers:
+          - name: filebeat
+            securityContext:
+              runAsUser: 0
+            volumeMounts:
+              - name: varlogcontainers
+                mountPath: /var/log/containers
+              - name: varlogpods
+                mountPath: /var/log/pods
+        volumes:
+          - name: varlogcontainers
+            hostPath:
+              path: /var/log/containers
+          - name: varlogpods
+            hostPath:
+              path: /var/log/pods
+```
+
+### 스케일링 및 운영
+
+```bash
+# Hot 노드 스케일링 (3 -> 5)
+kubectl patch elasticsearch production -n elastic --type merge -p '{
+  "spec": {
+    "nodeSets": [
+      {"name": "master", "count": 3},
+      {"name": "hot", "count": 5},
+      {"name": "warm", "count": 2}
+    ]
+  }
+}'
+
+# Elasticsearch 비밀번호 확인
+kubectl get secret production-es-elastic-user -n elastic \
+  -o jsonpath='{.data.elastic}' | base64 -d; echo
+
+# Pod 내부에서 클러스터 상태 확인
+kubectl exec -n elastic production-es-hot-0 -c elasticsearch -- \
+  curl -s -u "elastic:$(kubectl get secret production-es-elastic-user -n elastic -o jsonpath='{.data.elastic}' | base64 -d)" \
+  -k "https://localhost:9200/_cluster/health?pretty"
+```
+
+### StorageClass 정의
+
+```yaml
+# NVMe SSD (Hot 노드용)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-nvme
+provisioner: ebs.csi.aws.com
+parameters:
+  type: io2
+  iopsPerGB: "50"
+  encrypted: "true"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+
+# Standard HDD (Warm/Cold 노드용)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-hdd
+provisioner: ebs.csi.aws.com
+parameters:
+  type: st1
+  encrypted: "true"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+```
+
+### 배포 방식 비교 요약
+
+| 항목 | Docker Compose | ECK Operator | Helm Chart |
+|------|---------------|-------------|------------|
+| **사용 환경** | 개발/테스트 | 프로덕션 K8s | 프로덕션 K8s |
+| **TLS 관리** | 수동 인증서 | 자동 생성/회전 | 수동 또는 cert-manager |
+| **스케일링** | 수동 서비스 추가 | `count` 변경 | `replicas` 변경 |
+| **업그레이드** | 이미지 태그 변경 | `version` 변경 (자동 롤링) | `helm upgrade` |
+| **볼륨 관리** | Docker Volume | PVC + StorageClass | PVC + StorageClass |
+| **모니터링** | 수동 구성 | Stack Monitoring 내장 | 수동 구성 |
+| **장애 복구** | restart_policy | Pod 자동 재시작 + Shard 재배치 | Pod 자동 재시작 |
+| **적합 규모** | 1-3 노드 | 3-100+ 노드 | 3-50 노드 |
+
+---
 *참고: Elasticsearch 8.x / Logstash 8.x / Kibana 8.x 기준*

@@ -431,6 +431,169 @@ PUT /autocomplete_index
 
 검색 시 "ela"를 입력하면 "elasticsearch"가 매칭된다. Index time에 `[e, el, ela, elas, ...]` 토큰이 생성되고, search time에는 `[ela]` 하나만 생성되어 매칭된다.
 
+## 보충: 분산 시스템
+
+Elasticsearch는 데이터를 Shard 단위로 분할하고 클러스터 내 여러 노드에 분산 배치하여 수평 확장성과 고가용성을 동시에 달성한다. 이 섹션에서는 Sharding 전략, Replication 프로토콜, Shard Allocation 메커니즘을 소스코드 수준에서 분석한다.
+
+### ShardRouting 상태 머신
+
+소스코드에서 `ShardRouting` 클래스는 개별 Shard의 라우팅 정보를 불변(immutable) 객체로 캡슐화한다. Shard는 다음 4가지 상태를 가진다:
+
+| 상태 | 설명 | currentNodeId | relocatingNodeId |
+|------|------|:---:|:---:|
+| `UNASSIGNED` | 노드에 할당되지 않음 | null | null |
+| `INITIALIZING` | 노드에 할당 후 초기화 중 | 설정됨 | null 또는 소스 노드 |
+| `STARTED` | 정상 운영 중 | 설정됨 | null |
+| `RELOCATING` | 다른 노드로 이동 중 | 현재 노드 | 대상 노드 |
+
+### Global Checkpoint과 Sequence Number
+
+모든 쓰기 연산에는 고유한 Sequence Number가 할당된다. **Global Checkpoint**은 모든 활성 Shard 복사본이 처리 완료한 최대 Sequence Number를 의미하며, Translog 정리와 Peer Recovery 최적화의 기준점이 된다.
+
+### IndexShard 클래스 구조
+
+`IndexShard`는 단일 Shard의 전체 생명주기를 관리하는 핵심 클래스다.
+
+주요 필드 분석:
+
+```java
+// Shard 라우팅 정보 (상태 전이 추적)
+protected volatile ShardRouting shardRouting;
+protected volatile IndexShardState state;
+
+// Replication 추적
+private final ReplicationTracker replicationTracker;
+private final GlobalCheckpointSyncer globalCheckpointSyncer;
+private final RetentionLeaseSyncer retentionLeaseSyncer;
+
+// 동시성 제어
+private final PendingReplicationActions pendingReplicationActions;
+private final IndexShardOperationPermits indexShardOperationPermits;
+```
+
+`IndexShardState`는 Shard의 내부 상태를 나타내며 다음 값들로 구성된다:
+- `CREATED` -> `RECOVERING` -> `POST_RECOVERY` -> `STARTED` -> `CLOSED`
+
+### Replication 프로토콜 - TransportReplicationAction
+
+Replication은 Primary-then-Replica 모델을 따른다:
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant Coord as Coordinating Node
+    participant P as Primary Shard
+    participant R1 as Replica 1
+    participant R2 as Replica 2
+
+    C->>Coord: Write Request
+    Coord->>P: Route to Primary
+    P->>P: Execute Primary Operation
+    P->>P: Assign Sequence Number
+    par Parallel Replication
+        P->>R1: Replicate
+        P->>R2: Replicate
+    end
+    R1-->>P: Ack
+    R2-->>P: Ack
+    P->>P: Update Global Checkpoint
+    P-->>Coord: Response
+    Coord-->>C: Response
+```
+
+`TransportReplicationAction`의 핵심 동작 흐름:
+
+1. **Coordinating Node**: 클러스터 상태에서 Primary Shard 위치를 찾아 요청을 라우팅
+2. **Primary Execution**: `PrimaryActionExecution`에 따라 오버로드 시 Reject 또는 Force 결정
+3. **Replica Execution**: Primary 성공 후 모든 활성 Replica에 병렬 전파
+4. **Global Checkpoint Sync**: `SyncGlobalCheckpointAfterOperation.AttemptAfterSuccess` 설정 시 Replica에 체크포인트 동기화
+
+### ShardRouting 상태 전이
+
+`ShardRouting`은 불변 객체로, 상태 전이 시 새로운 인스턴스가 생성된다. Relocation 발생 시 target Shard가 자동 초기화된다:
+
+```java
+private ShardRouting initializeTargetRelocatingShard() {
+    if (state == ShardRoutingState.RELOCATING) {
+        return new ShardRouting(
+            shardId, relocatingNodeId, currentNodeId, primary,
+            ShardRoutingState.INITIALIZING,
+            PeerRecoverySource.INSTANCE,
+            unassignedInfo, RelocationFailureInfo.NO_FAILURES,
+            AllocationId.newTargetRelocation(allocationId),
+            expectedShardSize, role
+        );
+    } else {
+        return null;
+    }
+}
+```
+
+### Shard Allocation
+
+Shard Allocation은 `BalancedShardsAllocator`가 담당하며, 다양한 `AllocationDecider`를 거쳐 최종 할당을 결정한다. 대표적인 Decider:
+
+| Decider | 역할 |
+|---------|------|
+| `DiskThresholdDecider` | 디스크 사용량 기반 할당 제한 |
+| `SameShardAllocationDecider` | 동일 Shard의 Primary/Replica가 같은 노드에 배치되지 않도록 방지 |
+| `AwarenessAllocationDecider` | Rack/Zone awareness 기반 분산 |
+| `FilterAllocationDecider` | 사용자 정의 필터 규칙 적용 |
+| `RebalanceOnlyWhenActiveAllocationDecider` | 모든 Shard가 활성 상태일 때만 리밸런싱 |
+
+### 분산 시스템 실전 예제
+
+**프로덕션 Shard 설계:**
+
+```json
+PUT /production-logs-2026.03
+{
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 1,
+    "routing.allocation.include._tier_preference": "data_hot",
+    "routing.allocation.total_shards_per_node": 2
+  }
+}
+```
+
+설계 기준:
+- **Shard 수**: 일일 데이터 50GB 기준, Shard당 10GB 목표 -> 5 Primary Shards
+- **Replica**: 1개로 설정하여 노드 1대 장애 시에도 데이터 무손실
+- **total_shards_per_node**: 2로 제한하여 특정 노드에 Shard 집중 방지
+
+**Unassigned Shard 진단 및 복구:**
+
+```bash
+# 1. Unassigned Shard 원인 확인
+GET /_cluster/allocation/explain
+{
+  "index": "production-logs-2026.03",
+  "shard": 2,
+  "primary": true
+}
+
+# 2. 디스크 워터마크 확인
+GET /_cluster/settings?include_defaults=true&filter_path=*.cluster.routing.allocation.disk*
+
+# 3. 강제 할당 (위험 - 데이터 유실 가능)
+POST /_cluster/reroute
+{
+  "commands": [
+    {
+      "allocate_stale_primary": {
+        "index": "production-logs-2026.03",
+        "shard": 2,
+        "node": "node-3",
+        "accept_data_loss": true
+      }
+    }
+  ]
+}
+```
+
+---
+
 ## 5. 정리
 
 | 구분 | 핵심 내용 |
@@ -442,6 +605,10 @@ PUT /autocomplete_index
 | **Edge N-gram** | 자동완성 구현의 핵심. Index time에 접두어 토큰 생성 |
 | **_analyze API** | 운영 환경에서 Analyzer 동작을 실시간 테스트하는 디버깅 도구 |
 | **커스텀 Analyzer** | `settings.analysis`에서 각 구성 요소를 조합하여 생성 |
+| **ShardRouting** | Shard 라우팅 정보를 불변 객체로 캡슐화. 4가지 상태 전이 |
+| **Replication** | Primary-then-Replica 모델. Sequence Number 기반 추적 |
+| **Global Checkpoint** | 모든 활성 복사본이 확인한 최대 Sequence Number |
+| **Shard Allocation** | AllocationDecider 체인을 통해 Shard 배치를 결정 |
 
 ---
 *참고: Elasticsearch 8.x / Nori Plugin 8.x 기준*

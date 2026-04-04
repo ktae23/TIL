@@ -84,29 +84,75 @@ Kibana 대시보드가 느려지는 주요 원인을 이해하면 최적화 방�
 
 Kibana 서버는 Node.js 위에 **Hapi.js** 프레임워크를 기반으로 구축되어 있다 (8.x부터 내부적으로 Hapi 20.x 사용).
 
+#### Lifecycle 3단계
+
+Kibana는 세 단계의 Lifecycle을 통해 순차적으로 초기화된다.
+
+1. **Preboot**: 최소한의 서비스만 시작, Interactive Setup 지원
+2. **Setup**: 모든 Core Service 구성, 플러그인 setup 호출
+3. **Start**: ES 연결 확인 후 전체 서비스 시작, 플러그인 start 호출
+
 #### 서버 부팅 시퀀스
 
 ```mermaid
 sequenceDiagram
-    participant Main as Kibana Main
-    participant Core as Core System
-    participant Plugins as Plugin System
-    participant ES as Elasticsearch
+    participant CLI as CLI Entry
+    participant BS as bootstrap()
+    participant Root as Root
+    participant Core as Core Services
+    participant Plugins as Plugins
 
-    Main->>Core: Bootstrap
-    Core->>Core: Load kibana.yml config
-    Core->>ES: Check cluster health
-    ES-->>Core: Cluster ready
-    Core->>Core: Setup Saved Objects migrations
-    Core->>Plugins: Discover plugins
-    Plugins->>Plugins: Resolve dependency order
-    loop Each Plugin
-        Plugins->>Plugins: plugin.setup()
+    CLI->>BS: bootstrap({configs, cliArgs})
+    BS->>BS: Env.createDefault(REPO_ROOT)
+    BS->>BS: RawConfigService.loadConfig()
+    BS->>Root: new Root(rawConfigService, env)
+
+    Note over Root: Preboot Phase
+    Root->>Core: root.preboot()
+    Core->>Plugins: preboot plugins setup
+    alt Setup On Hold
+        Core-->>BS: waitUntilCanSetup()
     end
-    loop Each Plugin
-        Plugins->>Plugins: plugin.start()
-    end
-    Core->>Main: Server ready on :5601
+
+    Note over Root: Setup Phase
+    Root->>Core: root.setup()
+    Core->>Core: HttpService.setup()
+    Core->>Core: ElasticsearchService.setup()
+    Core->>Core: SavedObjectsService.setup()
+    Core->>Plugins: standard plugins setup()
+
+    Note over Root: Start Phase
+    Root->>Core: root.start()
+    Core->>Core: ES connection validation
+    Core->>Core: SavedObjects migration
+    Core->>Plugins: standard plugins start()
+    Core-->>BS: SERVER_LISTENING
+```
+
+부트스트랩의 핵심 코드:
+
+```typescript
+export async function bootstrap({ configs, cliArgs, applyConfigOverrides }) {
+  const env = Env.createDefault(REPO_ROOT, { configs, cliArgs, repoPackages });
+  const rawConfigService = new RawConfigService(env.configs, applyConfigOverrides);
+  rawConfigService.loadConfig();
+
+  const root = new Root(rawConfigService, env, onRootShutdown);
+
+  // Phase 1: Preboot
+  const prebootContract = await root.preboot();
+  if (prebootContract?.preboot.isSetupOnHold()) {
+    await preboot.waitUntilCanSetup();
+  }
+
+  // Phase 2: Setup
+  await root.setup();
+
+  // Phase 3: Start
+  await root.start();
+
+  process.send(['SERVER_LISTENING']);
+}
 ```
 
 #### 핵심 서비스
@@ -255,7 +301,93 @@ graph TB
 - Feature visibility: Space별로 사용 가능한 Kibana 앱(Discover, Dashboard, Maps 등)을 제한 가능
 - RBAC과 연동: Elastic Security의 Role에서 Space별 권한(read/all/none) 설정
 
-### 3.5 Kibana Plugin 아키텍처
+### 3.5 ElasticsearchService 내부 구조
+
+`ElasticsearchService`는 Kibana가 Elasticsearch와 통신하는 핵심 서비스다. `ClusterClient`를 생성하여 두 가지 접근 모드를 제공한다:
+
+- `asInternalUser`: Kibana 내부 서비스용 (kibana_system 권한)
+- `asScoped(request)`: 요청한 사용자의 인증 정보로 ES에 접근
+
+```
+ ElasticsearchService Lifecycle
+ ┌─────────────────────────────────────────────────┐
+ │  preboot()                                      │
+ │    └─ createClient() for preboot plugins        │
+ │                                                 │
+ │  setup(deps)                                    │
+ │    ├─ AgentManager 생성 (HTTP/HTTPS Agent 풀)   │
+ │    ├─ ClusterClient('data') 생성                │
+ │    │    ├─ asInternalUser (내부 사용)            │
+ │    │    └─ asScoped(req) (요청별 사용자)         │
+ │    ├─ pollEsNodesVersion() 시작                 │
+ │    │    └─ 노드 버전 호환성 모니터링             │
+ │    └─ calculateStatus$() → 서비스 상태 공개     │
+ │                                                 │
+ │  start()                                        │
+ │    ├─ isValidConnection() 대기                  │
+ │    ├─ isInlineScriptingEnabled() 확인           │
+ │    └─ getElasticsearchCapabilities()            │
+ │                                                 │
+ │  stop()                                         │
+ │    └─ client.close()                            │
+ └─────────────────────────────────────────────────┘
+```
+
+### 3.6 SavedObjects Repository 아키텍처
+
+SavedObjects Repository는 Elasticsearch를 백엔드 저장소로 사용하며, Security/Spaces/Encryption Extension을 통해 RBAC, 멀티테넌시, 암호화를 지원한다.
+
+```
+ SavedObjects Architecture
+ ┌──────────────────────────────────────────────┐
+ │  SavedObjects API                            │
+ │  ┌────────────────────────────────────┐      │
+ │  │ SavedObjectsRepository             │      │
+ │  │  ├─ create() / bulkCreate()        │      │
+ │  │  ├─ get() / bulkGet()              │      │
+ │  │  ├─ find() / search()              │      │
+ │  │  ├─ update() / bulkUpdate()        │      │
+ │  │  ├─ delete() / bulkDelete()        │      │
+ │  │  ├─ resolve() / bulkResolve()      │      │
+ │  │  └─ openPointInTimeForType()       │      │
+ │  └────────────┬───────────────────────┘      │
+ │               │                              │
+ │  ┌────────────▼───────────────────────┐      │
+ │  │ Extensions                          │      │
+ │  │  ├─ SecurityExtension (RBAC)        │      │
+ │  │  ├─ SpacesExtension (멀티테넌시)    │      │
+ │  │  └─ EncryptionExtension (암호화)    │      │
+ │  └────────────┬───────────────────────┘      │
+ │               │                              │
+ │  ┌────────────▼───────────────────────┐      │
+ │  │ Elasticsearch .kibana Index         │      │
+ │  │  ├─ .kibana_8.x.x_001              │      │
+ │  │  ├─ .kibana_analytics              │      │
+ │  │  └─ .kibana_security_solution      │      │
+ │  └────────────────────────────────────┘      │
+ └──────────────────────────────────────────────┘
+```
+
+### 3.7 HTTP 서버 요청 처리 흐름
+
+Kibana의 HTTP 서버는 Hapi.js 프레임워크 기반이며, `InternalHttpServiceSetup`을 통해 플러그인에 라우트 등록 API를 제공한다.
+
+```
+  HTTP Request
+       │
+       ▼
+  Hapi Server (port 5601)
+       │
+       ├─ Auth Handler (인증/인가)
+       │
+       ├─ Route Handler
+       │     ├─ Core Routes (/api/status, /api/saved_objects/*)
+       │     └─ Plugin Routes (/api/*, /internal/*)
+       │
+       └─ Response (JSON/Stream)
+```
+
+### 3.8 Kibana Plugin 아키텍처
 
 Kibana 8.x는 **New Platform** 플러그인 아키텍처를 사용한다. 플러그인은 server와 public(브라우저) 두 영역에서 동작한다.
 
@@ -518,7 +650,10 @@ xpack.spaces.maxSpaces: 100
 | 항목 | 핵심 내용 |
 |------|----------|
 | **서버 기반** | Node.js + Hapi.js, 단일 프로세스 아키텍처 |
+| **Lifecycle** | preboot → setup → start 3단계, 각 단계별 사용 가능한 API가 다름 |
 | **Saved Objects** | `.kibana` 인덱스에 JSON 문서로 저장, 참조 기반 의존성 관리 |
+| **SavedObjects Repository** | Security/Spaces/Encryption Extension 지원, bulk 연산 최적화 |
+| **ElasticsearchService** | ClusterClient 기반, `asInternalUser`/`asScoped` 이중 접근 모드 |
 | **시각화 엔진** | Lens(권장/자동추천), TSVB(시계열 특화), Vega(완전 커스텀) |
 | **Spaces** | 논리적 멀티테넌시, URL 네임스페이스 + RBAC 연동 |
 | **Plugin 아키텍처** | New Platform, server/public 이중 구조, setup/start 생명주기 |

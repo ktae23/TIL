@@ -655,4 +655,253 @@ echo "Host initialization completed for ELK deployment."
 - Anti-Affinity 설정으로 동일 호스트 배치 방지
 
 ---
+
+## 보충: X-Pack 보안
+
+> 이 섹션은 infrastructure/ELK 문서에서 통합된 보충 자료로, X-Pack Security를 활용한 인증, 암호화, 접근제어 구성을 다룬다.
+
+### X-Pack Security 핵심 영역
+
+| 영역 | 설명 |
+|------|------|
+| **TLS/SSL** | 노드 간(Transport), 클라이언트-노드 간(HTTP) 통신 암호화 |
+| **Authentication** | 사용자 신원 확인 (Native, LDAP, SAML, OIDC, PKI) |
+| **Authorization (RBAC)** | 역할 기반 인덱스/클러스터 수준 접근제어 |
+| **API Key** | 서비스 간 인증을 위한 토큰 기반 인증 |
+| **Audit Logging** | 보안 이벤트 추적 및 감사 로그 |
+
+### Security Realm Chain
+
+```
+요청 → [Native Realm] → [LDAP Realm] → [SAML Realm] → [PKI Realm] → 인증 실패
+              ↓                ↓              ↓              ↓
+         인증 성공         인증 성공      인증 성공      인증 성공
+```
+
+### 보안 아키텍처 전체 흐름
+
+```mermaid
+flowchart TD
+    Client[Client Request] --> LB[Load Balancer<br/>TLS Termination]
+    LB -->|HTTPS| Coord[Coordinating Node]
+
+    subgraph Security["X-Pack Security Layer"]
+        AuthN[Authentication<br/>Realm Chain]
+        AuthZ[Authorization<br/>RBAC Engine]
+        Audit[Audit Logger]
+    end
+
+    Coord --> AuthN
+    AuthN -->|Identity| AuthZ
+    AuthZ -->|Permitted| Engine[Search/Index Engine]
+    AuthZ -->|Denied| Reject[403 Forbidden]
+
+    AuthN --> Audit
+    AuthZ --> Audit
+
+    Engine -->|Transport TLS| Data1[Data Node 1]
+    Engine -->|Transport TLS| Data2[Data Node 2]
+
+    Audit --> AuditIndex[.security-audit-log]
+```
+
+### TLS/SSL 인증서 생성 및 설정
+
+```bash
+# CA 생성
+bin/elasticsearch-certutil ca \
+  --out elastic-stack-ca.p12 \
+  --pass "ca-password"
+
+# 노드 인증서 생성 (CA 서명)
+bin/elasticsearch-certutil cert \
+  --ca elastic-stack-ca.p12 \
+  --ca-pass "ca-password" \
+  --out elastic-certificates.p12 \
+  --pass "cert-password" \
+  --dns "es-node-01.example.com,es-node-02.example.com" \
+  --ip "10.0.1.10,10.0.1.11"
+```
+
+```yaml
+# elasticsearch.yml - TLS 설정
+xpack.security.enabled: true
+
+# Transport Layer TLS (노드 간 통신)
+xpack.security.transport.ssl:
+  enabled: true
+  verification_mode: certificate
+  keystore.path: elastic-certificates.p12
+  truststore.path: elastic-certificates.p12
+
+# HTTP Layer TLS (클라이언트 통신)
+xpack.security.http.ssl:
+  enabled: true
+  keystore.path: http.p12
+  truststore.path: http.p12
+```
+
+### RBAC 역할 정의
+
+#### 읽기 전용 역할
+
+```bash
+curl -X PUT "https://localhost:9200/_security/role/logs_reader" \
+  -H "Content-Type: application/json" \
+  -u "elastic:changeme" \
+  --cacert ca.crt \
+  -d '{
+    "cluster": ["monitor"],
+    "indices": [
+      {
+        "names": ["logs-*", "filebeat-*"],
+        "privileges": ["read", "view_index_metadata"],
+        "field_security": {
+          "grant": ["timestamp", "message", "level", "service"]
+        },
+        "query": "{\"match\": {\"environment\": \"production\"}}"
+      }
+    ],
+    "applications": [
+      {
+        "application": "kibana-.kibana",
+        "privileges": ["feature_discover.read", "feature_dashboard.read"],
+        "resources": ["space:production"]
+      }
+    ]
+  }'
+```
+
+#### 쓰기 전용 역할 (Ingestion)
+
+```bash
+curl -X PUT "https://localhost:9200/_security/role/log_writer" \
+  -H "Content-Type: application/json" \
+  -u "elastic:changeme" \
+  --cacert ca.crt \
+  -d '{
+    "cluster": ["manage_index_templates", "manage_ilm", "monitor"],
+    "indices": [
+      {
+        "names": ["logs-*", "metrics-*"],
+        "privileges": ["write", "create_index", "auto_configure"]
+      }
+    ]
+  }'
+```
+
+### API Key 관리
+
+```bash
+# 제한된 권한의 API Key 생성
+curl -X POST "https://localhost:9200/_security/api_key" \
+  -H "Content-Type: application/json" \
+  -u "elastic:changeme" \
+  --cacert ca.crt \
+  -d '{
+    "name": "filebeat-shipper-key",
+    "expiration": "30d",
+    "role_descriptors": {
+      "filebeat_writer": {
+        "cluster": ["monitor"],
+        "index": [
+          {
+            "names": ["filebeat-*"],
+            "privileges": ["write", "create_index"]
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "application": "filebeat",
+      "environment": "production"
+    }
+  }'
+```
+
+### Audit Logging 설정
+
+```yaml
+# elasticsearch.yml
+xpack.security.audit.enabled: true
+xpack.security.audit.logfile.events.include:
+  - access_denied
+  - anonymous_access_denied
+  - authentication_failed
+  - connection_denied
+  - run_as_denied
+  - security_config_change
+
+xpack.security.audit.logfile.events.emit_request_body: false
+
+# 특정 사용자 제외 (헬스체크 등)
+xpack.security.audit.logfile.events.ignore_filters:
+  system_filter:
+    users: ["_xpack_security", "beats_system"]
+    realms: ["_service_account"]
+```
+
+### Kibana 보안 설정
+
+```yaml
+# kibana.yml
+server.ssl.enabled: true
+server.ssl.certificate: /etc/kibana/certs/kibana.crt
+server.ssl.key: /etc/kibana/certs/kibana.key
+
+elasticsearch.ssl.certificateAuthorities: ["/etc/kibana/certs/ca.crt"]
+elasticsearch.ssl.verificationMode: full
+
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "${KIBANA_ES_PASSWORD}"
+
+# 암호화 키 설정
+xpack.encryptedSavedObjects.encryptionKey: "min-32-byte-key-for-saved-objects!!"
+xpack.reporting.encryptionKey: "min-32-byte-key-for-reporting!!!!"
+xpack.security.encryptionKey: "min-32-byte-key-for-security!!!!!"
+
+# 세션 설정
+xpack.security.session.idleTimeout: "1h"
+xpack.security.session.lifespan: "24h"
+```
+
+### Logstash/Beats 보안 연결
+
+```yaml
+# filebeat.yml - API Key 인증
+output.elasticsearch:
+  hosts: ["https://es-node-01:9200", "https://es-node-02:9200"]
+  api_key: "VnVhQ2ZTMEJ...=="
+  ssl:
+    certificate_authorities: ["/etc/filebeat/ca.crt"]
+    verification_mode: full
+```
+
+```ruby
+# logstash.conf - 인증서 기반
+output {
+  elasticsearch {
+    hosts => ["https://es-node-01:9200"]
+    user => "logstash_writer"
+    password => "${LOGSTASH_ES_PASSWORD}"
+    ssl_enabled => true
+    ssl_certificate_authorities => ["/etc/logstash/ca.crt"]
+    ssl_verification_mode => "full"
+  }
+}
+```
+
+### 보안 체크리스트
+
+| 보안 영역 | 핵심 설정 | 우선순위 |
+|-----------|----------|---------|
+| **TLS/SSL** | Transport + HTTP 모두 활성화, 인증서 자동 회전 | 최우선 |
+| **Authentication** | Native(소규모), LDAP/SAML(엔터프라이즈) | 필수 |
+| **RBAC** | 최소 권한 원칙, field/document 수준 제어 | 필수 |
+| **API Key** | 만료 기간 설정, 정기 회전, 최소 권한 | 권장 |
+| **Audit Logging** | 인증 실패, 접근 거부 이벤트 중심 수집 | 권장 |
+| **Kibana** | SSL + 암호화 키 + 세션 타임아웃 | 필수 |
+| **Beats/Logstash** | API Key 또는 인증서 기반 인증 | 필수 |
+
+---
 *참고: Elasticsearch 8.x / Logstash 8.x / Kibana 8.x 기준*

@@ -657,6 +657,123 @@ spec:
 
 ---
 
+## 보충: Kibana 플러그인 시스템
+
+Kibana의 플러그인 시스템은 Core Platform 위에서 동작하며, Plugin Lifecycle(setup/start/stop)과 Contract 패턴을 통해 플러그인 간 느슨한 결합을 실현한다. 위상 정렬(topological sort)로 의존성 순서를 보장하고, 런타임 Contract Resolver로 동적 의존성도 지원한다.
+
+### Plugin Lifecycle
+
+모든 Kibana 플러그인은 세 가지 Lifecycle 메서드를 구현한다.
+
+| 메서드 | 시점 | 역할 |
+|--------|------|------|
+| `setup(core, plugins)` | 서버 초기화 | 라우트 등록, SavedObject 타입 등록, 타 플러그인 Contract 소비 |
+| `start(core, plugins)` | ES 연결 완료 후 | 서비스 시작, ES 클라이언트 사용, SavedObjects CRUD |
+| `stop()` | 서버 종료 시 | 리소스 정리, 타이머 해제 |
+
+### Contract 패턴
+
+각 플러그인은 `setup`과 `start`에서 Contract 객체를 반환한다. 이 Contract는 다른 플러그인이 의존성으로 소비할 수 있는 Public API이다.
+
+```typescript
+export interface Plugin<TSetup, TStart, TPluginsSetup, TPluginsStart> {
+  setup(core: CoreSetup<TPluginsStart, TStart>, plugins: TPluginsSetup): TSetup;
+  start(core: CoreStart, plugins: TPluginsStart): TStart;
+  stop?(): MaybePromise<void>;
+}
+```
+
+### Plugin Manifest (kibana.jsonc)
+
+주요 매니페스트 필드:
+- `id`: 플러그인 식별자 (camelCase)
+- `type`: `standard` 또는 `preboot`
+- `requiredPlugins`: 필수 의존 플러그인 목록
+- `optionalPlugins`: 선택적 의존 플러그인 목록
+- `runtimePluginDependencies`: 런타임에 동적으로 해결되는 의존성
+- `server`: 서버사이드 코드 포함 여부
+- `ui`: 클라이언트사이드 코드 포함 여부
+
+### 주요 내장 플러그인
+
+| 플러그인 | 역할 |
+|----------|------|
+| **data** | 검색, 쿼리, 필터, 인덱스 패턴 서비스 |
+| **discover** | 문서 탐색 UI |
+| **dashboard** | 대시보드 생성/관리 |
+| **visualizations** | 차트/시각화 프레임워크 |
+| **lens** | 드래그앤드롭 시각화 도구 |
+| **maps** | 지도 기반 시각화 |
+| **alerting** | 알림 규칙 및 액션 |
+| **security** | RBAC, 인증/인가 |
+
+### PluginsSystem - 위상 정렬과 Lifecycle 관리
+
+```mermaid
+graph TD
+    A[PluginsService] --> B[Discovery<br/>플러그인 검색]
+    B --> C[PluginsSystem<br/>플러그인 등록]
+    C --> D[Topological Sort<br/>의존성 정렬]
+    D --> E[setupPlugins]
+    E --> F[Plugin.init]
+    F --> G[Plugin.setup]
+    G --> H[Contract 수집]
+    H --> I[RuntimeResolver<br/>resolveSetupRequests]
+    I --> J[startPlugins]
+    J --> K[Plugin.start]
+    K --> L[RuntimeResolver<br/>resolveStartRequests]
+    L --> M[stopPlugins]
+    M --> N[역순으로 Plugin.stop]
+```
+
+위상 정렬된 순서로 plugin setup을 실행하며, 비동기 setup은 10초 타임아웃이 적용된다. Stop은 setup의 역순으로 실행되며 15초 타임아웃이 적용된다.
+
+### Kahn's Algorithm 기반 위상 정렬
+
+의존성이 없는 노드부터 시작하여 순차적으로 정렬하며, 그래프에 남은 노드가 있으면 순환 의존성으로 감지한다.
+
+### 플러그인 구현 - Contract 패턴 활용
+
+```typescript
+// Setup Contract: 다른 플러그인에게 제공하는 API
+interface MyPluginSetup {
+  registerCustomProcessor: (name: string, handler: Function) => void;
+}
+
+export class MyPlugin implements Plugin<MyPluginSetup, MyPluginStart, PluginsSetup> {
+  private readonly processors = new Map<string, Function>();
+
+  setup(core: CoreSetup, plugins: PluginsSetup): MyPluginSetup {
+    // data 플러그인의 검색 기능 활용
+    plugins.data.search.registerSearchStrategy('myStrategy', {
+      search: async (request, options, deps) => { /* ... */ },
+    });
+
+    // HTTP 라우트 등록
+    const router = core.http.createRouter();
+    router.post(
+      { path: '/api/my_plugin/process', validate: { body: schema.any() } },
+      async (context, request, response) => {
+        return response.ok({ body: { processed: true } });
+      }
+    );
+
+    // Setup Contract 반환 - 다른 플러그인이 사용 가능
+    return {
+      registerCustomProcessor: (name, handler) => {
+        this.processors.set(name, handler);
+      },
+    };
+  }
+
+  start(core: CoreStart): MyPluginStart {
+    return { getProcessors: () => this.processors };
+  }
+
+  stop() { this.processors.clear(); }
+}
+```
+
 ## 5. 정리
 
 | 항목 | 핵심 내용 |
@@ -670,6 +787,9 @@ spec:
 | **Internal Queue** | 메모리 큐(기본, 빠름) vs 디스크 큐(8.x, 내구성) |
 | **Kubernetes** | DaemonSet 배포, hostPath로 노드 로그 접근 |
 | **리소스** | ~30MB 메모리, Logstash 대비 1/15 수준 |
+| **Kibana Plugin Lifecycle** | `init()` → `setup()` → `start()` → `stop()`, 위상 정렬로 의존성 순서 보장 |
+| **Contract 패턴** | setup/start 반환값이 다른 플러그인의 의존성으로 주입됨 |
+| **PluginsSystem** | Kahn's Algorithm 기반 위상 정렬, 비동기 setup 10초/stop 15초 타임아웃 |
 
 ---
 *참고: Elasticsearch 8.x / Logstash 8.x / Kibana 8.x 기준*

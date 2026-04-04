@@ -565,6 +565,196 @@ output {
 }
 ```
 
+## 보충: 플러그인 시스템 내부 구현
+
+Logstash의 확장성은 플러그인 시스템에 기반한다. PluginFactory 패턴으로 런타임에 인스턴스화되며, 표준화된 인터페이스를 통해 파이프라인에 조립된다.
+
+### 플러그인 유형과 기반 클래스
+
+| 유형 | 기반 클래스 | 역할 | 예시 |
+|------|------------|------|------|
+| **Input** | `LogStash::Inputs::Base` | 외부 소스에서 이벤트 수집 | beats, kafka, file, stdin |
+| **Filter** | `LogStash::Filters::Base` | 이벤트 변환, 보강, 필터링 | grok, mutate, date, geoip |
+| **Output** | `LogStash::Outputs::Base` | 처리된 이벤트를 목적지로 전송 | elasticsearch, stdout, s3 |
+| **Codec** | `LogStash::Codecs::Base` | Input/Output의 데이터 인코딩/디코딩 | json, plain, multiline |
+
+### LogStash::Plugin - 최상위 기반 클래스
+
+모든 플러그인의 공통 기능을 정의한다:
+
+```ruby
+class LogStash::Plugin
+  include LogStash::Config::Mixin               # 설정 파싱
+  include LogStash::Plugins::ECSCompatibilitySupport  # ECS 호환성
+  include LogStash::Plugins::EventFactorySupport      # 이벤트 생성
+
+  config :enable_metric, :validate => :boolean, :default => true
+  config :id, :validate => :string
+
+  def initialize(params = {})
+    @params = LogStash::Util.deep_clone(params)
+    @params["id"] ||= "#{self.class.config_name}_#{SecureRandom.uuid}"
+  end
+
+  def do_close
+    @logger.debug("Closing", :plugin => self.class.name)
+    begin
+      close
+    ensure
+      LogStash::PluginMetadata.delete_for_plugin(self.id)
+    end
+  end
+
+  def self.lookup(type, name)
+    LogStash::PLUGIN_REGISTRY.lookup_pipeline_plugin(type, name)
+  end
+end
+```
+
+핵심 포인트:
+- **ID 자동 생성**: 사용자가 `id`를 지정하지 않으면 `config_name_UUID` 형태로 자동 생성
+- **메트릭 비활성화**: `enable_metric: false`로 개별 플러그인의 메트릭 수집 비활성화 가능
+- **PluginMetadata**: 플러그인별 키-값 메타데이터 저장소
+
+### Output Concurrency 모델
+
+| 모델 | 동작 | 사용 사례 |
+|------|------|----------|
+| `:legacy` | 기본값. Worker당 별도 인스턴스 | 이전 버전 호환 |
+| `:single` | 단일 인스턴스, Mutex로 직렬화 | Thread-unsafe Output |
+| `:shared` | 단일 인스턴스, 동시 접근 허용 | Thread-safe Output (elasticsearch 등) |
+
+### PluginFactoryExt - 플러그인 팩토리
+
+`PluginFactoryExt`는 PipelineIR의 플러그인 정의를 실제 플러그인 인스턴스로 변환하는 팩토리 클래스다:
+
+```java
+@JRubyClass(name = "PluginFactory")
+public final class PluginFactoryExt extends RubyBasicObject
+    implements RubyIntegration.PluginFactory {
+
+    private final transient Collection<String> pluginsById = ConcurrentHashMap.newKeySet();
+    private transient PipelineIR lir;
+    private transient PluginResolver pluginResolver;
+
+    // 유형별 플러그인 생성자 레지스트리
+    private final transient Map<PluginLookup.PluginType, AbstractPluginCreator<? extends Plugin>>
+        pluginCreatorsRegistry = new HashMap<>(4);
+```
+
+초기화 시 유형별 Creator를 등록한다:
+
+```java
+PluginFactoryExt init(final PipelineIR lir, ...) {
+    this.pluginCreatorsRegistry.put(PluginLookup.PluginType.INPUT,  new InputPluginCreator(this));
+    this.pluginCreatorsRegistry.put(PluginLookup.PluginType.CODEC,  new CodecPluginCreator());
+    this.pluginCreatorsRegistry.put(PluginLookup.PluginType.FILTER, new FilterPluginCreator());
+    this.pluginCreatorsRegistry.put(PluginLookup.PluginType.OUTPUT, new OutputPluginCreator(this));
+    return this;
+}
+```
+
+### PluginResolver와 PluginRegistry
+
+플러그인 해석 체인:
+
+```mermaid
+graph LR
+    PF["PluginFactoryExt"] -->|resolve type+name| PR["PluginResolver"]
+    PR -->|lookup| PL["PluginLookup"]
+    PL -->|search| REG["PluginRegistry"]
+    REG -->|Ruby plugin| RP["Ruby Class"]
+    REG -->|Java plugin| JP["Java Class"]
+```
+
+`PluginRegistry`는 설치된 모든 플러그인의 싱글턴 레지스트리로, Ruby Gem과 Java SPI 두 가지 경로로 플러그인을 발견한다.
+
+### FilterDelegator
+
+Filter 플러그인은 `FilterDelegator`로 래핑되어 메트릭 수집, 스레드 안전성 관리가 추가된다. 플러그인 인스턴스 생성 시 `ExecutionContext`가 주입되고, 메트릭 네임스페이스가 설정된다.
+
+### Java 기반 커스텀 Filter 플러그인
+
+```java
+@LogstashPlugin(name = "enrich_company")
+public class EnrichCompanyFilter implements Filter {
+
+    public static final PluginConfigSpec<String> SOURCE_FIELD =
+        PluginConfigSpec.stringSetting("source_field", "company_id");
+
+    public static final PluginConfigSpec<String> TARGET_FIELD =
+        PluginConfigSpec.stringSetting("target_field", "company_info");
+
+    private String sourceField;
+    private String targetField;
+    private final String id;
+
+    public EnrichCompanyFilter(String id, Configuration config, Context context) {
+        this.id = id;
+        this.sourceField = config.get(SOURCE_FIELD);
+        this.targetField = config.get(TARGET_FIELD);
+    }
+
+    @Override
+    public Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener) {
+        for (Event event : events) {
+            String companyId = (String) event.getField(sourceField);
+            if (companyId != null) {
+                Map<String, Object> companyInfo = lookupService.lookup(companyId);
+                if (companyInfo != null) {
+                    event.setField(targetField, companyInfo);
+                    matchListener.filterMatched(event);
+                }
+            }
+        }
+        return events;
+    }
+
+    @Override
+    public Collection<PluginConfigSpec<?>> configSchema() {
+        return Arrays.asList(SOURCE_FIELD, TARGET_FIELD);
+    }
+
+    @Override
+    public String getId() { return this.id; }
+}
+```
+
+### 플러그인 메트릭 모니터링
+
+```bash
+curl -s localhost:9600/_node/stats/pipelines?pretty | jq '
+  .pipelines["main-pipeline"].plugins | {
+    inputs: [.inputs[] | {
+      id: .id, name: .name,
+      events_out: .events.out,
+      queue_push_duration_ms: .events.queue_push_duration_in_millis
+    }],
+    filters: [.filters[] | {
+      id: .id, name: .name,
+      events_in: .events.in,
+      events_out: .events.out,
+      duration_ms: .events.duration_in_millis,
+      failures: .failures
+    }],
+    outputs: [.outputs[] | {
+      id: .id, name: .name,
+      events_in: .events.in,
+      events_out: .events.out,
+      duration_ms: .events.duration_in_millis
+    }]
+  }'
+```
+
+플러그인 성능 진단 기준:
+
+| 메트릭 | 의미 | 대응 방안 |
+|--------|------|----------|
+| Filter의 `duration_in_millis` 높음 | CPU-bound 처리 병목 | grok 패턴 최적화 또는 dissect로 대체 |
+| Output의 `duration_in_millis` 높음 | I/O 병목 (네트워크/디스크) | batch size 증가 또는 Output 분리 |
+| Input의 `queue_push_duration` 높음 | Queue 포화 | Worker 수 증가 또는 Queue 크기 확대 |
+| Filter의 `failures` 증가 | 파싱 오류 또는 예외 | 로그 확인 후 패턴 또는 입력 데이터 수정 |
+
 ## 5. 정리
 
 | 구분 | 핵심 내용 |
@@ -577,6 +767,10 @@ output {
 | **Pipeline-to-Pipeline** | virtual input/output으로 파이프라인 간 이벤트 전달. Fan-out 패턴 |
 | **Dead Letter Queue** | 처리 실패 이벤트를 별도 보관하여 나중에 재처리 가능 |
 | **튜닝 핵심** | CPU 바운드 → workers 증가, I/O 바운드 → batch_size 증가 |
+| **LogStash::Plugin** | 모든 플러그인의 최상위 기반 클래스. ID, 메트릭, 설정 처리 공통 기능 제공 |
+| **PluginFactoryExt** | PipelineIR 정의를 플러그인 인스턴스로 변환. 유형별 Creator 패턴 |
+| **PluginRegistry** | 설치된 모든 플러그인의 싱글턴 레지스트리. Ruby Gem + Java SPI 탐색 |
+| **Output Concurrency** | `:legacy`/`:single`/`:shared` 세 가지 모델로 스레드 안전성 관리 |
 
 ---
 *참고: Logstash 8.x 기준*

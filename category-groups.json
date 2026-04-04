@@ -27,7 +27,7 @@
       "label": "Infrastructure",
       "icon": "☁️",
       "order": 4,
-      "categories": ["cloud", "devops", "observability-prometheus-grafana"]
+      "categories": ["cloud", "devops", "elk", "aws-cicd-ecs", "observability-prometheus-grafana"]
     },
     {
       "id": "architecture",
@@ -60,7 +60,9 @@
     "MYSQL": "MySQL",
     "CS": "Computer Science",
     "AI": "AI / ML",
-    "data & messaging": "Data & Messaging"
+    "data & messaging": "Data & Messaging",
+    "elk": "ELK Stack",
+    "aws-cicd-ecs": "AWS CI/CD & ECS"
   },
   "defaultCollapsed": true
 }

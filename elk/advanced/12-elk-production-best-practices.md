@@ -728,4 +728,259 @@ esac
 ```
 
 ---
+
+## 보충: 트러블슈팅 심화
+
+> 이 섹션은 infrastructure/ELK 트러블슈팅 문서에서 통합된 보충 자료로, 프로덕션 운영 중 발생하는 장애 진단/복구에 유용한 추가 기법을 다룬다.
+
+### Circuit Breaker 동작 원리
+
+```mermaid
+flowchart LR
+    Request[Request] --> CB{Circuit Breaker<br/>Check}
+
+    CB -->|Under Limit| Process[Process Request]
+    CB -->|Over Limit| Reject[429 Rejected<br/>CircuitBreakingException]
+
+    subgraph Breakers["Circuit Breaker 종류"]
+        Parent["Parent (95% heap)"]
+        FieldData["Field Data (40% heap)"]
+        Request2["Request (60% heap)"]
+        InFlight["In-Flight (100% heap)"]
+    end
+
+    CB --> Parent
+    Parent --> FieldData
+    Parent --> Request2
+    Parent --> InFlight
+```
+
+Circuit Breaker는 메모리 사용량이 임계값을 초과하기 전에 요청을 거부하여 OOM을 예방한다.
+
+### Stale Primary 복구 (allocate_stale_primary)
+
+`allocate_empty_primary`와 달리, Stale Copy에서 복구하면 일부 데이터를 살릴 수 있다:
+
+```bash
+# Stale Copy에서 복구 (일부 데이터 유실 가능하지만 empty보다 나음)
+curl -X POST "localhost:9200/_cluster/reroute" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commands": [
+      {
+        "allocate_stale_primary": {
+          "index": "logs-2026.03.07",
+          "shard": 0,
+          "node": "es-node-01",
+          "accept_data_loss": true
+        }
+      }
+    ]
+  }'
+```
+
+### 쿼리 최적화 패턴
+
+```bash
+# Bad: wildcard leading (인덱스 전체 스캔)
+# {"query": {"wildcard": {"message": {"value": "*error*"}}}}
+
+# Good: match 쿼리 사용
+curl -X GET "localhost:9200/logs-*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{"query": {"match": {"message": "error"}}}'
+
+# Bad: 대량 결과 deep pagination
+# {"from": 10000, "size": 10}
+
+# Good: search_after 사용
+curl -X GET "localhost:9200/logs-*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "size": 100,
+    "sort": [{"@timestamp": "desc"}, {"_id": "asc"}],
+    "search_after": ["2026-03-07T10:00:00.000Z", "doc_id_123"],
+    "query": {"match_all": {}}
+  }'
+
+# Bad: 모든 필드 반환 (_source: true)
+# Good: 필요한 필드만 반환
+curl -X GET "localhost:9200/logs-*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {"match_all": {}},
+    "_source": ["@timestamp", "level", "message"],
+    "size": 100
+  }'
+```
+
+### Search Profiler 활용
+
+```bash
+curl -X GET "localhost:9200/logs-*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profile": true,
+    "query": {
+      "bool": {
+        "must": [
+          {"match": {"message": "error timeout"}}
+        ],
+        "filter": [
+          {"range": {"@timestamp": {"gte": "now-1h"}}}
+        ]
+      }
+    }
+  }' | jq '.profile.shards[0].searches[0].query[0] | {
+    type: .type,
+    description: .description,
+    time_in_nanos: .time_in_nanos,
+    breakdown: .breakdown
+  }'
+```
+
+### 노드 복구 절차 (계획된 유지보수)
+
+```bash
+# 1. 클러스터에서 노드 제외 (Shard 이동 시작)
+curl -X PUT "localhost:9200/_cluster/settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transient": {
+      "cluster.routing.allocation.exclude._name": "es-node-03"
+    }
+  }'
+
+# 2. Shard 이동 완료 대기
+watch 'curl -s "localhost:9200/_cat/shards?v" | grep es-node-03 | wc -l'
+
+# 3. 노드 재시작
+systemctl restart elasticsearch
+
+# 4. 제외 설정 해제
+curl -X PUT "localhost:9200/_cluster/settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transient": {
+      "cluster.routing.allocation.exclude._name": null
+    }
+  }'
+
+# 5. 복구 속도 향상 설정
+curl -X PUT "localhost:9200/_cluster/settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transient": {
+      "cluster.routing.allocation.node_concurrent_incoming_recoveries": 4,
+      "cluster.routing.allocation.node_concurrent_outgoing_recoveries": 4,
+      "indices.recovery.max_bytes_per_sec": "200mb"
+    }
+  }'
+```
+
+### Kibana 트러블슈팅
+
+```bash
+# Kibana 상태 확인
+curl -s "localhost:5601/api/status" | jq '{
+  overall_status: .status.overall.level,
+  elasticsearch: .status.statuses[] | select(.id | contains("elasticsearch"))
+}'
+
+# 흔한 문제 1: "Kibana server is not ready yet"
+# 원인: ES 연결 실패 또는 .kibana 인덱스 문제
+curl -s "localhost:9200/.kibana*/_count"
+
+# 흔한 문제 2: Saved Objects 마이그레이션 실패
+curl -X POST "localhost:5601/api/saved_objects/_migrate" \
+  -H "kbn-xsrf: true"
+
+# 흔한 문제 3: 메모리 부족
+# kibana.yml에서 Node.js 메모리 제한 증가
+# node.options: ["--max-old-space-size=2048"]
+```
+
+### Logstash 설정 검증
+
+```bash
+# 파이프라인 설정을 실행 전에 테스트
+/usr/share/logstash/bin/logstash --config.test_and_exit -f /etc/logstash/conf.d/
+
+# Dead Letter Queue 확인
+curl -s "localhost:9600/_node/stats/pipelines" | jq '
+  .pipelines | to_entries[] | {
+    pipeline: .key,
+    dlq_events: .value.dead_letter_queue.queue_size_in_bytes
+  }'
+```
+
+### 종합 헬스체크 스크립트 (컬러 출력)
+
+```bash
+#!/bin/bash
+# elk-healthcheck.sh
+ES_HOST="${1:-localhost:9200}"
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+echo "=== ELK Health Check ==="
+echo "Target: $ES_HOST"
+echo ""
+
+# 1. Cluster Health
+HEALTH=$(curl -s "$ES_HOST/_cluster/health")
+STATUS=$(echo $HEALTH | jq -r '.status')
+case $STATUS in
+  green)  echo -e "Cluster Status: ${GREEN}$STATUS${NC}" ;;
+  yellow) echo -e "Cluster Status: ${YELLOW}$STATUS${NC}" ;;
+  red)    echo -e "Cluster Status: ${RED}$STATUS${NC}" ;;
+esac
+
+echo "  Nodes: $(echo $HEALTH | jq '.number_of_nodes')"
+echo "  Active Shards: $(echo $HEALTH | jq '.active_shards')"
+echo "  Unassigned: $(echo $HEALTH | jq '.unassigned_shards')"
+echo ""
+
+# 2. Node Status
+echo "=== Node Status ==="
+curl -s "$ES_HOST/_cat/nodes?v&h=name,heap.percent,ram.percent,cpu,load_1m,disk.used_percent,node.role"
+echo ""
+
+# 3. Problem Indices
+echo "=== Problem Indices ==="
+PROBLEM=$(curl -s "$ES_HOST/_cat/indices?v&health=red,yellow&s=health" 2>/dev/null)
+if [ -z "$PROBLEM" ]; then
+  echo -e "${GREEN}No problem indices found${NC}"
+else
+  echo "$PROBLEM"
+fi
+echo ""
+
+# 4. Disk Watermark Check
+echo "=== Disk Usage ==="
+curl -s "$ES_HOST/_cat/allocation?v&s=disk.percent:desc"
+echo ""
+
+# 5. JVM Heap Pressure
+echo "=== JVM Heap Pressure ==="
+curl -s "$ES_HOST/_nodes/stats/jvm" | jq -r '
+  .nodes | to_entries[] |
+  "\(.value.name): \(.value.jvm.mem.heap_used_percent)% heap used"'
+echo ""
+
+# 6. Circuit Breaker Trips
+echo "=== Circuit Breaker Status ==="
+curl -s "$ES_HOST/_nodes/stats/breaker" | jq -r '
+  .nodes | to_entries[] |
+  .value as $node |
+  .value.breakers | to_entries[] |
+  select(.value.tripped > 0) |
+  "\($node.name) - \(.key): tripped \(.value.tripped) times"'
+
+echo "=== Health Check Complete ==="
+```
+
+---
 *참고: Elasticsearch 8.x / Logstash 8.x / Kibana 8.x 기준*

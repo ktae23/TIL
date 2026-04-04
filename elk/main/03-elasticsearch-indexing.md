@@ -559,6 +559,85 @@ POST _reindex?wait_for_completion=false
 GET _tasks/node-1:12345
 ```
 
+### 보충: InternalEngine — 핵심 엔진 클래스
+
+`InternalEngine`(`org.elasticsearch.index.engine.InternalEngine`)은 Elasticsearch의 핵심 인덱싱 엔진이다. Lucene IndexWriter를 래핑하여 문서를 기록하고, Translog로 내구성을 보장한다.
+
+```java
+// org.elasticsearch.index.engine.InternalEngine (핵심 필드)
+public class InternalEngine extends Engine {
+
+    private final Translog translog;
+    private final ElasticsearchMergeScheduler mergeScheduler;
+    private final IndexWriter indexWriter;
+
+    private final ExternalReaderManager externalReaderManager;
+    private final ElasticsearchReaderManager internalReaderManager;
+
+    private final ReentrantLock flushLock = new ReentrantLock();
+    private final ReentrantLock optimizeLock = new ReentrantLock();
+
+    // uid → version 매핑 (Real-Time Get 지원)
+    private final LiveVersionMap versionMap;
+    private final LiveVersionMapArchive liveVersionMapArchive;
+
+    private final LocalCheckpointTracker localCheckpointTracker;
+    private final AtomicLong maxSeqNoOfUpdatesOrDeletes;
+
+    // 메트릭 카운터
+    private final CounterMetric numVersionLookups = new CounterMetric();
+    private final CounterMetric numDocDeletes = new CounterMetric();
+    private final CounterMetric numDocAppends = new CounterMetric();
+    private final CounterMetric numDocUpdates = new CounterMetric();
+}
+```
+
+### 보충: LiveVersionMap — 실시간 버전 추적
+
+`LiveVersionMap`(`org.elasticsearch.index.engine.LiveVersionMap`)은 문서 ID(`_uid`)를 버전 정보에 매핑하는 인메모리 구조체다. `ReferenceManager.RefreshListener`를 구현하여 Refresh 이벤트에 반응한다.
+
+**Safe/Unsafe 모드**: auto-generated ID(벌크 인덱싱 시 자동 생성 ID)인 경우 중복이 발생하지 않으므로 VersionMap을 건너뛸 수 있다(unsafe 모드). 이는 메트릭 수집 등 대량의 소형 문서 인덱싱에서 메모리 사용을 크게 줄인다.
+
+### 보충: Sequence Number와 Checkpoint
+
+```mermaid
+graph TD
+    A[인덱싱 연산] --> B[SeqNo 할당]
+    B --> C[LocalCheckpointTracker]
+    C --> D{모든 SeqNo가<br/>연속적인가?}
+    D -->|Yes| E[Local Checkpoint 전진]
+    D -->|No| F[Gap 존재 → 대기]
+
+    E --> G[Replica에 SeqNo 전파]
+    G --> H[Global Checkpoint 전진<br/>모든 복제본 확인]
+    H --> I[Translog 정리 가능<br/>Global Checkpoint 이전]
+```
+
+### 보충: SoftDeletes와 Merge
+
+Elasticsearch는 Lucene의 Soft Delete를 사용한다. 문서 삭제/업데이트 시 실제로 삭제하지 않고 soft delete 필드를 마킹한다. Merge 과정에서 `SoftDeletesRetentionMergePolicy`가 보존 정책에 따라 실제 삭제를 수행한다.
+
+```java
+// InternalEngine 내부
+private final NumericDocValuesField softDeletesField = Lucene.newSoftDeletesField();
+private final SoftDeletesPolicy softDeletesPolicy;
+```
+
+### 보충: 인덱싱 병목 진단
+
+문서 인덱싱이 느릴 때 병목 지점을 파악하려면:
+- LiveVersionMap 메모리 사용량 → 버전 충돌 빈도
+- Translog 크기 → Flush 주기 적절성
+- Merge 스레드 스로틀링 → I/O 병목
+
+```java
+// InternalEngine의 Merge 관련 필드
+private final ElasticsearchMergeScheduler mergeScheduler;
+// 인덱스 스로틀링 — Merge가 뒤처지면 인덱싱 속도 제한
+private final AtomicInteger throttleRequestCount = new AtomicInteger();
+private final IndexThrottle throttle;
+```
+
 ---
 
 ## 5. 정리
@@ -568,6 +647,8 @@ GET _tasks/node-1:12345
 | **Inverted Index** | Term → Posting List 매핑. FST(Term Index) → Term Dictionary → Posting List 3단계 |
 | **Posting List 최적화** | Delta Encoding + Bit Packing + Skip List로 효율적 저장/탐색 |
 | **Doc Values** | 열 기반 저장소. 정렬/집계에 사용. `keyword`, `numeric`, `date` 등에 자동 생성 |
+| **InternalEngine** | Lucene IndexWriter 래퍼, 인덱싱 엔진 핵심. `indexWriter`, `translog` 필드 |
+| **LiveVersionMap** | uid→version 인메모리 맵, Real-Time Get 지원. Safe/Unsafe 모드 |
 | **인덱싱 흐름** | Client → Coordinating → Primary(Buffer+Translog) → Replica |
 | **라우팅** | `shard = hash(_routing) % num_primary_shards`, 기본 `_routing = _id` |
 | **Analyzer** | Character Filter → Tokenizer → Token Filter 파이프라인 |
@@ -575,7 +656,9 @@ GET _tasks/node-1:12345
 | **Refresh** | Buffer → Segment(메모리). 기본 1초. 검색 가능해지는 시점 |
 | **Flush** | Segment → 디스크 fsync + Translog 비움. 기본 30분/512MB |
 | **Translog** | WAL. 매 요청 fsync(기본). 크래시 복구 시 Replay |
-| **Merge** | TieredMergePolicy. 작은 세그먼트 합침 + 삭제 문서 정리 |
+| **Sequence Number** | 연산 순서 보장, 복제본 동기화. LocalCheckpointTracker |
+| **Soft Delete** | 실제 삭제 대신 마킹, Merge 시 제거 |
+| **Merge** | TieredMergePolicy. 작은 세그먼트 합침 + 삭제 문서 정리. Merge 지연 시 IndexThrottle 동작 |
 | **Bulk 최적화** | refresh -1, replica 0, async translog → 인덱싱 후 복원 |
 
 ---

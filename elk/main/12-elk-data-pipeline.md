@@ -331,7 +331,132 @@ PUT _slm/policy/daily-snapshots
 }
 ```
 
-### 3.4 파이프라인 모니터링 방법
+### 3.4 Elasticsearch REST API 계층
+
+모든 외부 요청은 Elasticsearch의 REST API 계층을 통해 처리된다.
+
+```
+ REST Request Flow
+ ┌──────────────────────────────────────────────────────┐
+ │  HTTP Request                                        │
+ │       │                                              │
+ │       ▼                                              │
+ │  RestController (PathTrie 기반 라우팅)                │
+ │       │                                              │
+ │       ▼                                              │
+ │  RestHandler (e.g. RestIndexAction, RestSearchAction) │
+ │       │                                              │
+ │       ▼                                              │
+ │  NodeClient.execute(ActionType, Request)              │
+ │       │                                              │
+ │       ▼                                              │
+ │  TransportAction (e.g. TransportIndexAction)          │
+ │       │                                              │
+ │       ▼                                              │
+ │  Internal Processing (인덱싱/검색/집계)               │
+ └──────────────────────────────────────────────────────┘
+```
+
+#### ActionModule - 주요 Action 매핑
+
+```
+ REST Handler          →  Transport Action
+ RestIndexAction       →  TransportIndexAction
+ RestBulkAction        →  TransportBulkAction
+ RestSearchAction      →  TransportSearchAction
+ RestGetAction         →  TransportGetAction
+ RestDeleteAction      →  TransportDeleteAction
+ RestUpdateAction      →  TransportUpdateAction
+ RestClusterHealthAct  →  TransportClusterHealth
+```
+
+#### Bulk Indexing 내부 흐름
+
+Logstash의 elasticsearch output은 Bulk API를 사용한다. 내부 처리 흐름:
+
+```
+ Bulk Indexing Flow
+ ┌──────────────────────────────────────────────────────┐
+ │  POST /_bulk                                         │
+ │       │                                              │
+ │       ▼                                              │
+ │  RestBulkAction.handleRequest()                      │
+ │       │ BulkRequest 파싱                             │
+ │       ▼                                              │
+ │  NodeClient.execute(BulkAction, BulkRequest)         │
+ │       │                                              │
+ │       ▼                                              │
+ │  TransportBulkAction                                 │
+ │       │ 1. 인덱스 존재 확인 (AutoCreate)             │
+ │       │ 2. 라우팅 → 샤드별 요청 분배                │
+ │       ▼                                              │
+ │  TransportShardBulkAction                            │
+ │       │ 3. Primary Shard에서 Lucene 인덱싱          │
+ │       │ 4. Translog 기록                             │
+ │       │ 5. Replica Shard에 복제                     │
+ │       ▼                                              │
+ │  BulkResponse (각 아이템별 성공/실패)                │
+ └──────────────────────────────────────────────────────┘
+```
+
+#### 검색 흐름 상세
+
+```
+ ES Search Internal Flow
+ ┌──────────────────────────────────────────────────────┐
+ │  Coordinating Node                                   │
+ │    │                                                 │
+ │    ├─ Query Phase (scatter)                          │
+ │    │   ├──▶ Shard 1: Lucene query → top N docIds    │
+ │    │   ├──▶ Shard 2: Lucene query → top N docIds    │
+ │    │   └──▶ Shard 3: Lucene query → top N docIds    │
+ │    │                                                 │
+ │    ├─ Merge: 전체 top N docIds 선별                  │
+ │    │                                                 │
+ │    ├─ Fetch Phase (gather)                           │
+ │    │   ├──▶ Shard 1: docId → _source 반환           │
+ │    │   └──▶ Shard 3: docId → _source 반환           │
+ │    │                                                 │
+ │    └─ Final Response 조합                            │
+ └──────────────────────────────────────────────────────┘
+```
+
+### 3.5 Kibana 데이터 조회 흐름
+
+```
+ Kibana Data Retrieval Flow
+ ┌──────────────────────────────────────────────────────┐
+ │  User: Dashboard 조회                                │
+ │       │                                              │
+ │       ▼                                              │
+ │  Dashboard Plugin                                    │
+ │       │ SavedObject에서 대시보드 정의 로드            │
+ │       │ (.kibana 인덱스)                             │
+ │       ▼                                              │
+ │  각 Panel(Visualization/Lens)                        │
+ │       │                                              │
+ │       ▼                                              │
+ │  Data Plugin - Search Service                        │
+ │       │ ES Query DSL 생성                            │
+ │       │ 시간 범위, 필터 적용                         │
+ │       ▼                                              │
+ │  Elasticsearch Client (asScoped)                     │
+ │       │ POST /my-index/_search                       │
+ │       │   { query, aggs, size }                      │
+ │       ▼                                              │
+ │  ES RestController → TransportSearchAction           │
+ │       │                                              │
+ │       ▼                                              │
+ │  Search Results → Aggregation 결과                   │
+ │       │                                              │
+ │       ▼                                              │
+ │  Visualization Renderer (차트 렌더링)                │
+ └──────────────────────────────────────────────────────┘
+```
+
+Kibana는 사용자의 인증 정보를 그대로 ES에 전달하여(`asScoped`) 사용자별 권한에 따른 데이터 접근을 보장한다.
+
+### 3.6 파이프라인 모니터링 방법
 
 파이프라인의 각 컴포넌트를 모니터링하여 병목과 장애를 사전에 감지해야 한다.
 
@@ -750,6 +875,10 @@ POST app-logs-*/_search
 | **수집 병목** | Harvester 수, 디스크 I/O, 네트워크 대역폭 |
 | **변환 병목** | Grok CPU, Worker 수, External lookup 지연 |
 | **저장 병목** | Bulk rejection, Refresh interval, Merge 부하, Shard 수 |
+| **REST API 계층** | RestController(PathTrie 라우팅) → RestHandler → TransportAction 체인 |
+| **Bulk Indexing** | TransportBulkAction → 샤드별 분배 → Primary 인덱싱 → Translog → Replica 복제 |
+| **검색 흐름** | Query Phase(scatter, 각 샤드 top N) → Merge → Fetch Phase(gather, _source 반환) |
+| **Kibana 조회** | SavedObject 로드 → Panel별 ES Query DSL → asScoped 클라이언트 → 렌더링 |
 | **유실 방지** | Registry(Beats) + PQ(Logstash) + Kafka replication + ES replica + Snapshot |
 | **DLQ** | 변환 실패 이벤트를 별도 인덱스로 분리, 재처리 가능 |
 | **핵심 모니터링** | Consumer Lag, Write Rejected, Ingestion Delay, Queue Fill % |

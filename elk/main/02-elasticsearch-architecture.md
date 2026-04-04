@@ -484,6 +484,103 @@ PUT _index_template/app-logs-template
 }
 ```
 
+### 보충: Coordinator — 클러스터 합의 엔진
+
+`Coordinator` 클래스(`org.elasticsearch.cluster.coordination.Coordinator`)는 클러스터 합의(consensus)를 담당하는 핵심 컴포넌트다. Raft에서 영감을 받은 합의 알고리즘을 구현한다.
+
+```java
+// org.elasticsearch.cluster.coordination.Coordinator
+public class Coordinator extends AbstractLifecycleComponent
+    implements ClusterStatePublisher {
+
+    private final TransportService transportService;
+    private final MasterService masterService;
+    private final AllocationService allocationService;
+    private final JoinHelper joinHelper;
+    private final ElectionStrategy electionStrategy;
+    private final PeerFinder peerFinder;
+    private final PreVoteCollector preVoteCollector;
+    private final LeaderChecker leaderChecker;
+    private final FollowersChecker followersChecker;
+    private final Reconfigurator reconfigurator;
+    private final ClusterBootstrapService clusterBootstrapService;
+
+    private Mode mode;  // CANDIDATE, LEADER, FOLLOWER
+    private Optional<DiscoveryNode> lastKnownLeader;
+    private Optional<Join> lastJoin;
+}
+```
+
+Coordinator의 세 가지 모드:
+
+```mermaid
+stateDiagram-v2
+    [*] --> CANDIDATE: 시작
+    CANDIDATE --> LEADER: 선거 승리
+    CANDIDATE --> FOLLOWER: 리더 발견
+    LEADER --> CANDIDATE: 리더십 상실
+    FOLLOWER --> CANDIDATE: 리더 장애 감지
+    FOLLOWER --> FOLLOWER: LeaderChecker 성공
+    LEADER --> LEADER: FollowersChecker 성공
+```
+
+### 보충: 클러스터 안정성 보장 메커니즘
+
+**LeaderChecker**: Follower 노드가 주기적으로 Leader에 핑을 보내 생존 확인. 실패 시 재선거 트리거.
+
+**FollowersChecker**: Leader가 모든 Follower에 주기적으로 핑을 보내 멤버십 확인. 응답 없는 노드는 클러스터에서 제거.
+
+**LagDetector**: Follower의 ClusterState 적용 지연을 감지하여 지연이 심한 노드를 감지.
+
+```java
+// Coordinator 내부 핵심 컴포넌트
+private final LeaderChecker leaderChecker;        // Follower → Leader 핑
+private final FollowersChecker followersChecker;  // Leader → Follower 핑
+private final LagDetector lagDetector;            // 지연 노드 감지
+private final PeerFinder peerFinder;              // 피어 탐색
+```
+
+### 보충: ClusterState 불변 객체
+
+`ClusterState`(`org.elasticsearch.cluster.ClusterState`)는 클러스터의 전체 상태를 나타내는 불변(immutable) 객체다. 소스코드 Javadoc에서:
+
+> *"Represents the state of the cluster, held in memory on all nodes in the cluster with updates coordinated by the elected master."*
+
+ClusterState가 포함하는 정보:
+- **Metadata**: 인덱스 설정, 매핑, 템플릿 (디스크에 persist)
+- **RoutingTable**: 샤드 할당 정보
+- **DiscoveryNodes**: 클러스터 멤버 목록
+- **ClusterBlocks**: 인덱스/클러스터 레벨 블록
+- **CompatibilityVersions**: 노드 간 호환성 버전
+
+### 보충: ClusterState 업데이트 흐름
+
+> *"Updates are triggered by submitting tasks to the MasterService on the elected master... Tasks that share the same ClusterStateTaskExecutor instance are processed as a batch. Each batch of tasks yields a new ClusterState which is published to the cluster by ClusterStatePublisher.publish."*
+
+```mermaid
+graph TD
+    A[ClusterStateUpdateTask 제출] --> B[MasterService Task Queue]
+    B --> C{Priority 기반 정렬}
+    C --> D[동일 Executor의 태스크 배치 처리]
+    D --> E[새로운 ClusterState 생성]
+    E --> F[ClusterStatePublisher.publish]
+    F --> G{Diff 또는 Full State}
+    G -->|기존 노드| H[Diff 전송 Transport Protocol]
+    G -->|신규 노드| I[Full State 전송]
+    H --> J[PublishResponse 수신]
+    I --> J
+    J --> K{과반수 확인}
+    K -->|성공| L[CommitRequest 전송]
+    L --> M[ClusterApplierService 적용]
+    M --> N[ClusterStateApplier 콜백]
+    N --> O[ClusterStateListener 콜백]
+    O --> P[ClusterService.state 업데이트]
+```
+
+### 보충: Voting Configuration과 Quorum
+
+`CoordinationMetadata.VotingConfiguration`은 마스터 선출에 투표할 수 있는 노드 집합을 정의한다. Quorum은 `(투표 구성 노드 수 / 2) + 1`이다. 3노드 클러스터에서는 2개의 동의가 필요하다.
+
 ---
 
 ## 5. 정리
@@ -494,6 +591,10 @@ PUT _index_template/app-logs-template
 | **샤드** | 인덱스의 수평 분할 단위. Primary(쓰기) + Replica(HA/읽기) |
 | **샤드 사이징** | 10~50GB/샤드, 힙 1GB당 20샤드 이하 |
 | **마스터 선출** | 7.x+ Voting Configuration으로 자동 관리. Split-Brain 방지 내장 |
+| **Coordinator** | 합의 엔진 (Raft-inspired). CANDIDATE/LEADER/FOLLOWER 모드 |
+| **ClusterState 전파** | Diff 기반 증분 전송, 과반수 커밋 |
+| **LeaderChecker** | Follower→Leader 핑으로 생존 확인 |
+| **FollowersChecker** | Leader→Follower 핑으로 멤버십 확인 |
 | **Lucene 세그먼트** | 불변(immutable) 자료구조. Refresh로 NRT Search, Merge로 최적화 |
 | **NRT Search** | Refresh 간격(기본 1초)으로 Near Real-Time 달성 |
 | **Cluster State** | 마스터가 관리하는 전역 메타데이터. 노드/인덱스/라우팅 정보 포함 |

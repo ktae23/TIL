@@ -377,6 +377,168 @@ GET /access-logs/_search
 
 > `precision_threshold`가 높을수록 정확하지만 메모리 사용량 증가. HyperLogLog++ 알고리즘 사용으로 항상 근사치를 반환한다. 40,000 이하에서는 오차가 거의 없다.
 
+## 보충: Transport Layer
+
+Elasticsearch 노드 간 모든 내부 통신은 Transport 계층을 통해 이루어진다. 이 섹션에서는 TransportService 아키텍처, TCP 기반 통신 프로토콜, 메시지 인코딩/디코딩 파이프라인, Connection 관리 및 Remote Cluster 연결 메커니즘을 분석한다.
+
+### Transport 계층의 역할
+
+Elasticsearch의 Transport 계층은 노드 간 통신을 담당하는 저수준 네트워크 계층이다. REST API(HTTP 계층)가 클라이언트-노드 통신을 처리하는 반면, Transport 계층은 다음을 담당한다:
+
+- **노드 간 클러스터 내부 통신**: Shard 복제, 클러스터 상태 전파, 검색 Scatter/Gather
+- **Action 기반 RPC**: 각 요청은 Action 이름(예: `internal:transport/handshake`)으로 라우팅
+- **Connection 풀 관리**: 노드별 다중 TCP 연결을 유지하며 요청 유형별 채널 분리
+- **Remote Cluster 연결**: Cross-Cluster Search(CCS)를 위한 원격 클러스터 통신
+
+### 핵심 컴포넌트
+
+| 컴포넌트 | 역할 |
+|----------|------|
+| `TransportService` | Transport 계층의 최상위 서비스. 요청 전송/수신, Handler 등록 |
+| `TcpTransport` | TCP 기반 Transport 구현체. 채널/커넥션 관리 |
+| `InboundPipeline` | 수신 바이트를 메시지로 디코딩하는 파이프라인 |
+| `OutboundHandler` | 요청/응답을 직렬화하여 전송 |
+| `ConnectionManager` | 노드별 Connection 풀 관리 |
+| `RemoteClusterService` | Remote Cluster 연결 및 관리 |
+
+### 전체 아키텍처
+
+```mermaid
+graph LR
+    subgraph "Node A"
+        TS_A["TransportService"]
+        OB_A["OutboundHandler"]
+        TCP_A["TcpTransport"]
+        CM_A["ConnectionManager"]
+    end
+
+    subgraph "Network"
+        CH["TCP Channel"]
+    end
+
+    subgraph "Node B"
+        TCP_B["TcpTransport"]
+        IP_B["InboundPipeline"]
+        DEC_B["InboundDecoder"]
+        AGG_B["InboundAggregator"]
+        IH_B["InboundHandler"]
+        TS_B["TransportService"]
+    end
+
+    TS_A -->|sendRequest| OB_A
+    OB_A -->|serialize| TCP_A
+    TCP_A -->|write bytes| CH
+    CH -->|read bytes| TCP_B
+    TCP_B -->|handleBytes| IP_B
+    IP_B --> DEC_B
+    IP_B --> AGG_B
+    AGG_B -->|InboundMessage| IH_B
+    IH_B --> TS_B
+```
+
+### TransportService — 최상위 서비스
+
+`TransportService`는 `AbstractLifecycleComponent`를 상속하며, `TransportMessageListener`와 `TransportConnectionListener` 인터페이스를 구현한다.
+
+핵심 필드:
+
+```java
+protected final Transport transport;             // 실제 TCP 통신 담당
+protected final ConnectionManager connectionManager;  // 노드별 연결 관리
+protected final ThreadPool threadPool;            // 비동기 처리용 스레드풀
+protected final TaskManager taskManager;          // 요청별 Task 추적
+private final TransportInterceptor.AsyncSender asyncSender;  // 인터셉터 체인
+private final Transport.ResponseHandlers responseHandlers;   // 응답 핸들러 맵
+```
+
+**Handshake 메커니즘**: 새 노드와 연결 시 `internal:transport/handshake` 액션으로 버전, 빌드 해시, 클러스터 이름을 교환한다.
+
+**Local Node 최적화**: 동일 노드 내 요청은 네트워크를 거치지 않고 직접 실행된다.
+
+### InboundPipeline — 수신 메시지 처리
+
+`InboundPipeline`은 TCP 채널에서 수신된 원시 바이트를 메시지로 조립하는 핵심 컴포넌트다.
+
+```mermaid
+graph TD
+    BYTES["Raw Bytes"] -->|handleBytes| PIPELINE["InboundPipeline"]
+    PIPELINE --> DECODER["InboundDecoder"]
+    DECODER -->|Header| AGG["InboundAggregator"]
+    DECODER -->|Content Fragment| AGG
+    DECODER -->|END_CONTENT| AGG
+    DECODER -->|PING| HANDLER["MessageHandler"]
+    AGG -->|finishAggregation| MSG["InboundMessage"]
+    MSG --> HANDLER
+```
+
+### Connection 관리
+
+`ConnectionManager`는 노드별 TCP 연결 풀을 관리한다. 연결은 용도별로 구분된 프로파일을 사용한다:
+
+| 프로파일 | 용도 |
+|----------|------|
+| `default` | 일반 클러스터 내부 통신 |
+| `.direct` | 로컬 노드 직접 통신 (네트워크 없음) |
+| `_remote_cluster` | Remote Cluster 전용 통신 |
+
+### Transport Layer 실전 예제
+
+**Transport 계층 튜닝:**
+
+```yaml
+# elasticsearch.yml - Transport 설정
+
+# TCP 연결 수 (노드당, 유형별)
+transport.connections_per_node.recovery: 2
+transport.connections_per_node.bulk: 3
+transport.connections_per_node.reg: 6
+transport.connections_per_node.state: 1
+transport.connections_per_node.ping: 1
+
+# TCP 버퍼 크기
+transport.tcp.send_buffer_size: 256kb
+transport.tcp.receive_buffer_size: 256kb
+
+# 압축 설정
+transport.compress: indexing_data
+
+# 느린 로그 설정 (5초 이상 걸리는 Transport 작업 기록)
+transport.slow_operation_logging_threshold: 5s
+```
+
+**Remote Cluster 구성 및 Cross-Cluster Search:**
+
+```yaml
+# elasticsearch.yml - Remote Cluster 설정 (Sniff mode)
+cluster.remote.cluster_west:
+  seeds: ["west-node1:9300", "west-node2:9300"]
+  transport.compress: true
+  transport.ping_schedule: 30s
+
+# Proxy mode (단일 진입점)
+cluster.remote.cluster_east:
+  mode: proxy
+  proxy_address: "east-proxy:9443"
+  server_name: "east-cluster.example.com"
+```
+
+```json
+// Cross-Cluster Search 실행
+GET /local-index,cluster_west:remote-index/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "message": "error" } },
+        { "range": { "@timestamp": { "gte": "now-1h" } } }
+      ]
+    }
+  }
+}
+```
+
+---
+
 ## 5. 정리
 
 | 구분 | 핵심 내용 |
@@ -388,6 +550,11 @@ GET /access-logs/_search
 | **Terms 정확도** | 분산 환경에서 근사치 반환. `shard_size` 증가로 정확도 개선 가능 |
 | **Composite Aggregation** | `after_key` 페이지네이션으로 고카디널리티 필드의 전체 버킷 순회 |
 | **성능 주의** | 중첩 깊이 제한, text 필드 Aggregation 지양, `size` 적절히 설정 |
+| **TransportService** | Transport 계층의 최상위 서비스. Action 기반 RPC, Handler 등록/디스패치 |
+| **TcpTransport** | TCP 기반 Transport 구현. Inbound/Outbound Handler 조립 |
+| **InboundPipeline** | 수신 바이트 -> Header/Content 디코딩 -> InboundMessage 조립 |
+| **ConnectionManager** | 노드별 TCP 연결 풀 관리. 프로파일별 연결 분리 |
+| **RemoteClusterService** | Cross-Cluster Search/Replication을 위한 원격 클러스터 연결 관리 |
 
 ---
 *참고: Elasticsearch 8.x 기준*

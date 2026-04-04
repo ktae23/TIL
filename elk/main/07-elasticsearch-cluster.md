@@ -418,6 +418,277 @@ GET /_cluster/stats?human&filter_path=indices.shards.total,indices.count
 | 총 샤드 수 | 클러스터 전체에서 수만 개 이하 |
 | Cluster State 크기 | 100MB 이하 |
 
+## 보충: Logstash 파이프라인 아키텍처
+
+Elasticsearch 클러스터로 데이터를 전송하는 Logstash 파이프라인의 내부 동작 원리를 이해하면 클러스터 운영에 도움이 된다. 이 섹션에서는 JavaPipeline의 실행 모델, Config에서 Bytecode까지의 컴파일 체인, WorkerLoop 동작 원리를 소스코드 수준에서 분석한다.
+
+### JavaPipeline
+
+Logstash 파이프라인의 핵심 구현체는 `JavaPipeline` 클래스다. Ruby의 `AbstractPipeline`을 상속하며 Java와 Ruby 하이브리드 구조로 동작한다. 하나의 파이프라인은 다음 요소로 구성된다:
+
+- **Input 플러그인**: 데이터 소스에서 이벤트를 수집
+- **Queue**: Input과 Worker 사이의 버퍼 (Memory 또는 Persistent Queue)
+- **Worker Thread**: Filter + Output 로직을 실행하는 스레드 (pipeline.workers 설정)
+- **Filter 플러그인**: 이벤트를 변환, 보강, 필터링
+- **Output 플러그인**: 처리된 이벤트를 목적지로 전송
+
+### Config 컴파일 체인
+
+Logstash 설정 파일은 다음 단계를 거쳐 실행 가능한 코드로 변환된다:
+
+```
+Config Text -> AST -> PipelineIR (Graph) -> Dataset (Compiled Bytecode)
+```
+
+### 핵심 설정 파라미터
+
+| 파라미터 | 기본값 | 설명 |
+|----------|--------|------|
+| `pipeline.workers` | CPU 코어 수 | Filter/Output 실행 Worker 스레드 수 |
+| `pipeline.batch.size` | 125 | Worker당 한 번에 처리하는 이벤트 수 |
+| `pipeline.batch.delay` | 50ms | 배치가 미달일 때 대기 시간 |
+| `pipeline.ordered` | auto | 이벤트 순서 보장 여부 |
+| `queue.type` | memory | 큐 유형 (memory / persisted) |
+
+### 전체 아키텍처
+
+```mermaid
+graph LR
+    subgraph "Input Threads"
+        I1["Input 1<br/>(beats)"]
+        I2["Input 2<br/>(kafka)"]
+    end
+
+    subgraph "Queue"
+        Q["Memory Queue<br/>/ Persistent Queue"]
+    end
+
+    subgraph "Worker Threads"
+        W1["Worker 0<br/>Filter -> Output"]
+        W2["Worker 1<br/>Filter -> Output"]
+        W3["Worker N<br/>Filter -> Output"]
+    end
+
+    I1 -->|push events| Q
+    I2 -->|push events| Q
+    Q -->|read_batch| W1
+    Q -->|read_batch| W2
+    Q -->|read_batch| W3
+```
+
+### JavaPipeline 초기화
+
+```ruby
+class JavaPipeline < AbstractPipeline
+  def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
+    super pipeline_config, namespaced_metric, @logger, agent
+    finish_initialization
+  end
+
+  def finish_initialization
+    open_queue                    # Queue 초기화
+
+    @worker_threads = []
+    @worker_observer = org.logstash.execution.WorkerObserver.new(
+      process_events_namespace_metric,
+      pipeline_events_namespace_metric
+    )
+
+    @drain_queue = settings.get_value("queue.drain") ||
+                   settings.get("queue.type") == MEMORY
+
+    @events_filtered = java.util.concurrent.atomic.LongAdder.new
+    @events_consumed = java.util.concurrent.atomic.LongAdder.new
+
+    @ready = Concurrent::AtomicBoolean.new(false)
+    @running = Concurrent::AtomicBoolean.new(false)
+    @flushing = java.util.concurrent.atomic.AtomicBoolean.new(false)
+    @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
+    @crash_detected = Concurrent::AtomicBoolean.new(false)
+  end
+end
+```
+
+### 파이프라인 시작 시퀀스
+
+```mermaid
+sequenceDiagram
+    participant Main as Pipeline Thread
+    participant WI as Worker Init
+    participant WL as Worker Loop
+    participant IT as Input Threads
+
+    Main->>Main: start()
+    Main->>Main: collect_stats / initialize_flow_metrics
+    Main->>Main: run()
+    Main->>WI: start_workers()
+    WI->>WI: maybe_setup_out_plugins()
+    WI->>WI: safe_pipeline_worker_count()
+    loop N workers
+        WI->>WI: Thread.new { init_worker_loop }
+    end
+    WI->>WL: worker_loop.run() (N threads)
+    WI->>IT: start_inputs()
+    Main->>Main: transition_to_running
+    Main->>Main: start_flusher
+    Main->>Main: monitor_inputs_and_workers
+```
+
+### Thread-safety 자동 감지
+
+unsafe한 Filter 플러그인이 있으면 자동으로 Worker 수를 1로 제한한다:
+
+```ruby
+def safe_pipeline_worker_count
+  pipeline_workers = settings.get("pipeline.workers")
+  safe_filters, unsafe_filters = filters.partition(&:threadsafe?)
+
+  return pipeline_workers if unsafe_filters.empty?
+
+  if settings.set?("pipeline.workers")
+    if pipeline_workers > 1
+      @logger.warn("Warning: filters that might not work with multiple workers",
+                   :worker_threads => pipeline_workers,
+                   :filters => unsafe_filters.collect(&:config_name))
+    end
+  else
+    if default > 1
+      return 1  # 자동으로 1로 제한
+    end
+  end
+  pipeline_workers
+end
+```
+
+### PipelineIR - 중간 표현(Intermediate Representation)
+
+`PipelineIR`은 파이프라인 설정을 Graph 기반 중간 표현으로 변환한다:
+
+```java
+public PipelineIR(Graph inputSection, Graph filterSection,
+                  Graph outputSection, String originalSource) throws InvalidIRException {
+    Graph tempGraph = inputSection.copy();        // Input 섹션 복사
+
+    QueueVertex tempQueue = new QueueVertex();
+    tempGraph = tempGraph.chain(tempQueue);        // Input -> Queue 연결
+
+    tempGraph = tempGraph.chain(filterSection);    // Queue -> Filter 연결
+
+    tempGraph = tempGraph.chain(                   // Filter -> Output 분리자
+        new SeparatorVertex("filter_to_output")
+    );
+
+    this.graph = tempGraph.chain(outputSection);   // Filter -> Output 연결
+
+    this.graph.validate();                         // 그래프 유효성 검증
+
+    // 원본 소스 기반 해시 또는 그래프 구조 기반 해시
+    if (this.getOriginalSource() != null) {
+        uniqueHash = Util.digest(this.getOriginalSource());
+    } else {
+        uniqueHash = this.graph.uniqueHash();
+    }
+}
+```
+
+Graph 구조:
+
+```
+Input1 --> Queue --> Filter1 --> Filter2 --> [filter_to_output] --> Output1
+Input2 ----^                                                   --> Output2
+```
+
+### DatasetCompiler - 런타임 코드 생성
+
+`DatasetCompiler`는 PipelineIR의 Graph를 런타임에 Java 바이트코드로 컴파일한다. Filter/Output 플러그인마다 최적화된 `Dataset` 구현을 동적 생성한다:
+
+```java
+// Filter Dataset 컴파일
+public static ComputeStepSyntaxElement<Dataset> filterDataset(
+    final Collection<Dataset> parents,
+    final AbstractFilterDelegatorExt plugin)
+{
+    final ClassFields fields = new ClassFields();
+    final ValueSyntaxElement outputBuffer = fields.add("outputBuffer", new ArrayList<>());
+
+    if (parents.isEmpty()) {
+        compute = filterBody(outputBuffer, BATCH_ARG, fields, plugin);
+    } else {
+        // 부모 Dataset에서 입력 버퍼링
+        final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
+        compute = withInputBuffering(
+            filterBody(outputBuffer, inputBufferField, fields, plugin),
+            parentFields, inputBufferField
+        );
+    }
+    return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
+}
+```
+
+### 파이프라인 종료 시퀀스
+
+```mermaid
+sequenceDiagram
+    participant M as Monitor Thread
+    participant I as Input Threads
+    participant W as Worker Threads
+
+    M->>M: monitor_inputs_and_workers()
+    Note over M: ThreadsWait로 스레드 감시
+
+    alt 정상 종료 (Input 완료)
+        I-->>M: Input thread terminated
+        M->>M: All inputs done
+    else 비정상 종료 (Worker 크래시)
+        W-->>M: Worker thread terminated
+        M->>I: stop_inputs()
+        M->>M: wait_input_threads_termination(10s)
+    end
+
+    M->>M: shutdown_flusher
+    M->>M: shutdown_workers
+    M->>M: close
+```
+
+### 프로덕션 파이프라인 설정 예제
+
+```ruby
+# /etc/logstash/pipelines.yml
+- pipeline.id: main-pipeline
+  pipeline.workers: 4
+  pipeline.batch.size: 250
+  pipeline.batch.delay: 50
+  queue.type: persisted
+  queue.max_bytes: 4gb
+  path.config: "/etc/logstash/conf.d/main.conf"
+
+- pipeline.id: dead-letter-pipeline
+  pipeline.workers: 1
+  pipeline.batch.size: 50
+  path.config: "/etc/logstash/conf.d/dlq.conf"
+```
+
+### Worker 수 최적화 진단
+
+```bash
+# 파이프라인 성능 메트릭 확인
+curl -s localhost:9600/_node/stats/pipelines | jq '
+  .pipelines["main-pipeline"] | {
+    workers: .pipeline.workers,
+    batch_size: .pipeline.batch_size,
+    events_in: .events.in,
+    events_out: .events.out,
+    events_filtered: .events.filtered,
+    queue_backpressure_ms: .events.queue_push_duration_in_millis,
+    worker_utilization: .pipeline.worker_utilization
+  }'
+```
+
+Worker 수 결정 기준:
+- `queue_push_duration` 높음 -> Worker가 부족하거나 Output 병목
+- `worker_utilization` 낮음 -> Worker 수 과다 (줄여도 됨)
+- CPU 사용률 포화 -> grok 등 CPU-bound Filter가 병목
+
 ## 5. 정리
 
 | 구분 | 핵심 내용 |
@@ -430,6 +701,10 @@ GET /_cluster/stats?human&filter_path=indices.shards.total,indices.count
 | **Split Brain 방지** | Quorum 기반 선출 (7.x+). Master-eligible 노드 홀수 개 권장 |
 | **Cluster State** | Master만 수정, diff 전파. 인덱스/샤드 수 폭발 시 성능 병목 |
 | **노드 제거** | exclude 필터로 샤드 배출 후 안전하게 중지 |
+| **JavaPipeline** | Logstash 파이프라인의 핵심 실행 엔진. Ruby/Java 하이브리드 구조 |
+| **PipelineIR** | Config를 Graph 기반 중간 표현으로 변환. Input -> Queue -> Filter -> Output 체인 |
+| **DatasetCompiler** | PipelineIR Graph를 런타임 Java 바이트코드로 컴파일. 플러그인별 최적화 |
+| **Thread-safety** | unsafe Filter 감지 시 Worker 수 자동 1로 제한 |
 
 ---
 *참고: Elasticsearch 8.x 기준*

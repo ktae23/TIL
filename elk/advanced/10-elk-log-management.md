@@ -408,4 +408,268 @@ graph TB
 4. **복원 테스트**: 분기별로 반드시 복원 테스트를 수행하여 백업 무결성 확인
 
 ---
+
+## 보충: Elasticsearch 성능 튜닝
+
+> 이 섹션은 infrastructure/ELK 문서에서 통합된 보충 자료로, Elasticsearch 클러스터의 JVM, 인덱싱, 검색, Merge, 하드웨어 전반의 성능 튜닝 전략을 다룬다.
+
+### 성능 튜닝 5개 계층
+
+| 계층 | 튜닝 대상 | 영향 범위 |
+|------|----------|----------|
+| **JVM** | Heap 크기, GC 정책 | 전체 노드 안정성 |
+| **Indexing** | Bulk 크기, Refresh Interval, Translog | 쓰기 처리량 |
+| **Search** | 캐시, Shard 수, Routing | 읽기 지연시간 |
+| **Merge** | Merge 정책, 스레드 수 | I/O 부하 및 검색 성능 |
+| **Hardware** | 디스크, 메모리, CPU, 네트워크 | 전체 성능 상한 |
+
+### 인덱싱 파이프라인 내부 구조
+
+```mermaid
+flowchart TD
+    Client[Client] -->|Bulk Request| Coord[Coordinating Node]
+    Coord -->|Route by _id hash| Primary[Primary Shard]
+
+    subgraph IndexingPipeline["Indexing Pipeline"]
+        Primary --> Analyze[Analyzer<br/>Tokenize + Filter]
+        Analyze --> InvertIdx[Inverted Index<br/>In-Memory Buffer]
+        InvertIdx --> Translog[Translog<br/>Write-Ahead Log]
+        InvertIdx -->|refresh_interval| Segment[New Segment<br/>Searchable]
+        Segment -->|Merge Policy| MergedSeg[Merged Segment]
+        Translog -->|flush_threshold| Commit[Lucene Commit<br/>fsync to disk]
+    end
+
+    Primary -->|Replicate| Replica[Replica Shard]
+```
+
+### JVM 메모리 구조
+
+```
+┌─────────────────────────────────────────────────┐
+│                   시스템 메모리 (64GB)              │
+│                                                 │
+│  ┌──────────────────┐  ┌──────────────────────┐ │
+│  │   JVM Heap (31GB) │  │  OS File Cache (33GB)│ │
+│  │                  │  │                      │ │
+│  │  ┌─────────────┐ │  │  Lucene Segments     │ │
+│  │  │  Young Gen   │ │  │  (Memory-mapped)     │ │
+│  │  │  (Eden+S0+S1)│ │  │                      │ │
+│  │  ├─────────────┤ │  │  Doc Values           │ │
+│  │  │  Old Gen     │ │  │  (columnar store)    │ │
+│  │  │  (Field Data,│ │  │                      │ │
+│  │  │   Caches,    │ │  │  Stored Fields       │ │
+│  │  │   Buffers)   │ │  │                      │ │
+│  │  └─────────────┘ │  └──────────────────────┘ │
+│  └──────────────────┘                           │
+└─────────────────────────────────────────────────┘
+```
+
+**핵심 원칙**: Heap은 물리 메모리의 50% 이하, 최대 31GB(Compressed OOP 임계값)로 설정한다. 나머지는 OS File Cache가 Lucene 세그먼트를 캐싱하는 데 사용한다.
+
+### JVM 설정
+
+```bash
+# /etc/elasticsearch/jvm.options
+
+# Heap 크기: 물리 메모리의 50% 이하, 최대 31GB
+-Xms31g
+-Xmx31g
+
+# G1GC 사용 (Elasticsearch 7.x+ 기본값)
+-XX:+UseG1GC
+
+# G1GC 튜닝
+-XX:G1HeapRegionSize=16m
+-XX:InitiatingHeapOccupancyPercent=30
+-XX:G1ReservePercent=25
+
+# GC 로깅
+-Xlog:gc*,gc+age=trace,safepoint:file=/var/log/elasticsearch/gc.log:utctime,pid,tags:filecount=32,filesize=64m
+
+# OOM 시 Heap Dump
+-XX:+HeapDumpOnOutOfMemoryError
+-XX:HeapDumpPath=/var/lib/elasticsearch/heapdump
+-XX:+ExitOnOutOfMemoryError
+```
+
+### Bulk API 최적화
+
+```bash
+# 인덱싱 전 최적화 설정 적용
+curl -X PUT "localhost:9200/logs-2026.03/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "index": {
+      "refresh_interval": "30s",
+      "number_of_replicas": 0,
+      "translog": {
+        "durability": "async",
+        "sync_interval": "30s",
+        "flush_threshold_size": "1gb"
+      }
+    }
+  }'
+
+# Bulk 인덱싱 실행 (최적 크기: 5-15MB per request)
+curl -X POST "localhost:9200/_bulk" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary @bulk_data.ndjson
+
+# 인덱싱 완료 후 설정 복원
+curl -X PUT "localhost:9200/logs-2026.03/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "index": {
+      "refresh_interval": "1s",
+      "number_of_replicas": 1,
+      "translog": {
+        "durability": "request"
+      }
+    }
+  }'
+```
+
+### Refresh Interval 조정
+
+```bash
+# 로그/메트릭 수집 (near-realtime 불필요)
+curl -X PUT "localhost:9200/logs-*/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{"index": {"refresh_interval": "30s"}}'
+
+# 실시간 검색 (기본값 유지)
+curl -X PUT "localhost:9200/products/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{"index": {"refresh_interval": "1s"}}'
+
+# 대량 리인덱싱 (완료 후 수동 refresh)
+curl -X PUT "localhost:9200/reindex-target/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{"index": {"refresh_interval": "-1"}}'
+```
+
+### Merge 정책 튜닝
+
+```bash
+curl -X PUT "localhost:9200/logs-*/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "index": {
+      "merge": {
+        "scheduler": {
+          "max_thread_count": 1
+        },
+        "policy": {
+          "max_merged_segment": "5gb",
+          "segments_per_tier": 10,
+          "floor_segment": "2mb"
+        }
+      }
+    }
+  }'
+
+# Force Merge (읽기 전용 인덱스에서만 사용)
+curl -X POST "localhost:9200/logs-2026.02/_forcemerge?max_num_segments=1"
+```
+
+### 검색 성능 최적화
+
+```bash
+# Shard 크기 및 수 최적화
+# 권장 Shard 크기: 10GB ~ 50GB
+# 권장 Shard 수: 노드당 Heap 1GB에 20개 이하
+
+# Filter Context 활용 (캐싱 가능, 스코어링 불필요)
+curl -X GET "localhost:9200/logs-*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {
+      "bool": {
+        "filter": [
+          {"term": {"status": "error"}},
+          {"range": {"@timestamp": {"gte": "now-1h"}}}
+        ]
+      }
+    }
+  }'
+
+# _source 필드 제한
+curl -X GET "localhost:9200/logs-*/_search" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {"match_all": {}},
+    "_source": ["@timestamp", "message", "level"],
+    "size": 100
+  }'
+```
+
+### 쓰기/읽기 노드 분리
+
+```yaml
+# Hot 노드 (쓰기 중심) - elasticsearch.yml
+node.roles: [data_hot, ingest]
+# SSD 사용, 높은 CPU
+
+# Warm 노드 (읽기 중심) - elasticsearch.yml
+node.roles: [data_warm]
+# HDD 가능, 높은 디스크 용량
+
+# Cold 노드 (아카이브) - elasticsearch.yml
+node.roles: [data_cold]
+# 대용량 HDD, 최소 리소스
+```
+
+### 하드웨어 사이징 가이드
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    하드웨어 사이징 기준                         │
+├──────────┬────────────┬────────────┬────────────┬────────────┤
+│  역할     │  CPU       │  메모리     │  디스크     │  네트워크   │
+├──────────┼────────────┼────────────┼────────────┼────────────┤
+│ Master   │ 4 cores    │ 16GB       │ 50GB SSD   │ 1Gbps      │
+│ Hot Data │ 16+ cores  │ 64GB       │ 2TB NVMe   │ 10Gbps     │
+│ Warm     │ 8 cores    │ 64GB       │ 8TB HDD    │ 1Gbps      │
+│ Cold     │ 4 cores    │ 32GB       │ 16TB HDD   │ 1Gbps      │
+│ Coord    │ 8 cores    │ 32GB       │ 100GB SSD  │ 10Gbps     │
+│ Ingest   │ 16 cores   │ 32GB       │ 100GB SSD  │ 10Gbps     │
+└──────────┴────────────┴────────────┴────────────┴────────────┘
+```
+
+### 성능 모니터링 쿼리
+
+```bash
+# 느린 쿼리 로그 설정
+curl -X PUT "localhost:9200/logs-*/_settings" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "index.search.slowlog.threshold.query.warn": "10s",
+    "index.search.slowlog.threshold.query.info": "5s",
+    "index.search.slowlog.threshold.fetch.warn": "1s",
+    "index.indexing.slowlog.threshold.index.warn": "10s",
+    "index.indexing.slowlog.threshold.index.info": "5s"
+  }'
+
+# Thread Pool 상태 확인
+curl -s "localhost:9200/_cat/thread_pool?v&h=node_name,name,active,rejected,completed" \
+  | grep -E "write|search|bulk"
+
+# Hot Threads 분석
+curl -X GET "localhost:9200/_nodes/hot_threads?threads=5"
+```
+
+### 성능 튜닝 요약
+
+| 튜닝 영역 | 핵심 설정 | 권장 값 | 효과 |
+|-----------|----------|--------|------|
+| **JVM Heap** | -Xmx | 물리 메모리 50%, max 31GB | OOP 압축 유지, GC 안정화 |
+| **Refresh Interval** | refresh_interval | 로그: 30s, 검색: 1s | 쓰기 처리량 2-3x 향상 |
+| **Bulk Size** | 요청당 크기 | 5-15MB | 최적 인덱싱 처리량 |
+| **Translog** | flush_threshold_size | 512MB-1GB | 디스크 I/O 감소 |
+| **Merge** | max_thread_count | HDD: 1, SSD: 기본값 | I/O 경합 감소 |
+| **Shard 크기** | number_of_shards | 10-50GB per shard | 검색/복구 성능 균형 |
+| **노드 분리** | node.roles | hot/warm/cold | 워크로드 격리 |
+| **Force Merge** | max_num_segments | 1 (읽기 전용만) | 검색 성능 향상 |
+
+---
 *참고: Elasticsearch 8.x / Logstash 8.x / Kibana 8.x 기준*

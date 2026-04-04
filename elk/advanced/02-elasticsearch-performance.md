@@ -522,4 +522,301 @@ GET /_cat/thread_pool/search,write?v&h=node_name,name,active,rejected,completed
 ```
 
 ---
+
+## 보충: 인덱스 설계 전략
+
+성능 튜닝과 밀접하게 연관된 인덱스 설계 전략을 다룬다. Analyzer 커스터마이징, Index Template, ILM, Data Stream, 샤드 크기 설계 등을 포함한다.
+
+### 인덱싱 파이프라인 내부
+
+```mermaid
+graph LR
+    DOC[문서 입력] --> INGEST[Ingest Pipeline]
+    INGEST --> MAPPING[Mapping 검증]
+    MAPPING --> ANALYZE[Analysis]
+
+    subgraph "Analysis 단계"
+        ANALYZE --> CF[Character Filters]
+        CF --> TK[Tokenizer]
+        TK --> TF[Token Filters]
+    end
+
+    TF --> II[Inverted Index 생성]
+    TF --> DV[Doc Values 생성]
+    TF --> SP[Stored Fields 저장]
+
+    II --> SEG[Lucene Segment]
+    DV --> SEG
+    SP --> SEG
+```
+
+### Analyzer 구성 요소
+
+```
+Analyzer = Character Filter(0~N) + Tokenizer(1) + Token Filter(0~N)
+
+예시: "The Quick Brown FOX!" 분석
+  Character Filter (html_strip): "The Quick Brown FOX!"
+  Tokenizer (standard):          ["The", "Quick", "Brown", "FOX"]
+  Token Filter (lowercase):      ["the", "quick", "brown", "fox"]
+```
+
+### 한국어 분석기 구성
+
+```json
+PUT korean-products
+{
+  "settings": {
+    "analysis": {
+      "char_filter": {
+        "special_char_filter": {
+          "type": "mapping",
+          "mappings": [
+            "& => and",
+            "+ => plus"
+          ]
+        }
+      },
+      "tokenizer": {
+        "nori_mixed": {
+          "type": "nori_tokenizer",
+          "decompound_mode": "mixed",
+          "discard_punctuation": true,
+          "user_dictionary_rules": [
+            "삼성전자",
+            "갤럭시노트",
+            "에어팟프로"
+          ]
+        }
+      },
+      "filter": {
+        "nori_pos_filter": {
+          "type": "nori_part_of_speech",
+          "stoptags": [
+            "E", "IC", "J", "MAG", "MAJ",
+            "MM", "SP", "SSC", "SSO", "SC",
+            "SE", "XPN", "XSA", "XSN", "XSV",
+            "UNA", "NA", "VSV"
+          ]
+        },
+        "nori_readingform_filter": {
+          "type": "nori_readingform"
+        }
+      },
+      "analyzer": {
+        "korean_analyzer": {
+          "type": "custom",
+          "char_filter": ["special_char_filter"],
+          "tokenizer": "nori_mixed",
+          "filter": [
+            "nori_pos_filter",
+            "nori_readingform_filter",
+            "lowercase"
+          ]
+        },
+        "korean_search_analyzer": {
+          "type": "custom",
+          "tokenizer": "nori_mixed",
+          "filter": [
+            "nori_pos_filter",
+            "nori_readingform_filter",
+            "lowercase"
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+### Component Template + Index Template (ES 7.8+)
+
+```json
+// 공통 설정 Component Template
+PUT _component_template/common-settings
+{
+  "template": {
+    "settings": {
+      "number_of_replicas": 1,
+      "refresh_interval": "5s",
+      "codec": "best_compression"
+    }
+  }
+}
+
+// 공통 매핑 Component Template
+PUT _component_template/common-mappings
+{
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "host": {
+          "properties": {
+            "name": { "type": "keyword" },
+            "ip": { "type": "ip" }
+          }
+        },
+        "environment": { "type": "keyword" }
+      }
+    }
+  }
+}
+
+// ILM 정책 Component Template
+PUT _component_template/ilm-settings
+{
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "logs-policy",
+      "index.lifecycle.rollover_alias": "logs"
+    }
+  }
+}
+
+// 조합한 Index Template
+PUT _index_template/logs-template
+{
+  "index_patterns": ["logs-*"],
+  "composed_of": [
+    "common-settings",
+    "common-mappings",
+    "ilm-settings"
+  ],
+  "priority": 200,
+  "template": {
+    "settings": {
+      "number_of_shards": 3
+    },
+    "mappings": {
+      "properties": {
+        "message": { "type": "text" },
+        "level": { "type": "keyword" }
+      }
+    }
+  }
+}
+```
+
+### ILM(Index Lifecycle Management) 정책
+
+```mermaid
+graph LR
+    HOT[Hot Phase<br/>인덱싱 + 검색<br/>SSD] -->|rollover 조건 충족| WARM[Warm Phase<br/>읽기 전용<br/>Force Merge]
+    WARM -->|min_age 충족| COLD[Cold Phase<br/>Searchable Snapshot<br/>축소된 레플리카]
+    COLD -->|min_age 충족| FROZEN[Frozen Phase<br/>Shared Cache<br/>최소 리소스]
+    FROZEN -->|min_age 충족| DELETE[Delete Phase<br/>인덱스 삭제]
+```
+
+```json
+PUT _ilm/policy/logs-policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_primary_shard_size": "50gb",
+            "max_age": "1d",
+            "max_docs": 100000000
+          },
+          "set_priority": { "priority": 100 }
+        }
+      },
+      "warm": {
+        "min_age": "3d",
+        "actions": {
+          "shrink": { "number_of_shards": 1 },
+          "forcemerge": { "max_num_segments": 1 },
+          "allocate": { "require": { "data": "warm" } },
+          "set_priority": { "priority": 50 }
+        }
+      },
+      "cold": {
+        "min_age": "30d",
+        "actions": {
+          "allocate": {
+            "number_of_replicas": 0,
+            "require": { "data": "cold" }
+          },
+          "set_priority": { "priority": 0 }
+        }
+      },
+      "delete": {
+        "min_age": "90d",
+        "actions": { "delete": {} }
+      }
+    }
+  }
+}
+```
+
+### Data Stream (시계열 데이터)
+
+```json
+// Data Stream용 Index Template
+PUT _index_template/metrics-template
+{
+  "index_patterns": ["metrics-*"],
+  "data_stream": {},
+  "composed_of": ["common-settings", "common-mappings"],
+  "priority": 300,
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "logs-policy"
+    },
+    "mappings": {
+      "properties": {
+        "metric_name": { "type": "keyword" },
+        "metric_value": { "type": "double" },
+        "unit": { "type": "keyword" },
+        "dimensions": {
+          "type": "object",
+          "dynamic": true
+        }
+      }
+    }
+  }
+}
+
+// Data Stream에 문서 인덱싱 (POST만 가능, _id 지정 불가)
+POST metrics-app/_doc
+{
+  "@timestamp": "2026-03-07T10:00:00Z",
+  "metric_name": "cpu_usage",
+  "metric_value": 72.5,
+  "unit": "percent",
+  "dimensions": {
+    "host": "web-server-01",
+    "region": "ap-northeast-2"
+  }
+}
+```
+
+### 샤드 크기 설계 가이드
+
+```
+적정 샤드 크기: 10GB ~ 50GB (primary shard 기준)
+
+계산 예시:
+  - 일일 데이터량: 100GB
+  - 보존 기간: 30일
+  - 총 데이터량: 3TB
+  - 샤드 크기 목표: 30GB
+  - 필요 샤드 수: 3TB / 30GB = 100 샤드
+
+  - 일별 인덱스 사용 시: 100GB/30GB ≈ 3~4 샤드/일
+  - ILM rollover 사용 시: max_primary_shard_size=30gb
+
+주의:
+  - 노드당 샤드 수 1000개 이하 권장
+  - 힙 1GB당 샤드 20개 이하 권장
+  - 너무 작은 샤드: 오버헤드 증가
+  - 너무 큰 샤드: 복구 시간 증가, 재할당 어려움
+```
+
+---
 *참고: Elasticsearch 8.x 기준*
