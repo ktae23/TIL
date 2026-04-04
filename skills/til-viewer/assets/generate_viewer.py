@@ -149,11 +149,13 @@ def main():
 <body>
     <div class="header">
         <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+        <button class="panel-toggle" id="sidebar-toggle" onclick="toggleDesktopSidebar()" title="사이드바 닫기">&#9664;</button>
         <h1>TIL Viewer</h1>
         <span class="header-stats" id="header-stats"></span>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search... (Ctrl+K)" autocomplete="off" />
         </div>
+        <button class="panel-toggle" id="toc-toggle-btn" onclick="toggleDesktopTOC()" title="목차 닫기">&#9654;</button>
         <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">Dark</button>
     </div>
 
@@ -200,6 +202,8 @@ def main():
         <div class="shortcut-item"><span>다음 문서</span><span class="shortcut-key">&#8594;</span></div>
         <div class="shortcut-item"><span>검색</span><span class="shortcut-key">Ctrl+K</span></div>
         <div class="shortcut-item"><span>테마 전환</span><span class="shortcut-key">T</span></div>
+        <div class="shortcut-item"><span>사이드바 토글</span><span class="shortcut-key">[</span></div>
+        <div class="shortcut-item"><span>목차 토글</span><span class="shortcut-key">]</span></div>
         <div class="shortcut-item"><span>맨 위로</span><span class="shortcut-key">Home</span></div>
         <div class="shortcut-item"><span>닫기</span><span class="shortcut-key">Esc</span></div>
     </div>

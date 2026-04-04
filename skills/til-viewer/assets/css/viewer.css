@@ -38,6 +38,42 @@
     box-sizing: border-box;
 }
 
+/* ========================================
+   SCROLLBAR (always visible)
+   ======================================== */
+.sidebar,
+.content-area,
+.toc-panel {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.sidebar::-webkit-scrollbar,
+.content-area::-webkit-scrollbar,
+.toc-panel::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track,
+.content-area::-webkit-scrollbar-track,
+.toc-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.content-area::-webkit-scrollbar-thumb,
+.toc-panel::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover,
+.content-area::-webkit-scrollbar-thumb:hover,
+.toc-panel::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', Roboto, sans-serif;
     background: var(--bg-primary);
@@ -648,6 +684,55 @@ body {
 .doc-nav-title { font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 
 /* ========================================
+   PANEL TOGGLE BUTTONS
+   ======================================== */
+.panel-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.panel-toggle:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+@media (min-width: 1025px) {
+    .panel-toggle {
+        display: flex;
+    }
+}
+
+/* ========================================
+   COLLAPSIBLE SIDEBAR (desktop)
+   ======================================== */
+@media (min-width: 1025px) {
+    .sidebar {
+        transition: width 0.3s, padding 0.3s, opacity 0.2s, border-color 0.3s;
+    }
+
+    .sidebar.panel-collapsed {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+        border-color: transparent;
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+/* ========================================
    TOC PANEL
    ======================================== */
 .toc-panel {
@@ -660,6 +745,24 @@ body {
     height: calc(100vh - 60px);
     background: var(--bg-primary);
     flex-shrink: 0;
+}
+
+/* ========================================
+   COLLAPSIBLE TOC (desktop)
+   ======================================== */
+@media (min-width: 1025px) {
+    .toc-panel {
+        transition: width 0.3s, padding 0.3s, opacity 0.2s, border-color 0.3s;
+    }
+
+    .toc-panel.panel-collapsed {
+        width: 0;
+        padding: 0;
+        overflow: hidden;
+        border-color: transparent;
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
 .toc-panel h4 {

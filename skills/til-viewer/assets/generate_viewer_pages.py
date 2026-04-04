@@ -129,10 +129,12 @@ def main():
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="header">
         <button class="menu-button" id="menu-button">☰</button>
+        <button class="panel-toggle" id="sidebar-toggle" onclick="toggleDesktopSidebar()" title="사이드바 닫기">&#9664;</button>
         <h1>ktae23 학습저장소</h1>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search files and content... (Ctrl+K)" autocomplete="off" />
         </div>
+        <button class="panel-toggle" id="toc-toggle-btn" onclick="toggleDesktopTOC()" title="목차 닫기">&#9654;</button>
         <button class="toc-toggle" id="toc-toggle" onclick="toggleTOC()" title="목차">≡</button>
         <button class="theme-toggle" id="theme-toggle">Dark</button>
     </div>
@@ -166,6 +168,8 @@ def main():
         <div class="shortcut-item"><span>검색</span><span class="shortcut-key">Ctrl+K</span></div>
         <div class="shortcut-item"><span>테마 전환</span><span class="shortcut-key">T</span></div>
         <div class="shortcut-item"><span>인쇄 / PDF 저장</span><span class="shortcut-key">P</span></div>
+        <div class="shortcut-item"><span>사이드바 토글</span><span class="shortcut-key">[</span></div>
+        <div class="shortcut-item"><span>목차 토글</span><span class="shortcut-key">]</span></div>
         <div class="shortcut-item"><span>맨 위로</span><span class="shortcut-key">Home</span></div>
         <div class="shortcut-item"><span>닫기</span><span class="shortcut-key">Esc</span></div>
     </div>

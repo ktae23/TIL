@@ -80,6 +80,7 @@ function init() {
     initRouter();
     initMobileMenu();
     initProgressBar();
+    initPanelToggle();
 
     // Display stats
     updateStats();
@@ -831,6 +832,12 @@ function initKeyboardShortcuts() {
             case 'P':
                 printDocument();
                 break;
+            case '[':
+                toggleDesktopSidebar();
+                break;
+            case ']':
+                toggleDesktopTOC();
+                break;
             case '?':
                 showShortcuts();
                 break;
@@ -899,6 +906,78 @@ window.addEventListener('afterprint', function() {
     }
 });
 
+
+// ========================================
+// DESKTOP PANEL TOGGLE (sidebar / toc)
+// ========================================
+const PANEL_STATE_KEY = 'til-panel-state';
+
+function loadPanelState() {
+    try {
+        return JSON.parse(localStorage.getItem(PANEL_STATE_KEY)) || {};
+    } catch { return {}; }
+}
+
+function savePanelState(ps) {
+    localStorage.setItem(PANEL_STATE_KEY, JSON.stringify(ps));
+}
+
+function initPanelToggle() {
+    const ps = loadPanelState();
+    const sidebar = document.getElementById('sidebar');
+    const toc = document.getElementById('toc-panel');
+
+    if (ps.sidebarCollapsed && sidebar) sidebar.classList.add('panel-collapsed');
+    if (ps.tocCollapsed && toc) toc.classList.add('panel-collapsed');
+
+    updateToggleIcons();
+}
+
+function toggleDesktopSidebar() {
+    if (window.innerWidth <= 1024) {
+        toggleSidebar();          // 모바일 동작 유지
+        return;
+    }
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    sidebar.classList.toggle('panel-collapsed');
+
+    const ps = loadPanelState();
+    ps.sidebarCollapsed = sidebar.classList.contains('panel-collapsed');
+    savePanelState(ps);
+    updateToggleIcons();
+}
+
+function toggleDesktopTOC() {
+    if (window.innerWidth <= 1024) {
+        toggleTOC();              // 모바일 동작 유지
+        return;
+    }
+    const toc = document.getElementById('toc-panel');
+    if (!toc) return;
+    toc.classList.toggle('panel-collapsed');
+
+    const ps = loadPanelState();
+    ps.tocCollapsed = toc.classList.contains('panel-collapsed');
+    savePanelState(ps);
+    updateToggleIcons();
+}
+
+function updateToggleIcons() {
+    const sidebarBtn = document.getElementById('sidebar-toggle');
+    const tocBtn = document.getElementById('toc-toggle-btn');
+    const sidebar = document.getElementById('sidebar');
+    const toc = document.getElementById('toc-panel');
+
+    if (sidebarBtn && sidebar) {
+        sidebarBtn.innerHTML = sidebar.classList.contains('panel-collapsed') ? '&#9654;' : '&#9664;';
+        sidebarBtn.title = sidebar.classList.contains('panel-collapsed') ? '사이드바 열기' : '사이드바 닫기';
+    }
+    if (tocBtn && toc) {
+        tocBtn.innerHTML = toc.classList.contains('panel-collapsed') ? '&#9664;' : '&#9654;';
+        tocBtn.title = toc.classList.contains('panel-collapsed') ? '목차 열기' : '목차 닫기';
+    }
+}
 
 // ========================================
 // QUICK ACTIONS
