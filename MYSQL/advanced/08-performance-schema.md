@@ -460,4 +460,121 @@ ORDER BY current_allocated DESC LIMIT 10;
 - `events_waits` → `events_stages` → `events_statements` → `events_transactions` 순으로 저수준에서 고수준으로 계층적 이벤트 분석이 가능하다
 
 ---
+
+## 6. 실무 트러���슈팅
+
+### 6.1 슬로우 쿼리 분석 도구
+
+```sql
+-- 슬로우 쿼리 로그 활성화
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 1;
+SET GLOBAL log_queries_not_using_indexes = 'ON';
+```
+
+```bash
+# mysqldumpslow — 상위 슬로우 쿼리 요약
+mysqldumpslow -s t -t 10 /var/log/mysql/slow.log
+
+# pt-query-digest (Percona Toolkit) — 상세 분석 리포트
+pt-query-digest /var/log/mysql/slow.log > report.txt
+```
+
+### 6.2 인덱스 문제 진단
+
+```sql
+-- 미사용 인덱스
+SELECT * FROM sys.schema_unused_indexes;
+
+-- 중복 인덱스
+SELECT * FROM sys.schema_redundant_indexes;
+
+-- ��덱스 사용 통계
+SELECT * FROM sys.schema_index_statistics WHERE table_name = 'orders';
+```
+
+**인덱스가 무효화되는 패턴:**
+
+```sql
+-- 함수 사용 → 범위 조건으로 변경
+WHERE YEAR(created_at) = 2024
+→ WHERE created_at >= '2024-01-01' AND created_at < '2025-01-01'
+
+-- 암묵적 타입 변환 (VARCHAR 컬럼에 숫자 비교)
+WHERE user_id = 12345    → WHERE user_id = '12345'
+
+-- LIKE 앞쪽 와일드카드
+WHERE name LIKE '%phone%'  → Full-text Search 또는 Elasticsearch
+
+-- OR 조건 → UNION으로 분리
+WHERE status = 'A' OR user_id = 100
+→ SELECT ... WHERE status='A' UNION SELECT ... WHERE user_id=100
+```
+
+### 6.3 Prometheus + Grafana 모니터링
+
+```sql
+-- 핵심 메트릭
+SHOW GLOBAL STATUS LIKE 'Queries';                    -- QPS
+SHOW GLOBAL STATUS LIKE 'Innodb_buffer_pool_read%';   -- Buffer Pool 히트율
+SHOW GLOBAL STATUS LIKE 'Slow_queries';                -- 슬로우 쿼리 수
+SHOW GLOBAL STATUS LIKE 'Threads_connected';           -- 현재 연결 수
+
+-- Buffer Pool 히트율 = 1 - (reads / read_requests), 99% 이상 권장
+```
+
+```yaml
+# mysql_exporter + Prometheus
+services:
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    environment:
+      DATA_SOURCE_NAME: "exporter:password@(mysql:3306)/"
+    ports:
+      - "9104:9104"
+```
+
+```yaml
+# Prometheus alerting rules
+groups:
+- name: mysql
+  rules:
+  - alert: MySQLDown
+    expr: mysql_up == 0
+    for: 1m
+    labels: { severity: critical }
+
+  - alert: MySQLSlowQueries
+    expr: rate(mysql_global_status_slow_queries[5m]) > 0.1
+    for: 5m
+    labels: { severity: warning }
+
+  - alert: MySQLConnectionsHigh
+    expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections > 0.8
+    for: 5m
+    labels: { severity: warning }
+```
+
+### 6.4 트러블슈팅 체크리스트
+
+```
+슬로우 쿼리:
+  □ slow query log 확인 → pt-query-digest 분석
+  □ EXPLAIN / EXPLAIN ANALYZE 확인
+  □ type=ALL / Extra=filesort,temporary → 인덱스 추가
+  □ 페이지네이션/캐싱 검토
+
+데드락:
+  □ SHOW ENGINE INNODB STATUS 확인
+  □ performance_schema.data_lock_waits 조회
+  □ 트랜잭션 순서/범위 분석
+  □ 재시도 로직 추가
+
+Connection 부족:
+  □ Threads_connected / Max_used_connections 확인
+  □ HikariCP leak-detection-threshold 설정
+  □ 슬로우 쿼리로 인한 커넥션 점유 확인
+```
+
+---
 *참고: MySQL 9.x (trunk) 소스코드 기준*

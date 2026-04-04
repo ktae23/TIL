@@ -296,4 +296,260 @@ INSERT INTO t (id) VALUES (35);  -- 성공 (범위 밖)
 | 대기 슬롯 관리 | waiting_threads 배열, reservation_no로 ABA 방지 | `lock0wait.cc:134` |
 
 ---
+
+## 6. 애플리케이션 Lock 패턴
+
+InnoDB Internal Lock 외에 애플리케이션 레벨에서 사용하는 동시성 제어 패턴을 정리한다.
+
+### 6.1 Named Lock (GET_LOCK)
+
+MySQL이 제공하는 **사용자 정의 Lock**. 테이블/행이 아닌 **임의 문자열**을 키로 잠금. 트랜잭션과 독립적으로 동작한다.
+
+```sql
+SELECT GET_LOCK('lock_key', 10);      -- 획득 (10초 타임아웃)
+SELECT RELEASE_LOCK('lock_key');       -- 해제 (반드시 명시적 호출)
+SELECT IS_FREE_LOCK('lock_key');       -- 사용 가능 여부
+```
+
+| 특성 | 설명 |
+|------|------|
+| 트랜잭션 독립 | COMMIT/ROLLBACK으로 해제 안 됨 |
+| 세션 기반 | 세션 종료 시 자동 해제 |
+| 전역 범위 | 동일 MySQL 서버 전체에서 공유 |
+| 키 길이 제한 | 64바이트 |
+
+**Spring + JPA 구현:**
+
+```java
+public interface LockRepository extends JpaRepository<Lock, Long> {
+    @Query(value = "SELECT GET_LOCK(:key, :timeout)", nativeQuery = true)
+    Integer getLock(@Param("key") String key, @Param("timeout") int timeout);
+
+    @Query(value = "SELECT RELEASE_LOCK(:key)", nativeQuery = true)
+    Integer releaseLock(@Param("key") String key);
+}
+```
+
+**커넥션 풀 분리 (핵심!)** — Named Lock과 비즈니스 로직이 같은 풀을 쓰면 데드락/고갈 위험:
+
+```yaml
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      pool-name: MainPool
+  named-lock-datasource:
+    hikari:
+      maximum-pool-size: 10
+      pool-name: NamedLockPool
+```
+
+```java
+@Component
+@RequiredArgsConstructor
+public class NamedLockFacade {
+    private final LockRepository lockRepository;
+    private final StockService stockService;
+
+    public void decrease(Long productId, int quantity) {
+        try {
+            lockRepository.getLock("stock_" + productId, 10);
+            stockService.decrease(productId, quantity);  // REQUIRES_NEW 트���잭션
+        } finally {
+            lockRepository.releaseLock("stock_" + productId);
+        }
+    }
+}
+```
+
+### 6.2 비관적 Lock (Pessimistic Lock)
+
+**"충돌이 발생한다"** 가정 → 읽기 시점에 Lock. 내부적으로 InnoDB의 S Lock / X Lock을 사용.
+
+```sql
+SELECT * FROM stock WHERE product_id = 1 FOR UPDATE;          -- X Lock
+SELECT * FROM stock WHERE product_id = 1 FOR SHARE;           -- S Lock
+SELECT * FROM stock WHERE product_id = 1 FOR UPDATE NOWAIT;   -- 즉시 실패
+SELECT * FROM stock WHERE status = 'PENDING'
+  FOR UPDATE SKIP LOCKED LIMIT 10;                             -- 큐 워커 패턴
+```
+
+**JPA 구현:**
+
+```java
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+@QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")})
+@Query("SELECT s FROM Stock s WHERE s.productId = :productId")
+Optional<Stock> findWithLock(@Param("productId") Long productId);
+```
+
+| LockModeType | SQL | 설명 |
+|-------------|-----|------|
+| `PESSIMISTIC_READ` | FOR SHARE | 공유 잠금 |
+| `PESSIMISTIC_WRITE` | FOR UPDATE | 배타 잠금 |
+| `PESSIMISTIC_FORCE_INCREMENT` | FOR UPDATE + version++ | 배타 + 버전 증가 |
+
+### 6.3 낙관적 Lock (Optimistic Lock)
+
+**"충돌이 드물다"** 가정 → DB Lock 없이 **version 컬럼**으로 충돌 감지.
+
+```java
+@Entity
+public class Stock {
+    @Id private Long id;
+    private int quantity;
+    @Version private Long version;  // JPA가 자동 관리
+}
+
+// 생성되는 SQL:
+// UPDATE stock SET quantity=?, version=version+1 WHERE id=? AND version=?
+// → version 불일치 시 OptimisticLockException
+```
+
+**재시도 로직 (필수!):**
+
+```java
+@Retryable(
+    retryFor = OptimisticLockingFailureException.class,
+    maxAttempts = 5,
+    backoff = @Backoff(delay = 100, multiplier = 2, maxDelay = 1000)
+)
+@Transactional
+public void decrease(Long productId, int quantity) {
+    Stock stock = stockRepository.findByProductId(productId).orElseThrow();
+    stock.decrease(quantity);
+}
+```
+
+### 6.4 분산 Lock
+
+단일 DB Lock으로 부족한 경우: DB 부하 분산, 트랜잭션 밖 Lock, DB 샤딩 환경.
+
+| 방식 | 장점 | 단점 | 적합 상황 |
+|------|------|------|----------|
+| MySQL Named Lock | 추가 인프라 불필요 | 단일 MySQL 한정 | 소규모 |
+| Redis (Redisson) | 고성능, Pub/Sub | Redis 의존성 | 이미 Redis 사용 |
+| Zookeeper | 높은 신뢰성 | 운영 복잡 | 금융 등 |
+
+**Redisson 분산 Lock:**
+
+```java
+RLock lock = redissonClient.getLock("lock:stock:" + productId);
+try {
+    if (lock.tryLock(5, 10, TimeUnit.SECONDS)) {
+        stockService.decrease(productId, quantity);
+    }
+} finally {
+    if (lock.isHeldByCurrentThread()) lock.unlock();
+}
+```
+
+**AOP 기반 @DistributedLock 어노테이션:**
+
+```java
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DistributedLock {
+    String key();                    // SpEL 지원
+    long waitTime() default 5000;
+    long leaseTime() default 10000;
+}
+
+@Aspect
+@Component
+public class DistributedLockAspect {
+    @Around("@annotation(dl)")
+    public Object around(ProceedingJoinPoint pjp, DistributedLock dl) throws Throwable {
+        RLock lock = redissonClient.getLock(resolveLockKey(pjp, dl.key()));
+        try {
+            if (!lock.tryLock(dl.waitTime(), dl.leaseTime(), TimeUnit.MILLISECONDS))
+                throw new LockAcquisitionException("락 획득 실패");
+            return pjp.proceed();
+        } finally {
+            if (lock.isHeldByCurrentThread()) lock.unlock();
+        }
+    }
+}
+
+// 사용
+@DistributedLock(key = "'lock:coupon:' + #couponId", waitTime = 3000)
+public void issue(Long couponId, Long userId) { ... }
+```
+
+### 6.5 Lock 선택 가이드
+
+```
+비관적 vs 낙관적 벤치마크 (100 동시 스레드, 동일 재고 차감):
+  비관적 Lock:   ~3.5초, 재시도 0회
+  낙관적 Lock:   ~8.2초, 재시도 ~4,950회
+  Named Lock:    ~4.0초, 커넥션 풀 분리 필요
+  Redis Lock:    ~3.8초, 네트워크 홉 추가
+```
+
+| 시나리오 | 권장 Lock |
+|----------|----------|
+| 재고 차감 (선착순, 충돌 빈번) | 비관적 Lock / Redis Lock |
+| 게시글 수정 (충돌 드묾) | 낙관적 Lock (@Version) |
+| 쿠폰 발급 (폭주) | Redis Lock / Named Lock |
+| 스케줄러 중복 방지 | ShedLock / Redis Lock |
+| 결제 (외부 API, 긴 트랜잭션) | Named Lock / Redis Lock |
+
+```
+Lock 선택 흐름도:
+
+단일 서버? ─── No ──→ Redis 있음? → Redisson
+       │                         → MySQL만? → Named Lock
+      Yes
+       │
+충돌 잦음? ─── Yes ──→ 비관적 Lock (FOR UPDATE)
+       │                  └── SKIP LOCKED 큐 패턴
+      No
+       │
+트랜잭션 밖? ── Yes ──→ Named Lock
+       │
+      No → 낙관적 Lock (@Version + 재시도)
+```
+
+## 7. 데드락 실무 대응
+
+InnoDB의 데드락 탐지(DFS, CATS)는 위 섹션 참조. 여기서는 애플리케이션 레벨 대응 전략을 다룬다.
+
+### 7.1 데드락 진단
+
+```sql
+SHOW ENGINE INNODB STATUS\G                    -- 최근 데드락 정보
+SET GLOBAL innodb_print_all_deadlocks = ON;    -- 자동 로그 기록
+SELECT * FROM performance_schema.data_locks;   -- 현재 락 상태 (8.0+)
+SELECT * FROM performance_schema.data_lock_waits;
+```
+
+### 7.2 방지 전략
+
+```java
+// 1. 일관된 락 순서 — 항상 작은 ID부터
+public void transfer(Long fromId, Long toId) {
+    Long first = Math.min(fromId, toId);
+    Long second = Math.max(fromId, toId);
+    Account acc1 = accountRepository.findByIdForUpdate(first);
+    Account acc2 = accountRepository.findByIdForUpdate(second);
+}
+
+// 2. 짧은 트랜잭션 — 외부 API 호출은 트랜잭션 밖에서
+PaymentResult result = paymentService.process(request);  // 트랜잭션 밖
+orderRepository.save(order);  // 트랜잭션 안
+
+// 3. 인덱스 활용 — 인덱스 없으면 풀스캔 → 테이블 전체 락
+CREATE INDEX idx_user ON orders(user_id);
+
+// 4. 재시도 로직
+@Retryable(
+    retryFor = DeadlockLoserDataAccessException.class,
+    maxAttempts = 3,
+    backoff = @Backoff(delay = 100, multiplier = 2)
+)
+@Transactional
+public void processOrder(Long orderId) { ... }
+```
+
+---
 *참고: MySQL 9.x (trunk) 소스코드 기준*

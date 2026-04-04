@@ -363,4 +363,60 @@ mysqlbinlog --base64-output=DECODE-ROWS -v binlog.000042
 - Semi-sync 복제는 `AFTER_SYNC` 모드에서 데이터 유실 없는 복제를 보장한다
 
 ---
+
+## 6. Replication Lag 실무 대응
+
+### 6.1 Lag 모니터링
+
+```sql
+SHOW REPLICA STATUS\G
+-- 핵심 지표:
+-- Seconds_Behind_Source: 지연 시간 (초)
+-- Replica_IO_Running / Replica_SQL_Running: 스레드 상태
+-- Relay_Log_Space: 릴레이 로그 크기
+```
+
+### 6.2 읽기 일관성 보장
+
+```java
+// 쓰기 후 읽기는 반드시 Source에서
+@Transactional
+public Order createOrder(OrderRequest request) {
+    Order order = orderRepository.save(new Order(request));
+    return orderRepository.findById(order.getId()).orElseThrow();  // Source 읽기
+}
+
+// 지연 허용 가능한 조회만 Replica로
+@Transactional(readOnly = true)  // Replica 라우팅
+public List<Order> getOrderHistory(Long userId) {
+    return orderRepository.findByUserId(userId);
+}
+```
+
+### 6.3 Spring Data JPA 읽기/쓰기 분리
+
+```java
+public class ReplicationRoutingDataSource extends AbstractRoutingDataSource {
+    @Override
+    protected Object determineCurrentLookupKey() {
+        return TransactionSynchronizationManager
+            .isCurrentTransactionReadOnly() ? "replica" : "source";
+    }
+}
+
+@Configuration
+public class DataSourceConfig {
+    @Bean @Primary
+    public DataSource routingDataSource(
+            @Qualifier("sourceDataSource") DataSource source,
+            @Qualifier("replicaDataSource") DataSource replica) {
+        ReplicationRoutingDataSource ds = new ReplicationRoutingDataSource();
+        ds.setTargetDataSources(Map.of("source", source, "replica", replica));
+        ds.setDefaultTargetDataSource(source);
+        return ds;
+    }
+}
+```
+
+---
 *참고: MySQL 9.x (trunk) 소스코드 기준*

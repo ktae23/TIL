@@ -418,4 +418,55 @@ ORDER BY TIME DESC;
 | **핵심 파라미터** | `max_connections`, `thread_cache_size`, `back_log`, `wait_timeout` |
 
 ---
+
+## 6. Connection Pool 실무
+
+### 6.1 HikariCP 권장 설정
+
+```yaml
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20          # CPU cores * 2 + spindle_count
+      minimum-idle: 10
+      idle-timeout: 600000           # 10분
+      max-lifetime: 1800000          # 30분
+      connection-timeout: 30000      # 30초
+      leak-detection-threshold: 60000  # 60초 (leak 감지)
+      connection-test-query: SELECT 1
+```
+
+```
+Pool Size 공식: connections = (core_count * 2) + effective_spindle_count
+예: 4코어 SSD → (4 * 2) + 1 = 9~10
+주의: 너무 많은 커넥션은 Context Switching 비용으로 오히려 성능 저하
+```
+
+### 6.2 Connection Leak 감지
+
+```java
+// 문제: 커넥션 미반환
+public void badMethod() {
+    Connection conn = dataSource.getConnection();
+    // return 안 함 → 커넥션 누수!
+}
+
+// 해결: try-with-resources
+public void goodMethod() {
+    try (Connection conn = dataSource.getConnection()) {
+        // 자동 반환
+    }
+}
+```
+
+### 6.3 모니터링
+
+```sql
+SHOW STATUS LIKE 'Threads_connected';      -- 현재 연결 수
+SHOW STATUS LIKE 'Max_used_connections';    -- 최대 연결 수
+SHOW STATUS LIKE 'Threads_running';        -- 실행 중 스레드
+SHOW PROCESSLIST;                           -- 프로세스 목록
+```
+
+---
 *참고: MySQL 9.x (trunk) 소스코드 기준*
