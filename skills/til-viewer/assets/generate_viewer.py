@@ -6,6 +6,9 @@ import sys
 from datetime import datetime, timedelta
 from glob import glob
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from til_ordering import order_key, numbered_title
+
 
 def main():
     if len(sys.argv) < 3:
@@ -35,7 +38,15 @@ def main():
     total_lines = 0
     skipped_files = 0
 
-    for md_file in sorted(glob(f"{TIL_PATH}/**/*.md", recursive=True)):
+    # 학습 순서(하위폴더 순위 -> 파일명 번호 -> 이름)로 정렬
+    md_files = sorted(
+        glob(f"{TIL_PATH}/**/*.md", recursive=True),
+        key=lambda p: order_key(os.path.relpath(p, TIL_PATH)),
+    )
+    # 카테고리별 통합 연번 카운터
+    seq = {}
+
+    for md_file in md_files:
         rel_path = os.path.relpath(md_file, TIL_PATH)
         if rel_path.startswith("skills/"):
             continue
@@ -66,6 +77,10 @@ def main():
             if line.startswith("# "):
                 title = line[2:].strip()
                 break
+
+        # 카테고리 내 학습 순서 연번을 제목 앞에 부여
+        seq[category] = seq.get(category, 0) + 1
+        title = numbered_title(seq[category], title)
 
         lines = content.count("\n") + 1
         total_lines += lines

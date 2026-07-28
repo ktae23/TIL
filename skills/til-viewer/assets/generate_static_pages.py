@@ -19,6 +19,9 @@ from glob import glob
 
 import markdown
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from til_ordering import order_key, numbered_title
+
 BASE_URL = "https://ktae23.github.io/TIL"
 
 INLINE_CSS = """
@@ -70,7 +73,15 @@ def scan_files(til_path):
     """TIL 마크다운 파일을 스캔하여 카테고리별로 분류"""
     categories = {}
 
-    for md_file in sorted(glob(f"{til_path}/**/*.md", recursive=True)):
+    # 학습 순서(하위폴더 순위 -> 파일명 번호 -> 이름)로 정렬
+    md_files = sorted(
+        glob(f"{til_path}/**/*.md", recursive=True),
+        key=lambda p: order_key(os.path.relpath(p, til_path)),
+    )
+    # 카테고리별 통합 연번 카운터
+    seq = {}
+
+    for md_file in md_files:
         rel_path = os.path.relpath(md_file, til_path)
         if rel_path.startswith("skills/"):
             continue
@@ -90,6 +101,10 @@ def scan_files(til_path):
             if line.startswith("# "):
                 title = line[2:].strip()
                 break
+
+        # 카테고리 내 학습 순서 연번을 제목 앞에 부여
+        seq[category] = seq.get(category, 0) + 1
+        title = numbered_title(seq[category], title)
 
         if category not in categories:
             categories[category] = {"files": [], "subcategories": {}}
