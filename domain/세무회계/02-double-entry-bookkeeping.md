@@ -1,6 +1,6 @@
 # 복식부기의 원리 (Double-Entry Bookkeeping)
 
-> 📚 **선수 지식**: [회계란 무엇인가](./accounting-basics.md)
+> 📚 **선수 지식**: [회계란 무엇인가](./01-accounting-basics.md)
 
 ## 개요
 

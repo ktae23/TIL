@@ -1,6 +1,6 @@
 # 개인사업자와 종합소득세 (Individual Business and Comprehensive Income Tax)
 
-> **선수 지식**: [세금의 종류와 체계](./tax-system-overview.md), [부가가치세 기초](./vat-basics.md), [손익계산서](./income-statement.md)
+> **선수 지식**: [세금의 종류와 체계](./08-tax-system-overview.md), [부가가치세 기초](./09-vat-basics.md), [손익계산서](./06-income-statement.md)
 
 개인사업자가 부담하는 가장 핵심적인 세금인 종합소득세의 전체 구조를 살펴본다. 사업소득이 어떻게 계산되고, 어떤 공제를 거쳐 최종 납부세액이 결정되는지, 그리고 장부 기장 방식에 따라 세금이 어떻게 달라지는지를 체계적으로 정리한다.
 

@@ -1,6 +1,6 @@
 # 부가가치세 기초 (VAT Basics)
 
-> 📚 **선수 지식**: [세금의 종류와 체계](./tax-system-overview.md), [분개와 전기](./journal-entries.md)
+> 📚 **선수 지식**: [세금의 종류와 체계](./08-tax-system-overview.md), [분개와 전기](./04-journal-entries.md)
 
 ## 부가가치세란 무엇인가
 

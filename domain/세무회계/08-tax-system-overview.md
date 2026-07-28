@@ -1,6 +1,6 @@
 # 세금의 종류와 체계 (Tax System Overview)
 
-> 📚 **선수 지식**: [회계란 무엇인가](./accounting-basics.md), [손익계산서](./income-statement.md)
+> 📚 **선수 지식**: [회계란 무엇인가](./01-accounting-basics.md), [손익계산서](./06-income-statement.md)
 
 ## 세금이란 무엇인가
 
@@ -129,7 +129,7 @@
 
 ### 부가가치세 (Value Added Tax, VAT)
 
-재화 (Goods)나 용역 (Services)의 공급 과정에서 창출된 부가가치에 대해 부과하는 세금이다. 세율은 10%이며, 최종 소비자가 부담하고 사업자가 납부하는 간접세이다. 자세한 내용은 [부가가치세 기초](./vat-basics.md)에서 다룬다.
+재화 (Goods)나 용역 (Services)의 공급 과정에서 창출된 부가가치에 대해 부과하는 세금이다. 세율은 10%이며, 최종 소비자가 부담하고 사업자가 납부하는 간접세이다. 자세한 내용은 [부가가치세 기초](./09-vat-basics.md)에서 다룬다.
 
 ### 상속세 (Inheritance Tax)
 

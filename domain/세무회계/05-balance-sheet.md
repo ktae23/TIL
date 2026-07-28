@@ -1,6 +1,6 @@
 # 재무상태표 (Balance Sheet)
 
-> 📚 **선수 지식**: [계정과목 이해하기](./chart-of-accounts.md), [분개와 전기](./journal-entries.md)
+> 📚 **선수 지식**: [계정과목 이해하기](./03-chart-of-accounts.md), [분개와 전기](./04-journal-entries.md)
 
 ## 재무상태표란 무엇인가
 

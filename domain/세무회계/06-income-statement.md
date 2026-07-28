@@ -1,6 +1,6 @@
 # 손익계산서 (Income Statement)
 
-> 📚 **선수 지식**: [계정과목 이해하기](./chart-of-accounts.md), [재무상태표](./balance-sheet.md)
+> 📚 **선수 지식**: [계정과목 이해하기](./03-chart-of-accounts.md), [재무상태표](./05-balance-sheet.md)
 
 ## 손익계산서란 무엇인가
 

@@ -1,6 +1,6 @@
 # 법인사업자와 법인세 (Corporate Tax)
 
-> **선수 지식**: [세금의 종류와 체계](./tax-system-overview.md), [결산과 수정분개](./closing-entries.md), [개인사업자와 종합소득세](./individual-income-tax.md)
+> **선수 지식**: [세금의 종류와 체계](./08-tax-system-overview.md), [결산과 수정분개](./07-closing-entries.md), [개인사업자와 종합소득세](./11-individual-income-tax.md)
 
 법인(Corporation)이 부담하는 핵심 세금인 법인세의 전체 구조를 살펴본다. 기업회계이익에서 세무조정을 거쳐 법인세 과세표준이 어떻게 결정되는지, 주요 세무조정 사례는 무엇인지, 그리고 개인사업자와의 세금 구조 차이를 체계적으로 정리한다.
 

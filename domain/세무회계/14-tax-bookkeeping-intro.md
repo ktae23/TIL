@@ -1,6 +1,6 @@
 # 세무기장이란 (Introduction to Tax Bookkeeping)
 
-> 📚 **선수 지식**: [회계란 무엇인가](./accounting-basics.md), [복식부기의 원리](./double-entry-bookkeeping.md), [세금의 종류와 체계](./tax-system-overview.md)
+> 📚 **선수 지식**: [회계란 무엇인가](./01-accounting-basics.md), [복식부기의 원리](./02-double-entry-bookkeeping.md), [세금의 종류와 체계](./08-tax-system-overview.md)
 
 ## 개요
 

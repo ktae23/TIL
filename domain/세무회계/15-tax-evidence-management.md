@@ -1,6 +1,6 @@
 # 증빙 관리와 적격증빙 (Tax Evidence and Qualified Documentation)
 
-> 📚 **선수 지식**: [부가가치세 기초](./vat-basics.md), [세무기장이란](./tax-bookkeeping-intro.md)
+> 📚 **선수 지식**: [부가가치세 기초](./09-vat-basics.md), [세무기장이란](./14-tax-bookkeeping-intro.md)
 
 ## 개요
 

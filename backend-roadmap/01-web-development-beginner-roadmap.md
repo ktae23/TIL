@@ -187,11 +187,11 @@ HTML 파일을 받았다고 바로 화면이 뜨는 게 아닙니다. 브라우�
 
 | 자료 | 내용 |
 |------|------|
-| [웹 브라우저와 HTTP/DNS 기초](../network/chapter-01-web-browser-http-dns.md) | URL 입력부터 응답까지의 전체 흐름 |
-| [HTTP vs HTTPS 프로토콜 비교](../network/http-vs-https.md) | HTTPS 암호화와 인증서 동작 원리 |
-| [DNS 동작 과정](../network/dns-resolution-process.md) | DNS 질의/응답 과정 상세 |
-| [웹 서버 응답 처리](../network/chapter-06-web-server-response.md) | 서버가 요청을 처리하고 응답하는 방법 |
-| [네트워크 대역폭 개념](../network/bandwidth.md) | 대역폭과 지연 시간의 이해 |
+| [웹 브라우저와 HTTP/DNS 기초](../network/03-chapter-01-web-browser-http-dns.md) | URL 입력부터 응답까지의 전체 흐름 |
+| [HTTP vs HTTPS 프로토콜 비교](../network/10-http-vs-https.md) | HTTPS 암호화와 인증서 동작 원리 |
+| [DNS 동작 과정](../network/09-dns-resolution-process.md) | DNS 질의/응답 과정 상세 |
+| [웹 서버 응답 처리](../network/08-chapter-06-web-server-response.md) | 서버가 요청을 처리하고 응답하는 방법 |
+| [네트워크 대역폭 개념](../network/01-bandwidth.md) | 대역폭과 지연 시간의 이해 |
 
 ---
 
@@ -744,15 +744,15 @@ HTTP는 백엔드 개발의 기본 언어입니다. 모든 API 통신이 HTTP �
 
 | 자료 | 내용 |
 |------|------|
-| [Flask 프레임워크 사용법](../python/flask-프레임워크-사용법.md) | Flask 기초와 라우팅 |
-| [FastAPI 프레임워크 사용법](../python/fastapi-프레임워크-사용법.md) | FastAPI 비동기 API 개발 |
-| [Django 프레임워크 사용법](../python/django-프레임워크-사용법.md) | Django 풀스택 개발 |
-| [프레임워크 비교](../python/flask-fastapi-django-프레임워크-비교.md) | Flask vs FastAPI vs Django 비교 분석 |
+| [Flask 프레임워크 사용법](../python/03-flask-프레임워크-사용법.md) | Flask 기초와 라우팅 |
+| [FastAPI 프레임워크 사용법](../python/05-fastapi-프레임워크-사용법.md) | FastAPI 비동기 API 개발 |
+| [Django 프레임워크 사용법](../python/04-django-프레임워크-사용법.md) | Django 풀스택 개발 |
+| [프레임워크 비교](../python/02-flask-fastapi-django-프레임워크-비교.md) | Flask vs FastAPI vs Django 비교 분석 |
 | [Java 기초](../java/java-fundamentals.md) | Java 핵심 문법과 OOP |
-| [Spring 컨테이너 기초](../spring/spring-bean-container-context-ioc.md) | Bean, IoC, DI 개념 |
+| [Spring 컨테이너 기초](../spring/core/01-spring-bean-container-context-ioc.md) | Bean, IoC, DI 개념 |
 | [JPA 데이터 영속성](../spring/jpa-basics.md) | JPA/Hibernate 기초 |
-| [백엔드 학습 로드맵](./backend-developer-learning-roadmap.md) | 백엔드 개발자 상세 학습 경로 |
-| [JWT/OAuth 인증](../security/jwt-jwk-oauth-comparison.md) | JWT, JWK, OAuth 비교와 활용 |
+| [백엔드 학습 로드맵](./02-backend-developer-learning-roadmap.md) | 백엔드 개발자 상세 학습 경로 |
+| [JWT/OAuth 인증](../security/02-jwt-jwk-oauth-comparison.md) | JWT, JWK, OAuth 비교와 활용 |
 
 ---
 
@@ -939,10 +939,10 @@ HTTP는 백엔드 개발의 기본 언어입니다. 모든 API 통신이 HTTP �
 | [MySQL 인덱스 심화](../DB/mysql-index-deep-dive.md) | B-Tree, 커버링 인덱스, 인덱스 설계 |
 | [MySQL 실행 계획](../DB/mysql-execution-plan-guide.md) | EXPLAIN 읽기와 쿼리 최적화 |
 | [MySQL 락과 트랜잭션](../DB/mysql-lock-and-transaction.md) | 격리 수준, 갭락, 데드락 |
-| [Redis 기초](../cache/redis-fundamentals.md) | Redis 자료구조와 명령어 |
+| [Redis 기초](../redis/main/01-redis-fundamentals.md) | Redis 자료구조와 명령어 |
 | [캐싱 전략 패턴](../cache/caching-strategy-patterns.md) | Cache-Aside, Write-Through 등 |
-| [AWS 핵심 서비스](../cloud/aws-core-services-overview.md) | EC2, S3, RDS, VPC 개요 |
-| [VPC 네트워크 보안](../cloud/vpc-network-security.md) | 서브넷, 보안 그룹, NACL |
+| [AWS 핵심 서비스](../cloud/01-aws-core-services-overview.md) | EC2, S3, RDS, VPC 개요 |
+| [VPC 네트워크 보안](../cloud/03-vpc-network-security.md) | 서브넷, 보안 그룹, NACL |
 
 ---
 
@@ -1557,11 +1557,11 @@ function Counter() {
 | 자료 | 내용 |
 |------|------|
 | [JUnit5 기초](../TEST/junit5-fundamentals.md) | 테스트 작성과 생명주기 |
-| [API 테스트 모범 사례](../TEST/api-testing-best-practices.md) | REST API 테스트 전략 |
-| [통합 테스트 전략](../TEST/integration-testing-strategies.md) | TestContainers 등 활용 |
-| [MSA 기초](../MSA/msa-fundamentals.md) | 마이크로서비스 아키텍처 개념 |
-| [API Gateway 패턴](../MSA/api-gateway-patterns.md) | Gateway 설계 패턴 |
-| [이벤트 기반 아키텍처](../MSA/event-driven-architecture.md) | 이벤트 소싱, CQRS |
-| [Prometheus/Grafana 모니터링](../spring/spring-boot-prometheus-grafana-monitoring.md) | 메트릭 수집과 시각화 |
-| [백엔드 보안 기초](../security/backend-security-fundamentals.md) | OWASP, 보안 헤더 |
+| [API 테스트 모범 사례](../TEST/06-api-testing-best-practices.md) | REST API 테스트 전략 |
+| [통합 테스트 전략](../TEST/04-integration-testing-strategies.md) | TestContainers 등 활용 |
+| [MSA 기초](../MSA/01-msa-fundamentals.md) | 마이크로서비스 아키텍처 개념 |
+| [API Gateway 패턴](../MSA/03-api-gateway-patterns.md) | Gateway 설계 패턴 |
+| [이벤트 기반 아키텍처](../MSA/04-event-driven-architecture.md) | 이벤트 소싱, CQRS |
+| [Prometheus/Grafana 모니터링](../spring/monitoring/01-spring-boot-prometheus-grafana-monitoring.md) | 메트릭 수집과 시각화 |
+| [백엔드 보안 기초](../security/01-backend-security-fundamentals.md) | OWASP, 보안 헤더 |
 | [Spring Security](../spring/spring-security-interview.md) | 인증/인가 구현 |

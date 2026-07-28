@@ -1,6 +1,6 @@
 # 세무기장 실무 워크플로우 (Tax Bookkeeping Workflow)
 
-> 📚 **선수 지식**: [세무기장이란](./tax-bookkeeping-intro.md), [증빙 관리와 적격증빙](./tax-evidence-management.md), [원천징수 실무](./withholding-tax.md)
+> 📚 **선수 지식**: [세무기장이란](./14-tax-bookkeeping-intro.md), [증빙 관리와 적격증빙](./15-tax-evidence-management.md), [원천징수 실무](./10-withholding-tax.md)
 
 ## 개요
 

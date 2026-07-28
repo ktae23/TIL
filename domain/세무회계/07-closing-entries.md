@@ -1,6 +1,6 @@
 # 결산과 수정분개 (Closing Entries and Adjusting Entries)
 
-> 📚 **선수 지식**: [분개와 전기](./journal-entries.md), [재무상태표](./balance-sheet.md), [손익계산서](./income-statement.md)
+> 📚 **선수 지식**: [분개와 전기](./04-journal-entries.md), [재무상태표](./05-balance-sheet.md), [손익계산서](./06-income-statement.md)
 
 ## 결산이란 무엇인가
 

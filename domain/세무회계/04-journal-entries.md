@@ -1,6 +1,6 @@
 # 분개와 전기 (Journal Entries and Posting)
 
-> 📚 **선수 지식**: [복식부기의 원리](./double-entry-bookkeeping.md), [계정과목 이해하기](./chart-of-accounts.md)
+> 📚 **선수 지식**: [복식부기의 원리](./02-double-entry-bookkeeping.md), [계정과목 이해하기](./03-chart-of-accounts.md)
 
 ## 개요
 

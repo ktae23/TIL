@@ -1,6 +1,6 @@
 # 계정과목 이해하기 (Chart of Accounts)
 
-> 📚 **선수 지식**: [회계란 무엇인가](./accounting-basics.md), [복식부기의 원리](./double-entry-bookkeeping.md)
+> 📚 **선수 지식**: [회계란 무엇인가](./01-accounting-basics.md), [복식부기의 원리](./02-double-entry-bookkeeping.md)
 
 ## 개요
 

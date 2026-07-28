@@ -1,6 +1,6 @@
 # 원천징수 실무 (Withholding Tax)
 
-> 📚 **선수 지식**: [세금의 종류와 체계](./tax-system-overview.md)
+> 📚 **선수 지식**: [세금의 종류와 체계](./08-tax-system-overview.md)
 
 ## 원천징수란 무엇인가
 
