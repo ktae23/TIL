@@ -137,9 +137,21 @@ def scan_files(til_path):
 
 def render_html(title, content_html, category, subcategory, page_path):
     """개별 문서용 자기완결적 HTML 생성"""
+    import re
+
+    # ```mermaid 코드블록은 fenced_code 확장에 의해 <pre><code class="language-mermaid">
+    # 로 변환되어 다이어그램이 아니라 코드로 노출된다. mermaid.js 가 인식하는
+    # <pre class="mermaid"> 형태로 바꿔준다.
+    has_mermaid = 'class="language-mermaid"' in content_html
+    content_html = re.sub(
+        r'<pre><code class="language-mermaid">(.*?)</code></pre>',
+        r'<pre class="mermaid">\1</pre>',
+        content_html,
+        flags=re.S,
+    )
+
     description = ""
     # content_html에서 첫 텍스트 150자 추출
-    import re
     text_only = re.sub(r"<[^>]+>", "", content_html)
     text_only = re.sub(r"\s+", " ", text_only).strip()
     description = text_only[:150]
@@ -152,6 +164,16 @@ def render_html(title, content_html, category, subcategory, page_path):
     breadcrumb = " &gt; ".join(breadcrumb_parts)
 
     canonical_url = f"{BASE_URL}/pages/{page_path}"
+
+    # mermaid 다이어그램이 있는 문서에만 렌더러를 싣는다.
+    # 뷰어와 동일하게 다크/라이트 테마를 따라간다.
+    mermaid_script = ""
+    if has_mermaid:
+        mermaid_script = """  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default' });
+  </script>"""
 
     return f"""<!DOCTYPE html>
 <html lang="ko">
@@ -175,6 +197,7 @@ def render_html(title, content_html, category, subcategory, page_path):
     <a href="{BASE_URL}/">TIL Viewer</a> |
     <a href="{BASE_URL}/content-index.html">All Documents</a>
   </footer>
+{mermaid_script}
 </body>
 </html>"""
 
