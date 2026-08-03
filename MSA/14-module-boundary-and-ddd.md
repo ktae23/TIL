@@ -158,15 +158,13 @@ done | sort | uniq -c | sort -rn | head -20
 경계를 그었다면 다음 질문은 "경계 간 관계는 어떤 종류인가"다. Eric Evans가 정리한 패턴 중 실무에서 자주 쓰는 다섯 가지.
 
 ```mermaid
-flowchart TB
-    subgraph SK["Shared Kernel — 공유 커널"]
+flowchart LR
+    subgraph SK["Shared Kernel"]
         A1[모듈 A] --- K[[공유 모델]] --- B1[모듈 B]
     end
-    subgraph CS["Customer-Supplier — 상하 관계"]
-        U[Upstream 공급자] -->|"고객 요구를 반영"| D[Downstream 고객]
-    end
-    subgraph CF["Conformist — 순응"]
-        U2[Upstream] -->|"그대로 따름"| D2[Downstream]
+    subgraph CS["Customer-Supplier / Conformist"]
+        U[Upstream] -->|"요구를 반영 (C-S)"| D[Downstream]
+        U -->|"그대로 따름 (Conformist)"| D
     end
     subgraph ACLg["ACL — 부패 방지 계층"]
         U3[외부/레거시] --> L[[Translator]] --> D3[내 도메인]
@@ -333,14 +331,10 @@ data class SalableProduct(
     val price: Long,
     val sellerId: Long,
 )
-```
 
-```kotlin
 // catalog/infra — 구현. 내부 엔티티를 API 타입으로 변환해서 내보낸다
 @Service
-internal class CatalogQueryService(
-    private val repository: ProductRepository,
-) : CatalogQuery {
+internal class CatalogQueryService(private val repository: ProductRepository) : CatalogQuery {
     override fun findSalable(productId: Long): SalableProduct? =
         repository.findById(productId)
             ?.takeIf { it.isOnSale() }

@@ -54,9 +54,7 @@ TLS 1.3에서는 문자열이 `TLS_AES_256_GCM_SHA384` 처럼 **대칭 암호와
 a, b는 세션 종료 시 폐기 → 서버 개인키를 얻어도 복원 불가
 ```
 
-여기서 서버의 장기 개인키(RSA/ECDSA)는 **키 교환이 아니라 "지금 응답하는 것이 진짜 서버"임을 서명으로 증명하는 용도**로만 쓰입니다. 역할이 분리되었기 때문에 개인키 유출이 과거 세션으로 번지지 않습니다.
-
-이것이 "**Harvest Now, Decrypt Later**"(지금 수집, 나중에 복호화) 공격 모델에 대한 방어이며, 양자 컴퓨팅 논의에서도 핵심 쟁점입니다.
+여기서 서버의 장기 개인키(RSA/ECDSA)는 **키 교환이 아니라 "지금 응답하는 것이 진짜 서버"임을 서명으로 증명하는 용도**로만 쓰입니다. 역할이 분리되었기 때문에 개인키 유출이 과거 세션으로 번지지 않습니다. 이것이 "**Harvest Now, Decrypt Later**"(지금 수집, 나중에 복호화) 공격 모델에 대한 방어이며, 양자 컴퓨팅 논의에서도 핵심 쟁점입니다.
 
 ---
 
@@ -64,9 +62,7 @@ a, b는 세션 종료 시 폐기 → 서버 개인키를 얻어도 복원 불가
 
 ### 2.1 실무 사고 사례
 
-**사례 1 — `TrustAllX509TrustManager` 프로덕션 유입**
-
-개발 중 자체 서명 인증서 때문에 `SSLHandshakeException` 이 나자 검색으로 찾은 코드를 붙여넣고, 그대로 배포됩니다.
+**사례 1 — `TrustAllX509TrustManager` 프로덕션 유입.** 개발 중 자체 서명 인증서 때문에 `SSLHandshakeException` 이 나자 검색으로 찾은 코드를 붙여넣고, 그대로 배포됩니다.
 
 ```kotlin
 val trustAll = object : X509TrustManager {   // 안티패턴 — TLS의 인증 기능을 완전히 제거한다
@@ -80,13 +76,9 @@ val trustAll = object : X509TrustManager {   // 안티패턴 — TLS의 인증 �
 
 `HostnameVerifier { _, _ -> true }` 도 동일한 부류입니다. 체인은 검증하지만 **도메인 일치를 확인하지 않으므로**, 공격자가 정당하게 발급받은 `evil.com` 인증서로 `api.mybank.com` 을 위장할 수 있습니다.
 
-**사례 2 — 인증서 만료로 전면 장애**
+**사례 2 — 인증서 만료로 전면 장애.** 예고된 장애인데도 가장 자주 발생합니다. 만료 시점에 **모든 클라이언트가 동시에** 연결 실패하며, 내부 서비스 간 인증서라면 장애가 연쇄합니다. 갱신 자동화보다 **만료 임박 알림**이 먼저입니다.
 
-TLS 인증서 만료는 예고된 장애인데도 가장 자주 발생합니다. 만료 시점에 **모든 클라이언트가 동시에** 연결 실패하며, 내부 서비스 간 인증서라면 장애가 연쇄합니다. 갱신 자동화보다 **만료 임박 알림**이 먼저입니다.
-
-**사례 3 — LB 뒤 내부 구간 평문** (`Client --TLS--> ALB --HTTP(평문)--> ECS Task`)
-
-"HTTPS 적용 완료"로 보고되지만, VPC 내부 트래픽이 평문입니다. 같은 VPC의 침해된 인스턴스, 잘못 설정된 미러링 세션, 로그 수집 사이드카가 전부 평문을 봅니다. 개인정보를 다루면 이 구간도 암호화 대상입니다.
+**사례 3 — LB 뒤 내부 구간 평문** (`Client --TLS--> ALB --HTTP(평문)--> ECS Task`). "HTTPS 적용 완료"로 보고되지만, VPC 내부 트래픽이 평문입니다. 같은 VPC의 침해된 인스턴스, 잘못 설정된 미러링 세션, 로그 수집 사이드카가 전부 평문을 봅니다. 개인정보를 다루면 이 구간도 암호화 대상입니다.
 
 ### 2.2 규제·컴플라이언스 관점
 
@@ -144,7 +136,7 @@ keytool -importcert -alias internal-ca -file internal-ca.crt \
 
 ### 3.3 mTLS — MSA 내부 인증 패턴
 
-일반 TLS는 **클라이언트가 서버를 검증**합니다. mTLS는 여기에 **서버가 클라이언트를 검증**하는 단계를 추가합니다.
+일반 TLS가 **클라이언트의 서버 검증**만 하는 데 비해, mTLS는 **서버의 클라이언트 검증**을 추가합니다.
 
 ```
 일반 TLS: ClientHello → ← Certificate                        → Finished
@@ -195,7 +187,6 @@ server:
     key-alias: app
     enabled-protocols: TLSv1.3                   # 레거시 클라이언트가 있으면 TLSv1.2 추가
     ciphers: [TLS_AES_256_GCM_SHA384, TLS_AES_128_GCM_SHA256, TLS_CHACHA20_POLY1305_SHA256]
-
     # --- mTLS: 클라이언트 인증서 요구 ---
     client-auth: need                            # need(필수) | want(선택) | none
     trust-store: classpath:truststore.p12
@@ -234,18 +225,17 @@ class InternalController {
 ```kotlin
 @Configuration
 class MutualTlsClientConfig {
-
     /** WebClient (Reactor Netty)에 클라이언트 인증서를 붙인다 */
     @Bean
     fun internalWebClient(
-        @Value("\${app.mtls.keystore-path}") keyStorePath: String,
-        @Value("\${app.mtls.keystore-password}") keyStorePassword: String,
+        @Value("\${app.mtls.keystore-path}") path: String,
+        @Value("\${app.mtls.keystore-password}") password: String,
     ): WebClient {
         val keyStore = KeyStore.getInstance("PKCS12").apply {
-            FileSystemResource(keyStorePath).inputStream.use { load(it, keyStorePassword.toCharArray()) }
+            FileSystemResource(path).inputStream.use { load(it, password.toCharArray()) }
         }
         val kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-            .apply { init(keyStore, keyStorePassword.toCharArray()) }
+            .apply { init(keyStore, password.toCharArray()) }
 
         // keyManager = 클라이언트 인증서 제시 / trustManager 미지정 = 시스템 기본 검증 유지
         val sslContext = SslContextBuilder.forClient().keyManager(kmf).protocols("TLSv1.3").build()
@@ -267,17 +257,13 @@ class MutualTlsClientConfig {
 ```kotlin
 /** 시스템 기본 신뢰 + 사설 CA. 둘 다 실패해야 거부한다. */
 class DelegatingTrustManager(caCertPath: String) : X509TrustManager {
-
     private val defaultTm = build(null)                    // JVM 기본 cacerts
-    private val internalTm = build(
-        KeyStore.getInstance(KeyStore.getDefaultType()).apply {
-            load(null, null)
-            val ca = FileSystemResource(caCertPath).inputStream.use {
-                CertificateFactory.getInstance("X.509").generateCertificate(it)
-            }
-            setCertificateEntry("internal-ca", ca)
-        }
-    )
+    private val internalTm = build(KeyStore.getInstance(KeyStore.getDefaultType()).apply {
+        load(null, null)
+        setCertificateEntry("internal-ca", FileSystemResource(caCertPath).inputStream.use {
+            CertificateFactory.getInstance("X.509").generateCertificate(it)
+        })
+    })
 
     override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) =
         try {
@@ -303,14 +289,14 @@ class DelegatingTrustManager(caCertPath: String) : X509TrustManager {
 **금지 코드 목록** — 발견 시 머지 차단: `checkServerTrusted` 빈 구현, `HostnameVerifier { _, _ -> true }`, `NoopHostnameVerifier.INSTANCE`, 프로덕션의 `TrustSelfSignedStrategy()`, `-Dcom.sun.net.ssl.checkRevocation=false`. CI에 아래 정도의 검사만 넣어도 대부분 걸립니다.
 
 ```bash
-grep -rn --include=*.kt --include=*.java \
-  -e "checkServerTrusted" -e "NoopHostnameVerifier" -e "TrustAllStrategy" \
-  src/main && echo "TLS 검증 우회 코드 발견" && exit 1
+grep -rn --include=*.kt --include=*.java -e "checkServerTrusted" \
+  -e "NoopHostnameVerifier" -e "TrustAllStrategy" src/main \
+  && echo "TLS 검증 우회 코드 발견" && exit 1
 ```
 
 ### 4.5 인증서 만료 모니터링
 
-만료는 **자동 갱신보다 알림이 먼저**입니다. 갱신 자동화도 실패할 수 있기 때문입니다.
+만료는 **자동 갱신보다 알림이 먼저**입니다 — 갱신 자동화도 실패할 수 있기 때문입니다.
 
 ```kotlin
 @Component
@@ -342,15 +328,7 @@ class CertificateExpiryMonitor(
 }
 ```
 
-```yaml
-# Prometheus 알림 룰
-- alert: TlsCertExpiringSoon
-  expr: tls_cert_days_until_expiry < 21
-  labels: { severity: warning }
-- alert: TlsCertExpiringCritical
-  expr: tls_cert_days_until_expiry < 7
-  labels: { severity: critical }
-```
+Prometheus 알림 룰은 `tls_cert_days_until_expiry < 21` 을 warning, `< 7` 을 critical로 두면 충분합니다.
 
 ### 4.6 HSTS
 

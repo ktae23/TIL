@@ -48,18 +48,14 @@ graph TD
 
 ```kotlin
 // 위반: Use Case가 Frameworks(4번 원)의 타입을 안다
-class PlaceOrderService {
-    fun place(request: HttpServletRequest): ResponseEntity<*> { ... }   // ✗
-}
+class PlaceOrderService { fun place(request: HttpServletRequest): ResponseEntity<*> { ... } }   // ✗
 
 // 위반: Entity가 Interface Adapters(3번 원)의 타입을 안다
-data class Order(val id: OrderId) {
-    fun toResponse(): OrderResponse = ...                                // ✗
-}
+data class Order(val id: OrderId) { fun toResponse(): OrderResponse = ... }                     // ✗
 
 // 준수: 바깥 원의 이름이 하나도 없다
 class PlaceOrderService(private val saveOrder: SaveOrderPort) : PlaceOrderUseCase {
-    override fun place(command: PlaceOrderCommand): OrderId = ...        // ✓
+    override fun place(command: PlaceOrderCommand): OrderId = ...                               // ✓
 }
 ```
 
@@ -72,14 +68,9 @@ class PlaceOrderService(private val saveOrder: SaveOrderPort) : PlaceOrderUseCas
 **① 단순한 데이터 구조만 넘긴다**
 
 ```kotlin
-// 나쁨: JPA 엔티티가 유스케이스 경계를 넘어감
-fun place(entity: OrderEntity): OrderEntity      // ✗ 지연 로딩, 영속성 컨텍스트가 함께 넘어옴
-
-// 나쁨: 프레임워크 타입
-fun place(request: PlaceOrderRequest): ResponseEntity<OrderResponse>   // ✗
-
-// 좋음: 순수 데이터 구조
-fun place(command: PlaceOrderCommand): OrderId   // ✓
+fun place(entity: OrderEntity): OrderEntity                            // ✗ 영속성 컨텍스트가 함께 넘어옴
+fun place(request: PlaceOrderRequest): ResponseEntity<OrderResponse>   // ✗ 프레임워크 타입
+fun place(command: PlaceOrderCommand): OrderId                         // ✓ 순수 데이터 구조
 ```
 
 **② 데이터 구조의 형태는 안쪽 원에 편하게 정한다**
@@ -106,14 +97,7 @@ data class PlaceOrderCommand(val customerId: CustomerId, val items: List<Item>, 
 
 ### 1.4 왜 이 규칙이 필요한가 — 변경 빈도의 차이
 
-핵심 근거는 단순합니다. **바깥으로 갈수록 자주 바뀝니다.**
-
-| 대상 | 실제 변경 주기 |
-|---|---|
-| "주문 총액 = 항목 합계 - 할인" 규칙 | 수년 |
-| "주문 생성 → 결제 → 이벤트 발행" 흐름 | 수개월 |
-| REST API 응답 스펙 | 수주 |
-| Spring Boot 버전, JPA 설정 | 수주 |
+핵심 근거는 단순합니다. **바깥으로 갈수록 자주 바뀝니다.** "주문 총액 = 항목 합계 - 할인" 규칙은 수년에 한 번 바뀌고, "주문 생성 → 결제 → 이벤트 발행" 흐름은 수개월, REST API 응답 스펙과 Spring Boot 버전은 수주 단위로 바뀝니다.
 
 자주 바뀌는 것이 안 바뀌는 것에 의존해야, 변경의 파급이 밖으로만 흐릅니다. 반대가 되면 Spring Boot 3.5 업그레이드가 도메인 코드 수정으로 이어집니다.
 
@@ -135,33 +119,13 @@ data class PlaceOrderCommand(val customerId: CustomerId, val items: List<Item>, 
 
 **같은 것**: 셋 다 "도메인은 인프라를 몰라야 한다"이고, 셋 다 그 수단으로 의존성 역전(DIP)을 씁니다.
 
-**다른 것**:
-- 헥사고날은 **좌우 대칭**을 중요하게 봅니다. 입력이 웹이든 테스트든 동등하다는 것이 출발점입니다.
-- 어니언은 **동심원 배치**를 제시하지만 포트/어댑터라는 명시적 이름은 없습니다.
-- 클린은 **Entities와 Use Cases를 분리**합니다. 이게 실질적으로 가장 큰 차이입니다. "여러 애플리케이션이 공유하는 규칙"(Entities)과 "이 앱만의 시나리오"(Use Cases)를 구분하라는 것인데, 단일 서비스에서는 이 구분이 잘 드러나지 않아 대개 하나로 합쳐집니다.
+**다른 것**: 헥사고날은 **좌우 대칭**을 중요하게 봅니다(입력이 웹이든 테스트든 동등하다는 것이 출발점). 어니언은 **동심원 배치**를 제시하지만 포트/어댑터라는 명시적 이름은 없습니다. 클린은 **Entities와 Use Cases를 분리**하는데 이게 실질적으로 가장 큰 차이입니다 — "여러 애플리케이션이 공유하는 규칙"(Entities)과 "이 앱만의 시나리오"(Use Cases)를 구분하라는 것인데, 단일 서비스에서는 이 구분이 잘 드러나지 않아 대개 하나로 합쳐집니다.
 
 **실무 결론**: 세 개를 구분하려 애쓸 필요가 없습니다. 팀에서 통용되는 이름 하나를 골라 쓰고, 실제로는 "포트를 안쪽이 소유한다"는 규칙만 지키면 됩니다. 이름을 두고 논쟁하는 시간이 구조를 개선하는 시간보다 길어지면 그건 이미 실패입니다.
 
 ### 2.2 제어 흐름과 의존성 방향이 반대일 때
 
-클린 아키텍처의 가장 중요한 기술적 논점입니다. 그림으로 봅니다.
-
-```mermaid
-sequenceDiagram
-    participant C as Controller (3번 원)
-    participant U as UseCase (2번 원)
-    participant G as Gateway 구현 (3번 원)
-    participant DB as Database (4번 원)
-
-    C->>U: place(command)
-    U->>G: save(order)  ※ 제어 흐름은 바깥으로
-    G->>DB: INSERT
-    DB-->>G: id
-    G-->>U: Order
-    U-->>C: OrderId
-```
-
-제어 흐름은 `UseCase → Gateway`로 **바깥을 향합니다**. 그런데 의존성 규칙은 안쪽만 향하라고 합니다. 모순처럼 보입니다.
+클린 아키텍처의 가장 중요한 기술적 논점입니다. 실행 시점의 호출 순서는 `Controller(3번 원) → UseCase(2번 원) → Gateway 구현(3번 원) → Database(4번 원)`입니다. 즉 제어 흐름은 `UseCase → Gateway`로 **바깥을 향합니다**. 그런데 의존성 규칙은 안쪽만 향하라고 합니다. 모순처럼 보입니다.
 
 해법은 인터페이스를 안쪽에 두는 것입니다.
 
@@ -202,15 +166,12 @@ class PlaceOrderService(private val output: PlaceOrderOutputPort) : PlaceOrderUs
     }
 }
 
-// 3번 원 — Presenter가 구현
+// 3번 원 — Presenter가 구현. 포맷팅은 바깥에서
 @Component
 class PlaceOrderPresenter : PlaceOrderOutputPort {
     var viewModel: OrderViewModel? = null
     override fun present(result: PlaceOrderResult) {
-        viewModel = OrderViewModel(
-            orderId = result.orderId.value.toString(),
-            totalAmount = "${result.totalAmount.amount.toPlainString()}원",   // 포맷팅은 바깥에서
-        )
+        viewModel = OrderViewModel(result.orderId.value.toString(), "${result.totalAmount.amount}원")
     }
 }
 ```
@@ -241,9 +202,8 @@ class OrderService(
 
 // B. Use Case 클래스 스타일 — 유스케이스 하나 = 클래스 하나
 @Service @Transactional
-class PlaceOrderService(
-    private val orders: SaveOrderPort, private val payment: PaymentGateway,
-) : PlaceOrderUseCase {
+class PlaceOrderService(private val orders: SaveOrderPort, private val payment: PaymentGateway)
+    : PlaceOrderUseCase {
     override fun place(command: PlaceOrderCommand): OrderId { ... }
 }
 
@@ -262,8 +222,7 @@ class CancelOrderService(
 | 클래스 수 | 적음 | 유스케이스 수만큼 |
 | 의존성 명확성 | 흐림(일부 메서드만 쓰는 의존이 섞임) | 정확(그 유스케이스가 쓰는 것만) |
 | 클래스 크기 | 시간이 지나며 비대해짐 | 자연히 작게 유지 |
-| 머지 충돌 | 잦음(여러 명이 같은 파일) | 드묾 |
-| 테스트 셋업 | 안 쓰는 의존까지 스텁 | 최소 |
+| 머지 충돌 / 테스트 셋업 | 잦음 / 안 쓰는 의존까지 스텁 | 드묾 / 최소 |
 | 관련 로직 파악 | 한 파일에서 전체 조망 | 파일 여러 개 열어야 함 |
 | 공통 private 헬퍼 공유 | 쉬움 | 별도 클래스로 추출 필요 |
 
@@ -273,19 +232,9 @@ class CancelOrderService(
 
 ### 3.2 Spring Boot에서 부딪히는 현실 문제 ①: 트랜잭션 경계
 
-가장 난감한 지점입니다. `@Transactional`은 Spring 어노테이션이므로 4번 원의 것인데, 트랜잭션 경계는 **유스케이스 단위**로 잡아야 합니다. 즉 2번 원에 붙여야 합니다.
+가장 난감한 지점입니다. `@Transactional`은 Spring 어노테이션이므로 4번 원의 것인데, 트랜잭션 경계는 **유스케이스 단위**로 잡아야 합니다. 즉 2번 원에 붙여야 합니다. 선택지는 세 가지입니다.
 
-선택지 세 가지:
-
-**① 유스케이스 서비스에 `@Transactional`을 붙인다 (권장)**
-
-```kotlin
-@Service
-@Transactional
-class PlaceOrderService(...) : PlaceOrderUseCase { ... }
-```
-
-application 모듈이 `spring-tx`에 의존하게 됩니다. 순수하지 않지만 **`spring-tx`는 변경 빈도가 극히 낮고 API가 안정적**이므로 실질적 위험이 없습니다. 대부분의 팀이 이 선택을 합니다.
+**① 유스케이스 서비스에 `@Transactional`을 붙인다 (권장).** application 모듈이 `spring-tx`에 의존하게 됩니다. 순수하지 않지만 **`spring-tx`는 변경 빈도가 극히 낮고 API가 안정적**이므로 실질적 위험이 없습니다. 대부분의 팀이 이 선택을 합니다.
 
 **② 어댑터에서 트랜잭션을 연다.** 컨트롤러에 `@Transactional`을 붙이면 application은 순수해지지만, 트랜잭션 경계가 진입점마다 흩어지고 배치에서 빠뜨리면 조용히 깨집니다. **권장하지 않습니다.**
 
@@ -336,24 +285,14 @@ class UseCaseConfig {
 
 | 허용 | 금지 |
 |---|---|
-| `@Service`, `@Component`, `@Transactional` | `@Entity`, `@Column`, `@Table` |
-| `@Value`(설정 주입) | `@RestController`, `HttpServletRequest` |
-| 생성자 주입 | `@JsonProperty`, `ObjectMapper` |
-| | `EntityManager`, `JpaRepository` |
+| `@Service`, `@Component`, `@Transactional` | `@Entity`, `@Column`, `@Table`, `EntityManager` |
+| `@Value`(설정 주입), 생성자 주입 | `@RestController`, `HttpServletRequest`, `ObjectMapper` |
 
 기준은 "**교체 가능성이 있는가**"입니다. Spring DI는 앱 수명 내내 안 바뀝니다. JPA와 REST 스펙은 바뀝니다.
 
 ### 3.4 현실 문제 ③: 조회 성능
 
-의존성 규칙을 엄격히 지키면 조회가 비효율적이 됩니다.
-
-```kotlin
-// 규칙 준수: 도메인 객체로 전부 로딩 → 화면에 쓰는 건 3개 필드
-fun orderList(customerId: CustomerId): List<OrderSummary> =
-    loadOrder.findByCustomer(customerId).map { OrderSummary.from(it) }   // N+1 위험
-```
-
-현실적인 해법은 **읽기 경로를 규칙에서 제외하는 것**입니다.
+의존성 규칙을 엄격히 지키면 조회가 비효율적이 됩니다. 도메인 객체로 전부 로딩한 뒤 화면에 쓰는 건 필드 3개뿐이고, 컬렉션 매핑 때문에 N+1이 발생합니다. 현실적인 해법은 **읽기 경로를 규칙에서 제외하는 것**입니다.
 
 ```kotlin
 // adapter-in-web에서 조회 전용 어댑터를 직접 호출 (CQRS의 가벼운 형태)
@@ -447,10 +386,8 @@ class OrderController(private val cancelOrder: CancelOrderUseCase) {
     @PostMapping("/{id}/cancel")
     fun cancel(@PathVariable id: Long, @RequestBody req: CancelRequest): CancelResponse {
         val result = cancelOrder.cancel(CancelOrderCommand(OrderId(id), req.reason))
-        return CancelResponse(
-            orderId = result.orderId.value,
-            refundedAmount = result.refunded.amount.toPlainString(),   // 표현 형식은 여기서 결정
-        )
+        // 표현 형식(금액 포맷)은 여기서 결정한다
+        return CancelResponse(result.orderId.value, result.refunded.amount.toPlainString())
     }
 }
 
@@ -475,13 +412,7 @@ class OrderPersistenceGateway(private val jpa: OrderJpaRepository) : LoadOrderPo
 | **L3** | L2 + Gradle 멀티모듈 + ArchUnit 강제 | 10인 이상, 장기 운영, MSA 예정 |
 | **L4** | L3 + Presenter/Output Port + `@Service` 제거 | 사실상 권장하지 않음 |
 
-**대부분의 팀에게 L2가 최적점입니다.** L3는 모듈 경계가 실제로 팀 경계와 일치할 때만 값어치가 있습니다. L4는 얻는 것 대비 유지 비용이 명백히 큽니다.
-
-수준을 올리는 신호는 코드가 아니라 사건입니다.
-
-- L0 → L1: 도메인 테스트에 DB가 필요해서 CI가 느려짐
-- L1 → L2: 같은 비즈니스 규칙이 세 곳에 복사됨 / 엔티티에 `@JsonIgnore`가 늘어남
-- L2 → L3: 팀이 갈라져 같은 패키지에서 충돌 / MSA 분리 로드맵 확정
+**대부분의 팀에게 L2가 최적점입니다.** L3는 모듈 경계가 실제로 팀 경계와 일치할 때만 값어치가 있고, L4는 얻는 것 대비 유지 비용이 명백히 큽니다. 수준을 올리는 신호는 코드가 아니라 사건입니다 — L0 → L1은 "도메인 테스트에 DB가 필요해서 CI가 느려짐", L1 → L2는 "같은 규칙이 세 곳에 복사됨 / 엔티티에 `@JsonIgnore`가 늘어남", L2 → L3는 "팀이 갈라져 같은 패키지에서 충돌 / MSA 분리 로드맵 확정"입니다.
 
 ### 4.4 규칙을 테스트로 고정
 
@@ -489,16 +420,12 @@ class OrderPersistenceGateway(private val jpa: OrderJpaRepository) : LoadOrderPo
 @Test
 fun `안쪽 원은 바깥 원을 몰라야 한다`() {
     val classes = ClassFileImporter().importPackages("com.shop.order")
-
-    noClasses().that().resideInAPackage("..domain..")
-        .should().dependOnClassesThat().resideInAnyPackage(
-            "..application..", "..adapter..", "org.springframework..", "jakarta.persistence..",
-        ).check(classes)
-
-    noClasses().that().resideInAPackage("..application..")
-        .should().dependOnClassesThat().resideInAnyPackage(
-            "..adapter..", "org.springframework.web..", "jakarta.persistence..",
-        ).check(classes)
+    noClasses().that().resideInAPackage("..domain..").should().dependOnClassesThat()
+        .resideInAnyPackage("..application..", "..adapter..", "org.springframework..", "jakarta.persistence..")
+        .check(classes)
+    noClasses().that().resideInAPackage("..application..").should().dependOnClassesThat()
+        .resideInAnyPackage("..adapter..", "org.springframework.web..", "jakarta.persistence..")
+        .check(classes)
 }
 ```
 
@@ -519,11 +446,7 @@ fun `안쪽 원은 바깥 원을 몰라야 한다`() {
 
 ### 세 아키텍처 비교
 
-| | 헥사고날 | 어니언 | 클린 |
-|---|---|---|---|
-| 핵심 원리 | 동일(의존성 역전) | 동일 | 동일 |
-| 고유 기여 | 좌우 대칭, 포트/어댑터 명명 | 동심원 계층 배치 | Entities/Use Cases 분리, 구성요소 명세 |
-| 실무 선택 | 셋 중 팀에 익숙한 이름 하나 | | |
+핵심 원리(의존성 역전)는 셋 다 같습니다. 고유 기여만 다릅니다 — 헥사고날은 좌우 대칭과 포트/어댑터 명명, 어니언은 동심원 계층 배치, 클린은 Entities/Use Cases 분리와 구성요소 명세입니다. 실무에서는 팀에 익숙한 이름 하나를 고르면 됩니다.
 
 ### 현실 타협 요약
 

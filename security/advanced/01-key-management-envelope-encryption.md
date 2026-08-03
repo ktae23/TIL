@@ -99,14 +99,7 @@ object CryptoUtil {
 
 문제점이 세 가지 겹칩니다. (1) 키가 Git 히스토리에 영구 기록됨, (2) 저장소 접근 권한이 곧 복호화 권한, (3) 고정 IV로 GCM을 쓰면 nonce 재사용으로 **키 자체가 복구 가능**해집니다([../main/04-iv-and-nonce.md](../main/04-iv-and-nonce.md) 참고).
 
-**유형 2 — Git 커밋 후 삭제**
-
-```bash
-git rm application-prod.yml
-git commit -m "fix: 설정 파일 제거"   # 히스토리에는 그대로 남음
-```
-
-`git log -p`, `git show <old-commit>` 로 누구나 복구 가능합니다. 공개 저장소라면 봇이 수 분 내에 스캔합니다. **한 번 커밋된 키는 유출된 키**입니다 — 제거가 아니라 **로테이션**이 정답입니다.
+**유형 2 — Git 커밋 후 삭제**: `git rm application-prod.yml` 로 지워도 히스토리에는 그대로 남습니다. `git log -p`, `git show <old-commit>` 로 누구나 복구 가능합니다. 공개 저장소라면 봇이 수 분 내에 스캔합니다. **한 번 커밋된 키는 유출된 키**입니다 — 제거가 아니라 **로테이션**이 정답입니다.
 
 **유형 3 — 로그/에러 메시지 노출**: `logger.error("복호화 실패: key=$secretKey")` 같은 코드 한 줄로 키가 로그 수집기에 영구 적재됩니다.
 
