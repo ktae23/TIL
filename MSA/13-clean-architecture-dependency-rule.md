@@ -15,20 +15,15 @@
 
 ### 1.1 동심원 구조
 
-로버트 마틴이 정리한 클린 아키텍처는 네 개의 원으로 표현됩니다.
+로버트 마틴이 정리한 클린 아키텍처는 안쪽부터 Entities → Use Cases → Interface Adapters → Frameworks & Drivers 순으로 중첩된 네 개의 원으로 표현되며, 의존성 화살표는 항상 바깥에서 안쪽으로만 그어집니다.
 
 ```mermaid
-graph TD
-    subgraph F["4. Frameworks & Drivers"]
-        subgraph IA["3. Interface Adapters"]
-            subgraph UC["2. Use Cases"]
-                E["1. Entities<br/>기업 전사 비즈니스 규칙"]
-            end
-        end
-    end
-    F -.->|"DB, Web, Spring, UI"| IA
-    IA -.->|"Controller, Presenter, Gateway 구현"| UC
-    UC -.->|"애플리케이션 비즈니스 규칙"| E
+graph RL
+    F["4. Frameworks & Drivers<br/>Spring, JPA, PostgreSQL"]
+    IA["3. Interface Adapters<br/>Controller, Presenter, Gateway"]
+    UC["2. Use Cases<br/>애플리케이션 비즈니스 규칙"]
+    E["1. Entities<br/>기업 전사 비즈니스 규칙"]
+    F --> IA --> UC --> E
 ```
 
 | 원 | 이름 | 내용 | 변경 빈도 |
@@ -73,9 +68,7 @@ fun place(request: PlaceOrderRequest): ResponseEntity<OrderResponse>   // ✗ �
 fun place(command: PlaceOrderCommand): OrderId                         // ✓ 순수 데이터 구조
 ```
 
-**② 데이터 구조의 형태는 안쪽 원에 편하게 정한다**
-
-`PlaceOrderCommand`는 유스케이스가 정의합니다. 컨트롤러의 `PlaceOrderRequest`를 그대로 쓰지 않습니다. 이유는 명확합니다. **API 스펙이 바뀌었다고 유스케이스가 바뀌면 안 되기 때문입니다.**
+**② 데이터 구조의 형태는 안쪽 원에 편하게 정한다.** `PlaceOrderCommand`는 유스케이스가 정의합니다. 컨트롤러의 `PlaceOrderRequest`를 그대로 쓰지 않는 이유는 명확합니다. **API 스펙이 바뀌었다고 유스케이스가 바뀌면 안 되기 때문입니다.**
 
 ```kotlin
 // adapter (3번 원) — API 스펙에 종속. 클라이언트 요구에 따라 바뀜
@@ -114,7 +107,6 @@ data class PlaceOrderCommand(val customerId: CustomerId, val items: List<Item>, 
 | 핵심 규칙 | 애플리케이션이 포트를 소유, 어댑터가 구현 | 의존성은 안쪽 향함 | 의존성은 안쪽 향함 |
 | 강조점 | **대칭성** — 좌/우(driving/driven) 구분 | **계층** — 도메인 모델 중심 동심원 | **원의 서열** — Entities vs Use Cases 분리 |
 | 고유 개념 | Port, Adapter, Primary/Secondary | Domain Model / Domain Services / Application Services | Use Case Interactor, Presenter, Humble Object |
-| 그림 | 육각형 | 양파(동심원) | 동심원 + 우측 하단 제어 흐름 도식 |
 | 제시하는 것 | 격리 방법 | 계층 배치 | 격리 방법 + 계층 배치 + 세부 구성요소 |
 
 **같은 것**: 셋 다 "도메인은 인프라를 몰라야 한다"이고, 셋 다 그 수단으로 의존성 역전(DIP)을 씁니다.
@@ -132,9 +124,7 @@ data class PlaceOrderCommand(val customerId: CustomerId, val items: List<Item>, 
 ```mermaid
 graph RL
     subgraph inner["2번 원 (Use Cases)"]
-        UC["PlaceOrderService"]
-        PORT["SaveOrderPort «interface»"]
-        UC --> PORT
+        UC["PlaceOrderService"] --> PORT["SaveOrderPort «interface»"]
     end
     subgraph outer["3번 원 (Interface Adapters)"]
         IMPL["OrderPersistenceGateway"]
@@ -261,7 +251,7 @@ class SpringTransactionRunner(private val template: TransactionTemplate) : Trans
 
 ### 3.3 현실 문제 ②: 프레임워크 어노테이션 침투
 
-`@Service`, `@Component`도 Spring 타입입니다. 엄격히 보면 위반입니다.
+`@Service`, `@Component`도 Spring 타입입니다. 엄격히 보면 위반입니다. 선택지는 셋이고, 대부분의 팀은 첫 번째를 고릅니다.
 
 | 방식 | application 모듈의 순수도 | 비용 |
 |---|---|---|
@@ -367,14 +357,12 @@ class CancelOrderService(
     override fun cancel(command: CancelOrderCommand): CancelOrderResult {
         val order = loadOrder.findById(command.orderId) ?: throw OrderNotFoundException(command.orderId)
         val canceled = saveOrder.save(order.cancel())       // 규칙은 1번 원에서 검증
-
         val refunded = if (order.status == OrderStatus.PAID) {
             when (val r = refundGateway.refund(order.id, order.payableAmount)) {
                 is RefundResult.Success -> order.payableAmount
                 is RefundResult.Failure -> throw RefundFailedException(order.id, r.reason)
             }
         } else Money.ZERO
-
         return CancelOrderResult(canceled.id, refunded)
     }
 }
@@ -476,8 +464,7 @@ fun `안쪽 원은 바깥 원을 몰라야 한다`() {
 - [14-module-boundary-and-ddd.md](14-module-boundary-and-ddd.md) — 모듈 경계와 DDD
 - [15-common-module-antipattern.md](15-common-module-antipattern.md) — common 모듈 안티패턴
 - [16-archunit-enforcing-rules.md](16-archunit-enforcing-rules.md) — ArchUnit으로 규칙 강제하기
-- [17-modular-monolith-to-msa.md](17-modular-monolith-to-msa.md) — 모듈러 모놀리스에서 MSA로
-- [01-msa-fundamentals.md](01-msa-fundamentals.md) — MSA 기초와 서비스 분리
+- [17-modular-monolith-to-msa.md](17-modular-monolith-to-msa.md) — 모듈러 모놀리스에서 MSA로 / [01-msa-fundamentals.md](01-msa-fundamentals.md) — MSA 기초
 - [../build-tool/02-gradle-multi-module.md](../build-tool/02-gradle-multi-module.md) — Gradle 멀티모듈 설정 실무
 - [../spring/architecture/01-modular-monolith-spring-modulith.md](../spring/architecture/01-modular-monolith-spring-modulith.md) — Spring Modulith
 
