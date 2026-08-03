@@ -312,10 +312,7 @@ package com.shop.order
 @JvmInline value class OrderId(val value: Long)
 
 data class Order internal constructor(
-    val id: OrderId,
-    val customerId: CustomerId,
-    val lines: List<OrderLine>,
-    val status: OrderStatus,
+    val id: OrderId, val customerId: CustomerId, val lines: List<OrderLine>, val status: OrderStatus,
 ) {
     val totalAmount: Money get() = lines.fold(Money.ZERO) { acc, l -> acc + l.subtotal }
 
@@ -399,9 +396,9 @@ ArchUnit 규칙 작성과 CI 통합은 [16-archunit-enforcing-rules.md](16-archu
 
 ### 트레이드오프
 
-- **작은 서비스(엔티티 5개 미만, 팀 2인 이하)** 에서는 도메인/인프라 모듈 분리가 손해입니다. 패키지 분리 + ArchUnit 규칙 정도로 시작하고, 모듈은 실제로 아플 때 쪼개십시오.
+- **작은 서비스(엔티티 5개 미만, 팀 2인 이하)** 에서는 도메인/인프라 모듈 분리가 손해입니다. 패키지 분리 + ArchUnit 규칙으로 시작하고, 모듈은 실제로 아플 때 쪼개십시오.
 - **DIP는 모든 경계에 적용하는 원칙이 아닙니다.** 변동성이 높은 경계(외부 API, 저장소, 메시징)에만 적용하고, 안정적인 경계(표준 라이브러리, 값 객체)에는 적용하지 마십시오.
-- **이벤트로 순환을 푸는 것은 결합을 없애는 게 아니라 시간축으로 옮기는 것**입니다. 컴파일 의존성은 사라지지만 "이벤트가 안 오면 포인트가 안 쌓인다"는 런타임 결합이 생기고, 이건 디버깅이 더 어렵습니다.
+- **이벤트로 순환을 푸는 것은 결합을 없애는 게 아니라 시간축으로 옮기는 것**입니다. 컴파일 의존성은 사라지지만 "이벤트가 안 오면 포인트가 안 쌓인다"는 런타임 결합이 생기고, 디버깅은 더 어렵습니다.
 
 > **핵심 포인트**: 의존성 설계의 본질은 "인터페이스를 만드는가"가 아니라 **"인터페이스를 누가 소유하는가"** 입니다. 인터페이스를 구현체 모듈에 두면 화살표는 그대로이고 파일만 늘어납니다. 사용하는 쪽으로 옮겨야 비로소 역전이 일어납니다. 그리고 이 역전은 공짜가 아니므로, 안정 의존 원칙(SDP)으로 "어느 방향이 옳은지" 판단한 뒤 변동성이 높은 경계에만 선별적으로 적용하십시오. 모든 곳에 DIP를 바르면 그것은 아키텍처가 아니라 의식(ritual)입니다.
 
@@ -415,8 +412,7 @@ ArchUnit 규칙 작성과 CI 통합은 [16-archunit-enforcing-rules.md](16-archu
 - [14-module-boundary-and-ddd.md](14-module-boundary-and-ddd.md) — 모듈 경계와 DDD
 - [15-common-module-antipattern.md](15-common-module-antipattern.md) — common 모듈 안티패턴
 - [16-archunit-enforcing-rules.md](16-archunit-enforcing-rules.md) — ArchUnit으로 규칙 강제하기
-- [17-modular-monolith-to-msa.md](17-modular-monolith-to-msa.md) — 모듈러 모놀리스에서 MSA로
-- [04-event-driven-architecture.md](04-event-driven-architecture.md) — 이벤트 기반 아키텍처
+- [17-modular-monolith-to-msa.md](17-modular-monolith-to-msa.md) — 모듈러 모놀리스에서 MSA로 / [04-event-driven-architecture.md](04-event-driven-architecture.md) — 이벤트 기반 아키텍처
 - [../build-tool/02-gradle-multi-module.md](../build-tool/02-gradle-multi-module.md) — Gradle 멀티모듈 설정 실무
 - [../spring/architecture/01-modular-monolith-spring-modulith.md](../spring/architecture/01-modular-monolith-spring-modulith.md) — Spring Modulith
 

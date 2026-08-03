@@ -132,8 +132,7 @@ graph RL
     PERSIST --> APP
     PAY --> APP
     APP --> DOM
-    BOOT -.runtimeOnly.-> WEB
-    BOOT -.runtimeOnly.-> PERSIST
+    BOOT -.runtimeOnly.-> WEB & PERSIST
 ```
 
 의존성 선언(문법 상세는 [../build-tool/02-gradle-multi-module.md](../build-tool/02-gradle-multi-module.md) 참고):
@@ -253,8 +252,7 @@ class PlaceOrderService(
 
 ```kotlin
 // adapter-in-web/.../OrderController.kt
-@RestController
-@RequestMapping("/api/orders")
+@RestController @RequestMapping("/api/orders")
 class OrderController(private val placeOrder: PlaceOrderUseCase) {   // 포트에만 의존
     @PostMapping
     fun place(@RequestBody @Valid request: PlaceOrderRequest): ResponseEntity<PlaceOrderResponse> {
@@ -271,7 +269,7 @@ data class PlaceOrderRequest(@field:NotNull val customerId: Long, @field:Size(mi
 }
 ```
 
-컨트롤러는 `PlaceOrderService`를 모릅니다. 인터페이스만 압니다.
+컨트롤러는 `PlaceOrderService`를 모릅니다. 인터페이스만 압니다. 반대편 어댑터는 이렇습니다.
 
 ```kotlin
 // adapter-out-persistence/.../OrderPersistenceAdapter.kt
@@ -281,8 +279,7 @@ class OrderPersistenceAdapter(private val jpa: OrderJpaRepository) : SaveOrderPo
     override fun findById(id: OrderId): Order? = jpa.findByIdOrNull(id.value)?.let(OrderMapper::toDomain)
 }
 
-@Entity
-@Table(name = "orders")
+@Entity @Table(name = "orders")
 class OrderEntity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long = 0,
     @Column(nullable = false) var customerId: Long = 0,
@@ -302,11 +299,11 @@ class OrderEntity(
 | 도메인 불변성 | 보장 | 불가(`var` 필수) |
 | 단위 테스트 | 3ms, 스프링 불필요 | 컨텍스트 필요 |
 | 지연 로딩 사고 | 어댑터 안에서만 발생 | 서비스/컨트롤러까지 전파 |
-| DB 스키마 변경의 도메인 영향 | 없음 | 직접 전파 |
+| DB 스키마 변경 영향 | 도메인에 없음 | 도메인에 직접 전파 |
 
 **엔티티 5~10개 규모에서는 통합이 낫습니다.** 매핑 코드가 전체의 30%를 차지하는데 얻는 게 별로 없습니다. 반면 **엔티티 30개 이상 + 상태 전이 규칙이 복잡하면 분리가 명백히 낫습니다.** "결제 상태와 배송 상태의 조합에 따라 취소 가능 여부가 달라진다" 같은 규칙을 `var` 필드 위에 얹는 순간 어디서든 상태가 바뀔 수 있게 되어 추적이 불가능해집니다.
 
-MapStruct로 매퍼를 자동 생성하면 비용이 줄지만, 값 객체(`Money`, `OrderId`)가 많으면 커스텀 매핑이 늘어 이득이 줄어듭니다. Kotlin에서는 확장 함수로 직접 쓰는 편이 오히려 읽기 좋습니다.
+MapStruct로 매퍼를 자동 생성하면 비용이 줄지만, 값 객체(`Money`, `OrderId`)가 많으면 커스텀 매핑이 늘어 이득이 줄어듭니다. Kotlin에서는 확장 함수로 직접 쓰는 편이 읽기 좋습니다.
 
 ---
 
@@ -400,7 +397,7 @@ fun `헥사고날 의존 규칙을 검증한다`() {
 
 - **육각형 그림에 집착하지 마십시오.** 변의 개수, 포트 개수에는 아무 의미가 없습니다. 유일하게 지켜야 할 것은 "화살표가 안쪽을 향한다"입니다.
 - **인바운드 포트는 생략해도 됩니다.** 컨트롤러가 `PlaceOrderService`를 직접 주입받아도 의존 방향은 여전히 안쪽입니다. 유스케이스 인터페이스는 진입점이 여러 개이거나 문서화 가치가 있을 때만 만드십시오.
-- **도메인/엔티티 분리는 별개의 결정입니다.** 헥사고날을 채택했다고 반드시 분리해야 하는 것은 아닙니다. 엔티티가 적으면 통합해도 됩니다.
+- **도메인/엔티티 분리는 별개의 결정입니다.** 헥사고날을 채택했다고 반드시 분리해야 하는 것은 아니며, 엔티티가 적으면 통합해도 됩니다.
 
 > **핵심 포인트**: 헥사고날의 실체는 "포트 인터페이스를 애플리케이션이 소유하고 어댑터가 구현한다"는 **단 한 줄의 규칙**이고, 육각형·포트 개수·모듈 개수는 전부 부수적입니다. 이 구조의 이득은 인프라 교체가 아니라 **도메인을 프레임워크 없이 테스트하고 이해할 수 있게 되는 것**에서 대부분 나옵니다. 그래서 도메인 규칙이 얕은 시스템에서는 이득이 거의 0인 반면 비용은 그대로 발생합니다. 전면 도입 전에 아웃바운드 포트만 적용한 절충안으로 시작해, 실제로 규칙이 자라는지 확인한 뒤 모듈로 승격하는 것이 안전합니다.
 

@@ -269,8 +269,7 @@ data class Order(val id: OrderId, val lines: List<OrderLine>, val status: OrderS
 // 서비스는 조립만 한다
 @Service
 class OrderService(private val orders: OrderRepository, private val coupons: CouponRepository) {
-    @Transactional
-    fun applyCoupon(orderId: OrderId, couponId: CouponId) {
+    @Transactional fun applyCoupon(orderId: OrderId, couponId: CouponId) {
         val order = orders.findById(orderId) ?: throw OrderNotFoundException(orderId)
         val coupon = coupons.findById(couponId) ?: throw CouponNotFoundException(couponId)
         val discount = coupon.discountFor(order.totalAmount, LocalDateTime.now())
@@ -309,12 +308,7 @@ class OrderService(private val orders: OrderRepository, private val coupons: Cou
 | 7 | 서비스 클래스끼리 순환 호출한다 | ArchUnit / IDE 분석 |
 | 8 | MSA 분리 계획이 잡혔다 | 로드맵 |
 
-반대로, **아래에 해당하면 레이어드를 유지하십시오.**
-
-- 도메인 규칙이 "필수값 검증 + 저장" 수준이다
-- 팀이 3인 이하이고 서비스 수명이 1~2년으로 예상된다
-- 화면 요구사항이 곧 데이터 구조와 일치한다(관리자 CRUD)
-- 성능·인프라 이슈가 아키텍처 이슈보다 크다
+반대로 **도메인 규칙이 "필수값 검증 + 저장" 수준이거나, 팀이 3인 이하이고 서비스 수명이 1~2년이거나, 화면 요구사항이 곧 데이터 구조와 일치하거나(관리자 CRUD), 성능·인프라 이슈가 아키텍처 이슈보다 크다면 레이어드를 유지하십시오.**
 
 ### 4.2 두 패키징 방식 비교 코드
 
@@ -418,8 +412,7 @@ data class OrderResponse(val orderId: Long, val totalAmount: Long, val finalAmou
 - [14-module-boundary-and-ddd.md](14-module-boundary-and-ddd.md) — 모듈 경계와 DDD
 - [15-common-module-antipattern.md](15-common-module-antipattern.md) — common 모듈 안티패턴
 - [16-archunit-enforcing-rules.md](16-archunit-enforcing-rules.md) — ArchUnit으로 규칙 강제하기
-- [17-modular-monolith-to-msa.md](17-modular-monolith-to-msa.md) — 모듈러 모놀리스에서 MSA로
-- [01-msa-fundamentals.md](01-msa-fundamentals.md) — MSA 기초와 서비스 분리
+- [17-modular-monolith-to-msa.md](17-modular-monolith-to-msa.md) — 모듈러 모놀리스에서 MSA로 / [01-msa-fundamentals.md](01-msa-fundamentals.md) — MSA 기초
 - [../build-tool/02-gradle-multi-module.md](../build-tool/02-gradle-multi-module.md) — Gradle 멀티모듈 설정 실무
 - [../spring/architecture/01-modular-monolith-spring-modulith.md](../spring/architecture/01-modular-monolith-spring-modulith.md) — Spring Modulith
 
