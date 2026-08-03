@@ -18,12 +18,10 @@ MSA는 목표가 아니라 특정 문제의 해법이다. 언제 분리해야 �
 MSA 도입의 가장 흔한 실패는 기술 문제가 아니라 **경계를 모르는 상태에서 물리적으로 쪼갠 것**이다.
 
 ```mermaid
-flowchart TB
-    A["요구사항이 불확실한 초기"] --> B["도메인 경계를<br/>추측으로 결정"]
-    B --> C["서비스 8개로 분리<br/>+ 각자 DB"]
+flowchart LR
+    A["경계를<br/>추측으로 결정"] --> C["서비스 8개 분리<br/>+ 각자 DB"]
     C --> D["6개월 뒤<br/>경계가 틀렸음을 발견"]
-    D --> E{"수정 비용"}
-    E --> F["서비스 간 API 변경<br/>+ 데이터 마이그레이션<br/>+ 배포 조율<br/>+ 하위 호환"]
+    D --> F["API 변경 + 데이터 마이그레이션<br/>+ 배포 조율 + 하위 호환"]
     F --> G["못 고침<br/>→ 분산 모놀리스 확정"]
 ```
 
@@ -150,30 +148,21 @@ flowchart TB
 **2단계 — 인메모리 호출을 인터페이스로**
 
 ```kotlin
-// Before — 구체 클래스 직접 참조
+// Before — 다른 모듈의 구현체에 직접 결합
 @Service
-class OrderService(private val inventoryService: InventoryService) {
-    fun place(cmd: PlaceOrderCommand) {
-        inventoryService.deduct(cmd.sku, cmd.quantity)   // 다른 모듈 구현체에 직접 결합
-    }
-}
-```
+class OrderService(private val inventoryService: InventoryService)
 
-```kotlin
-// After — 내가 정의한 포트에 의존
-// order 모듈 소유 인터페이스
+// After — order 모듈이 소유한 포트에 의존
 interface InventoryPort {
     fun deduct(sku: Sku, quantity: Int): DeductResult
 }
 
 @Service
-class OrderService(private val inventory: InventoryPort) { /* ... */ }
+class OrderService(private val inventory: InventoryPort)
 
-// 지금은 인메모리 어댑터
+// 지금은 인메모리 어댑터. 5단계에서 이 클래스만 HTTP 버전으로 교체된다
 @Component
-class InMemoryInventoryAdapter(
-    private val inventoryService: InventoryService,
-) : InventoryPort {
+class InMemoryInventoryAdapter(private val inventoryService: InventoryService) : InventoryPort {
     override fun deduct(sku: Sku, quantity: Int): DeductResult =
         inventoryService.deduct(sku.value, quantity).toDeductResult()
 }
@@ -190,41 +179,18 @@ class InMemoryInventoryAdapter(
 fun place(cmd: PlaceOrderCommand): OrderId {
     val order = Order.place(cmd)
     orders.save(order)
-
-    // 필수 동기: 재고 확보 실패 시 주문 자체가 성립 안 됨
-    inventory.reserve(order.items())
-
-    // 비필수 → 이벤트로 전환
+    inventory.reserve(order.items())   // 필수 동기: 실패 시 주문 자체가 성립 안 됨
+    // 알림·적립금·추천 로그·정산 예정 등록은 전부 구독자가 처리
     events.publish(OrderPlaced(order.id, order.customerId, order.totalAmount()))
-    // 알림 발송, 적립금 예약, 추천 로그, 정산 예정 등록 → 전부 구독자가 처리
     return order.id
 }
 ```
 
 이벤트 유실 방지는 Outbox 패턴으로 ([06-outbox-pattern-guide.md](06-outbox-pattern-guide.md)).
 
-**4단계 — DB 분리 (가장 어려움)**
+**4단계 — DB 분리** (가장 어렵다. 3.2에서 별도로 다룬다)
 
-**5단계 — 프로세스 분리**
-
-```kotlin
-// 2단계에서 만든 인터페이스의 구현체만 교체
-@Component
-@Profile("distributed")
-class HttpInventoryAdapter(
-    private val client: RestClient,
-) : InventoryPort {
-    override fun deduct(sku: Sku, quantity: Int): DeductResult =
-        client.post().uri("/internal/inventory/deduct")
-            .body(DeductRequest(sku.value, quantity))
-            .retrieve()
-            .body(DeductResponse::class.java)
-            ?.toDeductResult()
-            ?: throw InventoryUnavailableException()
-}
-```
-
-프로필로 전환하면 **같은 코드베이스에서 모놀리스 모드와 분산 모드를 둘 다 돌릴 수 있다.** 로컬 개발은 모놀리스 모드, 운영은 분산 모드로 가는 팀도 있다.
+**5단계 — 프로세스 분리** — 2단계에서 만든 포트의 구현체만 `@Profile("distributed")` HTTP 어댑터로 교체한다 (코드는 4.2 Step B). 프로필로 전환하면 **같은 코드베이스에서 모놀리스 모드와 분산 모드를 둘 다 돌릴 수 있다.** 로컬 개발은 모놀리스 모드, 운영은 분산 모드로 가는 팀도 있다.
 
 ### 3.2 DB 분리가 가장 어려운 이유
 
@@ -269,13 +235,8 @@ DB가 보장해주던 것을 애플리케이션이 해야 한다. 회원이 탈�
 **DB 분리 실무 순서**
 
 ```mermaid
-flowchart TB
-    D1["1. 같은 DB, 스키마만 분리<br/>order_schema / inventory_schema"]
-    D2["2. 크로스 스키마 조인 금지<br/>계정 권한으로 물리적 차단"]
-    D3["3. FK 제약 제거<br/>애플리케이션 검증으로 대체"]
-    D4["4. 읽기 복제/이벤트로<br/>필요 데이터 동기화"]
-    D5["5. 물리 DB 분리"]
-    D1 --> D2 --> D3 --> D4 --> D5
+flowchart LR
+    D1["1. 같은 DB,<br/>스키마만 분리"] --> D2["2. 크로스 스키마 조인 금지<br/>계정 권한으로 차단"] --> D3["3. FK 제약 제거<br/>앱 검증으로 대체"] --> D4["4. 이벤트로<br/>데이터 동기화"] --> D5["5. 물리 DB<br/>분리"]
 ```
 
 **2단계가 결정적이다.** DB 계정 권한을 스키마별로 나눠서 크로스 조인을 물리적으로 불가능하게 만든다. 이것만 해도 실제 분리 시 발견되는 문제의 대부분이 미리 드러난다. 그리고 이건 되돌리기 쉽다.
@@ -293,20 +254,17 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA order_schema TO ord
 레거시를 한 번에 걷어내는 대신, 새 기능을 새 서비스로 만들고 트래픽을 점진적으로 옮긴다.
 
 ```mermaid
-flowchart TB
-    subgraph P1["Phase 1"]
-        C1[Client] --> F1[Facade/Gateway]
-        F1 --> L1[레거시 모놀리스]
+flowchart LR
+    subgraph P1["Phase 1 — Facade 삽입"]
+        F1[Gateway] --> L1[레거시 모놀리스]
     end
-    subgraph P2["Phase 2"]
-        C2[Client] --> F2[Facade/Gateway]
-        F2 -->|"주문 조회 10%"| N2[신규 주문 서비스]
-        F2 -->|"나머지"| L2[레거시]
+    subgraph P2["Phase 2 — 카나리"]
+        F2[Gateway] -->|"주문 조회 10%"| N2[신규 주문 서비스]
+        F2 -->|"90%"| L2[레거시]
         N2 -.->|"데이터 동기화"| L2
     end
-    subgraph P3["Phase 3"]
-        C3[Client] --> F3[Facade/Gateway]
-        F3 -->|"주문 100%"| N3[신규 주문 서비스]
+    subgraph P3["Phase 3 — 전환 완료"]
+        F3[Gateway] -->|"주문 100%"| N3[신규 주문 서비스]
         F3 -->|"축소된 범위"| L3[레거시]
     end
 ```
@@ -341,26 +299,14 @@ spring:
 
 MSA에서 모놀리스로 되돌린 공개 사례들은 "MSA가 나쁘다"가 아니라 **"이 워크로드에는 안 맞았다"**를 보여준다.
 
-**Amazon Prime Video 오디오/비디오 모니터링 (2023)**
+**Amazon Prime Video 오디오/비디오 모니터링 (2023)** — Step Functions + Lambda로 프레임 단위 분산 처리를 하던 것을 하나의 ECS 프로세스로 통합해 인프라 비용을 **약 90% 절감**했다. 비용의 대부분이 상태 전이와 S3를 경유한 프레임 전달이었기 때문이다.
+→ **데이터를 많이 주고받는 워크로드는 프로세스 경계를 넘을 때마다 비싸다.** 분리 기준에 "데이터 이동량"을 반드시 포함하라.
 
-- 원래: Step Functions + Lambda로 프레임 단위 분산 처리
-- 문제: 상태 전이 비용, S3를 경유한 프레임 전달 비용이 처리 비용의 대부분
-- 변경: 하나의 ECS 프로세스 안으로 통합 (모놀리식 컴포넌트)
-- 결과: 인프라 비용 **약 90% 절감**
-- 교훈: **데이터를 많이 주고받는 워크로드는 프로세스 경계를 넘을 때마다 비싸다.** 분리 기준이 "데이터 이동량"을 반드시 포함해야 한다.
+**Segment (2018)** — 목적지(destination)별 마이크로서비스 140여 개를 하나의 모놀리식 서비스로 되돌렸다. 서비스마다 큐·재시도·라이브러리 버전을 개별 관리해야 했고, 공유 라이브러리 업데이트 한 번에 140개를 배포해야 했다.
+→ **서비스 수 × 운영 상수 비용은 곱셈이다.** 팀이 감당할 수 있는 서비스 수에 상한이 있다.
 
-**Segment (2018)**
-
-- 원래: 목적지(destination)별로 마이크로서비스 140여 개
-- 문제: 서비스마다 큐·재시도·라이브러리 버전을 개별 관리 → 운영 부담이 선형 증가. 공유 라이브러리 업데이트 한 번에 140개 배포
-- 변경: 하나의 모놀리식 서비스로 통합
-- 교훈: **서비스 수 × 운영 비용**이 곱셈이라는 사실. 서비스가 늘어날수록 팀이 감당해야 할 상수 비용이 서비스 수만큼 늘어난다.
-
-**Istio (2020)**
-
-- 원래: 컨트롤 플레인이 Pilot/Mixer/Citadel/Galley 등 여러 컴포넌트
-- 변경: `istiod` 단일 바이너리로 통합
-- 교훈: **운영자(사용자)의 복잡도도 설계 요소다.** 내부 모듈성은 유지하면서 배포 단위만 합칠 수 있다.
+**Istio (2020)** — 컨트롤 플레인의 Pilot/Mixer/Citadel/Galley를 `istiod` 단일 바이너리로 통합했다.
+→ **운영자의 복잡도도 설계 요소다.** 내부 모듈성은 유지하면서 배포 단위만 합칠 수 있다.
 
 **세 사례의 공통 결론**: 논리적 모듈성과 물리적 분리는 별개의 결정이다. 모듈성은 항상 좋고, 물리적 분리는 값을 치른다.
 
@@ -391,8 +337,9 @@ echo "동시 변경률: $((both * 100 / total_order))%"
 
 **(2) 호출 빈도와 데이터 이동량**
 
+분리 전에 인메모리 호출을 계측해둔다. 네트워크로 바뀌면 이 숫자가 그대로 지연시간이 된다.
+
 ```kotlin
-// 분리 전에 인메모리 호출을 계측해둔다
 @Aspect
 @Component
 class ModuleCallMetrics(private val registry: MeterRegistry) {
@@ -410,13 +357,11 @@ class ModuleCallMetrics(private val registry: MeterRegistry) {
 }
 ```
 
-이 지표로 판단한다.
-
-- **호출 횟수가 요청당 10회 이상** → 네트워크로 바뀌면 지연시간이 치명적. 분리 부적합
+- **요청당 호출 10회 이상** → 지연시간이 치명적. 분리 부적합
 - **한 번에 오가는 데이터가 MB 단위** → Prime Video 케이스. 분리 부적합
 - **호출 1~2회, 페이로드 KB 단위** → 분리 가능
 
-**(3) 트랜잭션 결합 확인**
+**(3) 트랜잭션 결합 확인** — 이 ArchUnit 규칙이 통과하는 모듈만 분리 대상이 될 수 있다.
 
 ```kotlin
 @ArchTest
@@ -433,18 +378,15 @@ val 트랜잭션이_모듈을_넘지_않는다: ArchRule =
         .because("트랜잭션이 모듈 경계를 넘으면 분리 불가능한 상태다")
 ```
 
-이 테스트가 통과하는 모듈만 분리 대상이 될 수 있다.
-
 ### 4.2 단계적 전환 코드 예시
 
 **Step A — 모듈러 모놀리스 (현재)**
 
 ```kotlin
-// order/application/PlaceOrderService.kt
 @Service
 class PlaceOrderService(
     private val orders: OrderRepository,
-    private val inventory: InventoryPort,      // 이미 인터페이스
+    private val inventory: InventoryPort,      // 이미 포트 인터페이스
     private val events: DomainEventPublisher,
 ) {
     @Transactional
@@ -459,13 +401,14 @@ class PlaceOrderService(
 }
 ```
 
-**Step B — 어댑터 이중화 (전환 준비)**
+**Step B — 어댑터 이중화 + 원격 실패 대응**
+
+인메모리에는 없던 실패 모드(타임아웃, 부분 실패, 중복 요청)가 생긴다. 이걸 감당할 준비가 됐는지가 분리 가능 여부의 실질적 판단 기준이다.
 
 ```kotlin
-// 프로필로 구현체를 고른다. 코드 변경 없이 모드 전환
 @Configuration
 class InventoryAdapterConfig {
-
+    // 설정 한 줄로 모놀리스 모드 ↔ 분산 모드 전환. 로컬은 inmemory, 운영은 remote
     @Bean
     @ConditionalOnProperty("shop.inventory.mode", havingValue = "inmemory", matchIfMissing = true)
     fun inMemoryAdapter(service: InventoryService): InventoryPort = InMemoryInventoryAdapter(service)
@@ -475,38 +418,28 @@ class InventoryAdapterConfig {
     fun remoteAdapter(builder: RestClient.Builder): InventoryPort =
         HttpInventoryAdapter(builder.baseUrl("http://inventory-service").build())
 }
-```
 
-**Step C — 원격 호출 + 실패 처리**
-
-인메모리에서는 없던 실패 모드가 생긴다. 이걸 감당할 준비가 됐는지가 분리 가능 여부의 실질적 판단 기준이다.
-
-```kotlin
 @Component
 class HttpInventoryAdapter(private val client: RestClient) : InventoryPort {
 
     @CircuitBreaker(name = "inventory", fallbackMethod = "reserveFallback")
     @Retry(name = "inventory")
-    override fun reserve(items: List<OrderItem>): Reservation {
-        return client.post().uri("/internal/reservations")
+    override fun reserve(items: List<OrderItem>): Reservation =
+        client.post().uri("/internal/reservations")
             .header("Idempotency-Key", items.idempotencyKey())   // 재시도 대비 멱등성
             .body(ReserveRequest.from(items))
-            .retrieve()
-            .body(ReserveResponse::class.java)
-            ?.toReservation()
+            .retrieve().body(ReserveResponse::class.java)?.toReservation()
             ?: throw InventoryUnavailableException()
-    }
 
-    private fun reserveFallback(items: List<OrderItem>, e: Exception): Reservation {
-        // 폴백 정책을 도메인이 결정해야 한다 — 주문을 막을 것인가, 보류 처리할 것인가
+    // 폴백 정책은 도메인이 결정한다 — 주문을 막을 것인가, 보류 처리할 것인가
+    private fun reserveFallback(items: List<OrderItem>, e: Exception): Reservation =
         throw InventoryUnavailableException("재고 확인 불가, 잠시 후 다시 시도해주세요", e)
-    }
 }
 ```
 
 서킷 브레이커는 [07-circuit-breaker-implementation.md](07-circuit-breaker-implementation.md), 관측은 [08-distributed-tracing-basics.md](08-distributed-tracing-basics.md).
 
-**Step D — 트랜잭션 붕괴 대응**
+**Step C — 트랜잭션 붕괴 대응**
 
 `@Transactional` 안에서 원격 호출이 성공했는데 그 뒤 커밋이 실패하면? 재고는 예약됐는데 주문은 없다.
 
@@ -545,19 +478,16 @@ class PlaceOrderSaga(
 **분리 전 필수 (없으면 분리 금지)**
 
 - [ ] 각 서비스에 **명확한 소유 팀**이 있는가 (공동 소유 = 무소유)
-- [ ] 소유 팀이 **자기 서비스를 스스로 배포**할 수 있는가
-- [ ] 중앙 로그 수집이 되어 있는가
-- [ ] 분산 트레이싱(트레이스 ID 전파)이 되어 있는가
-- [ ] 서비스별 대시보드와 알람이 있는가
-- [ ] 온콜 로테이션과 장애 대응 프로세스가 있는가
-- [ ] CI/CD가 자동화되어 있는가 (수동 배포 + 서비스 10개 = 재앙)
+- [ ] 소유 팀이 **자기 서비스를 스스로 배포**할 수 있는가 (CI/CD 자동화)
+- [ ] 중앙 로그 수집 + 분산 트레이싱(트레이스 ID 전파)이 되어 있는가
+- [ ] 서비스별 대시보드·알람과 온콜 로테이션이 있는가
 
 **분리 후 6개월 내 필요**
 
 - [ ] API 계약 관리 방식 (OpenAPI + CDC 테스트)
-- [ ] 로컬 개발 환경 (서비스 전체 기동 없이 개발 가능한가)
+- [ ] 서비스 전체 기동 없이 개발 가능한 로컬 환경
 - [ ] 서비스 카탈로그 (누가 무엇을 소유하고 누구에게 문의하는가)
-- [ ] 데이터 일관성 문제 발생 시 복구 절차 (보상 실패는 반드시 일어난다)
+- [ ] 데이터 일관성 깨짐 복구 절차 (보상 실패는 반드시 일어난다)
 
 **팀 규모별 권장**
 

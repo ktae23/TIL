@@ -18,20 +18,10 @@ TDE·컬럼·애플리케이션 암호화가 각각 방어하는 위협을 구�
 "DB를 암호화했다"는 말은 세 가지 완전히 다른 것을 의미할 수 있습니다.
 
 ```mermaid
-flowchart TB
-    subgraph L3["애플리케이션 레벨 암호화"]
-        A["앱에서 암호화 → DB는 암호문만 봄"]
-    end
-    subgraph L2["컬럼(DB 엔진) 암호화"]
-        B["DB 함수로 암호화 (AES_ENCRYPT 등)"]
-    end
-    subgraph L1["디스크 암호화 (TDE / EBS)"]
-        C["파일/블록 단위 암호화"]
-    end
-
-    T1["위협: 디스크·백업 파일 탈취"] --> L1
-    T2["위협: DBA·SELECT 권한 계정의 조회"] --> L2
-    T3["위협: DB 계정 탈취 · SQL Injection · 덤프 유출"] --> L3
+flowchart LR
+    T1["위협: 디스크·백업 파일 탈취"] --> L1["디스크 암호화 (TDE / EBS)<br/>파일·블록 단위"]
+    T2["위협: DBA·SELECT 권한 계정 조회"] --> L2["컬럼 암호화 (DB 엔진)<br/>AES_ENCRYPT 등"]
+    T3["위협: DB 계정 탈취 · SQL Injection · 덤프"] --> L3["애플리케이션 레벨 암호화<br/>DB는 암호문만 본다"]
 ```
 
 | 계층 | 암호화 주체 | 막는 위협 | 못 막는 위협 |
@@ -416,8 +406,8 @@ security/advanced/04-tls-and-transport-security.md
 
 - [01-key-management-envelope-encryption.md](01-key-management-envelope-encryption.md) — 이 문서가 사용하는 DEK/KEK 구조
 - [../main/03-block-cipher-modes.md](../main/03-block-cipher-modes.md) — 결정적/확률적 암호화의 근거인 IV와 모드
-- [AEAD와 인증 암호화](../main/06-aead-authenticated-encryption.md) — blind index의 HMAC
-- [해시 함수와 비밀번호 저장](../main/07-hashing-and-password-storage.md) — 비밀번호는 암호화가 아닌 해시
+- [../main/06-aead-authenticated-encryption.md](../main/06-aead-authenticated-encryption.md) — 암호문 변조 탐지
+- [../main/07-hashing-and-password-storage.md](../main/07-hashing-and-password-storage.md) — blind index의 HMAC, 비밀번호는 해시
 - [03-spring-boot-encryption-practice.md](03-spring-boot-encryption-practice.md) — 로그 마스킹과 직렬화 차단
 
 ---

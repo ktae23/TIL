@@ -91,17 +91,13 @@ fun place(command: PlaceOrderCommand): OrderId   // ✓
 data class PlaceOrderRequest(
     @field:NotNull val customerId: Long,
     val items: List<ItemRequest>,
-    val couponCode: String?,          // 이 필드가 추가/삭제되어도
+    val couponCode: String?,                   // 이 필드가 추가/삭제되어도
 ) {
     fun toCommand() = PlaceOrderCommand(...)   // 변환 책임은 바깥 원이 진다
 }
 
 // use case (2번 원) — 유스케이스 언어. API가 바뀌어도 안 바뀜
-data class PlaceOrderCommand(
-    val customerId: CustomerId,
-    val items: List<Item>,
-    val coupon: CouponCode?,
-)
+data class PlaceOrderCommand(val customerId: CustomerId, val items: List<Item>, val coupon: CouponCode?)
 ```
 
 **③ 변환 책임은 바깥 원이 진다**
@@ -197,13 +193,9 @@ graph RL
 
 ```kotlin
 // 2번 원 — 유스케이스가 출력 포트를 정의
-interface PlaceOrderOutputPort {
-    fun present(result: PlaceOrderResult)
-}
+interface PlaceOrderOutputPort { fun present(result: PlaceOrderResult) }
 
-class PlaceOrderService(
-    private val output: PlaceOrderOutputPort,
-) : PlaceOrderUseCase {
+class PlaceOrderService(private val output: PlaceOrderOutputPort) : PlaceOrderUseCase {
     override fun place(command: PlaceOrderCommand) {
         // ...
         output.present(PlaceOrderResult(orderId, totalAmount))   // 반환값 없음
@@ -233,11 +225,9 @@ class PlaceOrderPresenter : PlaceOrderOutputPort {
 
 같은 로직을 두 방식으로 놓고 비교합니다.
 
-**A. 서비스 클래스 스타일 (관련 유스케이스를 한 클래스에)**
-
 ```kotlin
-@Service
-@Transactional
+// A. 서비스 클래스 스타일 — 관련 유스케이스를 한 클래스에
+@Service @Transactional
 class OrderService(
     private val orders: OrderRepository,
     private val payment: PaymentGateway,
@@ -248,23 +238,16 @@ class OrderService(
     fun complete(command: CompleteOrderCommand) { ... }
     fun refund(command: RefundOrderCommand) { ... }
 }
-```
 
-**B. Use Case 클래스 스타일 (유스케이스 하나 = 클래스 하나)**
-
-```kotlin
-@Service
-@Transactional
+// B. Use Case 클래스 스타일 — 유스케이스 하나 = 클래스 하나
+@Service @Transactional
 class PlaceOrderService(
-    private val orders: SaveOrderPort,
-    private val payment: PaymentGateway,
-    private val events: OrderEventPublisher,
+    private val orders: SaveOrderPort, private val payment: PaymentGateway,
 ) : PlaceOrderUseCase {
     override fun place(command: PlaceOrderCommand): OrderId { ... }
 }
 
-@Service
-@Transactional
+@Service @Transactional
 class CancelOrderService(
     private val orders: LoadOrderPort,
     private val saveOrders: SaveOrderPort,
@@ -304,31 +287,16 @@ class PlaceOrderService(...) : PlaceOrderUseCase { ... }
 
 application 모듈이 `spring-tx`에 의존하게 됩니다. 순수하지 않지만 **`spring-tx`는 변경 빈도가 극히 낮고 API가 안정적**이므로 실질적 위험이 없습니다. 대부분의 팀이 이 선택을 합니다.
 
-**② 어댑터에서 트랜잭션을 연다**
-
-```kotlin
-// adapter-in-web
-@RestController
-class OrderController(private val placeOrder: PlaceOrderUseCase) {
-    @PostMapping @Transactional
-    fun place(...) = placeOrder.place(...)
-}
-```
-
-application은 순수해지지만, 트랜잭션 경계가 진입점마다 흩어지고 배치에서 빠뜨리면 조용히 깨집니다. **권장하지 않습니다.**
+**② 어댑터에서 트랜잭션을 연다.** 컨트롤러에 `@Transactional`을 붙이면 application은 순수해지지만, 트랜잭션 경계가 진입점마다 흩어지고 배치에서 빠뜨리면 조용히 깨집니다. **권장하지 않습니다.**
 
 **③ 트랜잭션 포트를 만든다**
 
 ```kotlin
 // application (2번 원)
-interface TransactionRunner {
-    fun <T> inTransaction(block: () -> T): T
-}
+interface TransactionRunner { fun <T> inTransaction(block: () -> T): T }
 
 class PlaceOrderService(private val tx: TransactionRunner, ...) : PlaceOrderUseCase {
-    override fun place(command: PlaceOrderCommand): OrderId = tx.inTransaction {
-        // ...
-    }
+    override fun place(command: PlaceOrderCommand): OrderId = tx.inTransaction { /* ... */ }
 }
 
 // adapter-out (3번 원)
@@ -338,7 +306,7 @@ class SpringTransactionRunner(private val template: TransactionTemplate) : Trans
 }
 ```
 
-가장 순수하고, 실제로 트랜잭션 경계가 코드로 명시적으로 보인다는 부가 이득도 있습니다. 비용은 람다 중첩과 팀 내 학습입니다. 트랜잭션 경계가 세밀하게 필요한 경우(부분 커밋, 여러 트랜잭션 분할)에는 오히려 ①보다 낫습니다.
+가장 순수하고, 트랜잭션 경계가 코드로 명시적으로 보인다는 부가 이득도 있습니다. 비용은 람다 중첩과 팀 내 학습입니다. 경계가 세밀하게 필요한 경우(부분 커밋, 여러 트랜잭션 분할)에는 오히려 ①보다 낫습니다.
 
 **결론: ①로 시작하고, 트랜잭션 제어가 복잡해지면 ③으로 옮기십시오.**
 
@@ -359,8 +327,6 @@ class UseCaseConfig {
     @Bean fun placeOrderUseCase(
         save: SaveOrderPort, payment: PaymentGateway, events: OrderEventPublisher,
     ): PlaceOrderUseCase = PlaceOrderService(save, payment, events)
-
-    @Bean fun cancelOrderUseCase(...): CancelOrderUseCase = CancelOrderService(...)
 }
 ```
 
@@ -428,30 +394,22 @@ graph LR
 package com.shop.order.domain
 
 data class Order(
-    val id: OrderId,
-    val customerId: CustomerId,
-    val lines: List<OrderLine>,
-    val status: OrderStatus,
-    val discount: Money,
+    val id: OrderId, val customerId: CustomerId, val lines: List<OrderLine>,
+    val status: OrderStatus, val discount: Money,
 ) {
     val totalAmount: Money get() = lines.fold(Money.ZERO) { a, l -> a + l.subtotal }
     val payableAmount: Money get() = totalAmount - discount
 
     fun cancel(): Order {
-        check(status in setOf(OrderStatus.CREATED, OrderStatus.PAID)) {
-            "취소할 수 없는 상태입니다: $status"
-        }
+        check(status in setOf(OrderStatus.CREATED, OrderStatus.PAID)) { "취소할 수 없는 상태입니다: $status" }
         return copy(status = OrderStatus.CANCELED)
     }
 }
-```
 
-```kotlin
 // ── 2번 원: Use Cases ────────────────────────────
 package com.shop.order.application
 
-// 입력 경계
-interface CancelOrderUseCase { fun cancel(command: CancelOrderCommand): CancelOrderResult }
+interface CancelOrderUseCase { fun cancel(command: CancelOrderCommand): CancelOrderResult }   // 입력 경계
 data class CancelOrderCommand(val orderId: OrderId, val reason: String)
 data class CancelOrderResult(val orderId: OrderId, val refunded: Money)
 
@@ -467,13 +425,9 @@ class CancelOrderService(
     private val saveOrder: SaveOrderPort,
     private val refundGateway: RefundGateway,
 ) : CancelOrderUseCase {
-
     override fun cancel(command: CancelOrderCommand): CancelOrderResult {
-        val order = loadOrder.findById(command.orderId)
-            ?: throw OrderNotFoundException(command.orderId)
-
-        val canceled = order.cancel()                       // 규칙은 1번 원에서 검증
-        saveOrder.save(canceled)
+        val order = loadOrder.findById(command.orderId) ?: throw OrderNotFoundException(command.orderId)
+        val canceled = saveOrder.save(order.cancel())       // 규칙은 1번 원에서 검증
 
         val refunded = if (order.status == OrderStatus.PAID) {
             when (val r = refundGateway.refund(order.id, order.payableAmount)) {
@@ -485,14 +439,11 @@ class CancelOrderService(
         return CancelOrderResult(canceled.id, refunded)
     }
 }
-```
 
-```kotlin
 // ── 3번 원: Interface Adapters ───────────────────
 @RestController
 @RequestMapping("/api/orders")
 class OrderController(private val cancelOrder: CancelOrderUseCase) {
-
     @PostMapping("/{id}/cancel")
     fun cancel(@PathVariable id: Long, @RequestBody req: CancelRequest): CancelResponse {
         val result = cancelOrder.cancel(CancelOrderCommand(OrderId(id), req.reason))

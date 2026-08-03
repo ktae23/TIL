@@ -97,7 +97,7 @@ object CryptoUtil {
 }
 ```
 
-문제점이 세 가지 겹칩니다. (1) 키가 Git 히스토리에 영구 기록됨, (2) 저장소 접근 권한이 곧 복호화 권한, (3) 고정 IV로 GCM을 쓰면 nonce 재사용으로 **키 자체가 복구 가능**해집니다([../main/03-block-cipher-modes.md](../main/03-block-cipher-modes.md) 참고).
+문제점이 세 가지 겹칩니다. (1) 키가 Git 히스토리에 영구 기록됨, (2) 저장소 접근 권한이 곧 복호화 권한, (3) 고정 IV로 GCM을 쓰면 nonce 재사용으로 **키 자체가 복구 가능**해집니다([../main/04-iv-and-nonce.md](../main/04-iv-and-nonce.md) 참고).
 
 **유형 2 — Git 커밋 후 삭제**
 
@@ -411,7 +411,8 @@ security/advanced/04-tls-and-transport-security.md
 ```
 
 - [../main/01-encryption-fundamentals.md](../main/01-encryption-fundamentals.md) — 대칭/비대칭 암호화 기초
-- [../main/03-block-cipher-modes.md](../main/03-block-cipher-modes.md) — GCM 모드와 IV 재사용 위험
+- [../main/04-iv-and-nonce.md](../main/04-iv-and-nonce.md) — IV/nonce 재사용 위험
+- [../main/06-aead-authenticated-encryption.md](../main/06-aead-authenticated-encryption.md) — AAD로 키 버전을 묶는 근거
 - [02-database-field-encryption.md](02-database-field-encryption.md) — 이 문서의 DEK를 DB 필드에 적용
 - [03-spring-boot-encryption-practice.md](03-spring-boot-encryption-practice.md) — 시크릿 주입과 Spring 통합
 - [../01-backend-security-fundamentals.md](../01-backend-security-fundamentals.md) — 보안 전반

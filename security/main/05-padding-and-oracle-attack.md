@@ -240,28 +240,22 @@ Lucky Thirteen이 증명했듯 **타이밍**이 가장 잡기 어렵습니다.
 ### 4.1 안티패턴: 오라클을 만드는 코드
 
 ```java
-@RestController
-public class TokenController {
+@PostMapping("/api/redeem")
+public ResponseEntity<String> redeem(@RequestBody String encryptedToken) {
+    try {
+        String plain = aesCbcDecrypt(encryptedToken);
+        Token token = objectMapper.readValue(plain, Token.class);
+        return ResponseEntity.ok(process(token));
 
-    @PostMapping("/api/redeem")
-    public ResponseEntity<String> redeem(@RequestBody String encryptedToken) {
-        try {
-            String plain = aesCbcDecrypt(encryptedToken);
-            Token token = objectMapper.readValue(plain, Token.class);
-            return ResponseEntity.ok(process(token));
-
-        } catch (BadPaddingException e) {
-            // 안티패턴 1: 패딩 오류를 별도 응답으로 노출
-            return ResponseEntity.status(400).body("INVALID_PADDING");
-
-        } catch (JsonProcessingException e) {
-            // 안티패턴 2: 복호화는 성공했다는 사실이 드러남
-            return ResponseEntity.status(422).body("MALFORMED_TOKEN");
-
-        } catch (Exception e) {
-            // 안티패턴 3: 스택트레이스 노출
-            return ResponseEntity.status(500).body(e.toString());
-        }
+    } catch (BadPaddingException e) {
+        // 안티패턴 1: 패딩 오류를 별도 응답으로 노출
+        return ResponseEntity.status(400).body("INVALID_PADDING");
+    } catch (JsonProcessingException e) {
+        // 안티패턴 2: 복호화는 성공했다는 사실이 드러남
+        return ResponseEntity.status(422).body("MALFORMED_TOKEN");
+    } catch (Exception e) {
+        // 안티패턴 3: 스택트레이스 노출
+        return ResponseEntity.status(500).body(e.toString());
     }
 }
 ```
@@ -333,32 +327,25 @@ public class EncryptThenMacCipher {
 ### 4.3 정답: AEAD로 전환
 
 ```kotlin
-@Component
-class GcmCipher(private val key: SecretKey) {
+private const val TRANSFORMATION = "AES/GCM/NoPadding"  // 패딩 자체가 없다
+private const val IV_LENGTH = 12
+private const val TAG_BITS = 128
 
-    companion object {
-        private const val TRANSFORMATION = "AES/GCM/NoPadding"  // 패딩 자체가 없다
-        private const val IV_LENGTH = 12
-        private const val TAG_BITS = 128
+fun encrypt(key: SecretKey, plain: ByteArray): ByteArray {
+    val iv = ByteArray(IV_LENGTH).also { SecureRandom().nextBytes(it) }
+    val cipher = Cipher.getInstance(TRANSFORMATION).apply {
+        init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_BITS, iv))
     }
+    return iv + cipher.doFinal(plain)
+}
 
-    fun encrypt(plain: ByteArray): ByteArray {
-        val iv = ByteArray(IV_LENGTH).also { SecureRandom().nextBytes(it) }
-        val cipher = Cipher.getInstance(TRANSFORMATION).apply {
-            init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(TAG_BITS, iv))
-        }
-        return iv + cipher.doFinal(plain)
+fun decrypt(key: SecretKey, input: ByteArray): ByteArray {
+    val iv = input.copyOfRange(0, IV_LENGTH)
+    val cipher = Cipher.getInstance(TRANSFORMATION).apply {
+        init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_BITS, iv))
     }
-
-    fun decrypt(input: ByteArray): ByteArray {
-        val iv = input.copyOfRange(0, IV_LENGTH)
-        val ct = input.copyOfRange(IV_LENGTH, input.size)
-        val cipher = Cipher.getInstance(TRANSFORMATION).apply {
-            init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(TAG_BITS, iv))
-        }
-        // 태그 검증 실패 시 AEADBadTagException — 평문은 절대 반환되지 않는다
-        return cipher.doFinal(ct)
-    }
+    // 태그 검증 실패 시 AEADBadTagException — 평문은 절대 반환되지 않는다
+    return cipher.doFinal(input.copyOfRange(IV_LENGTH, input.size))
 }
 ```
 
@@ -372,21 +359,13 @@ GCM은 패딩이 없으므로 패딩 오라클이라는 개념 자체가 성립�
 @RestControllerAdvice
 public class CryptoExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(CryptoExceptionHandler.class);
-
     // BadPaddingException, AEADBadTagException, IllegalBlockSizeException,
     // JSON 파싱 실패까지 전부 같은 응답으로 수렴시킨다
-    @ExceptionHandler({
-        GeneralSecurityException.class,
-        SecurityException.class,
-        JsonProcessingException.class
-    })
+    @ExceptionHandler({GeneralSecurityException.class, SecurityException.class,
+                       JsonProcessingException.class})
     public ResponseEntity<ErrorResponse> handle(Exception e) {
-        // 상세 원인은 내부 로그에만 (외부 응답에는 절대 포함하지 않음)
-        log.warn("payload decryption failed", e);
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        log.warn("payload decryption failed", e);   // 상세 원인은 내부 로그에만
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("INVALID_REQUEST", "요청을 처리할 수 없습니다"));
     }
 }

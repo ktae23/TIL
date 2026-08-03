@@ -18,18 +18,11 @@ Spring Security Crypto 모듈, Jasypt 설정값 암호화, 시크릿 주입 방�
 Spring Boot 애플리케이션에서 "암호화"는 최소 네 군데에서 등장하며, 각각 다른 도구를 씁니다.
 
 ```mermaid
-flowchart TB
-    subgraph Boot["Spring Boot 애플리케이션"]
-        D["① 데이터 암호화<br/>spring-security-crypto<br/>TextEncryptor / BytesEncryptor"]
-        C["② 설정값 암호화<br/>Jasypt / Config Server {cipher}"]
-        S["③ 시크릿 주입<br/>ENV / Secrets Manager / Vault"]
-        L["④ 유출 차단<br/>로그 마스킹 / @JsonIgnore / toString"]
-    end
-
-    S -->|마스터 키 공급| C
-    S -->|KEK/키 공급| D
+flowchart LR
+    S["③ 시크릿 주입<br/>ENV / Secrets Manager / Vault"] -->|마스터 키| C["② 설정값 암호화<br/>Jasypt / Config Server {cipher}"]
+    S -->|KEK/데이터 키| D["① 데이터 암호화<br/>spring-security-crypto"]
+    C --> L["④ 유출 차단<br/>로그 마스킹 / @JsonIgnore / toString"]
     D --> L
-    C --> L
 ```
 
 혼동하기 쉬운 지점: **② 설정값 암호화는 ③ 시크릿 주입 문제를 해결하지 못합니다.** Jasypt로 DB 비밀번호를 `ENC(...)` 로 감싸도, 그것을 푸는 마스터 키를 어딘가에서 주입해야 하므로 문제가 한 겹 이동할 뿐입니다. 이 사실을 인지하고 쓰는 것과 모르고 쓰는 것은 큰 차이입니다.
@@ -81,8 +74,7 @@ stronger() → AES/GCM/NoPadding     (AEAD, 인증 태그 포함)
 
 12-factor App은 설정을 환경변수에 두라고 권고하지만, 이는 **시크릿 관리 도구가 보편화되기 전**의 지침입니다. 환경변수의 한계:
 
-- **프로세스 전체에 상속**됩니다. 서브프로세스, 크래시 리포터, APM 에이전트가 전부 읽습니다.
-- **`/proc/<pid>/environ`** 으로 같은 호스트의 다른 프로세스가 읽을 수 있습니다.
+- **프로세스 전체에 상속**됩니다. 서브프로세스·크래시 리포터·APM 에이전트가 전부 읽고, `/proc/<pid>/environ` 으로 같은 호스트의 다른 프로세스도 읽습니다.
 - **회전이 불가능**합니다. 값을 바꾸려면 프로세스를 재시작해야 합니다.
 - Kubernetes `Secret` 은 기본이 **base64 인코딩일 뿐 암호화가 아닙니다**(etcd 암호화 별도 설정 필요).
 
@@ -103,15 +95,12 @@ application.yml  →  EncryptablePropertySource (프록시)
 ```
 
 ```yaml
-spring:
-  datasource:
-    password: ENC(G6N718UuyPE5bHyWKyuLQSm02auQPUtm)
-
+spring.datasource.password: ENC(G6N718UuyPE5bHyWKyuLQSm02auQPUtm)
 jasypt:
   encryptor:
     algorithm: PBEWITHHMACSHA512ANDAES_256   # 기본값(2.x+)
     iv-generator-classname: org.jasypt.iv.RandomIvGenerator
-    pool-size: 4                              # 스레드 안전성 확보
+    pool-size: 4                             # 스레드 안전성 확보
 ```
 
 **마스터 키 주입 방법 우선순위**: ① 명령행 인자(`--jasypt.encryptor.password=`)는 `ps` 로 노출되므로 **금지**, ② 환경변수 `JASYPT_ENCRYPTOR_PASSWORD` 는 최소 수준, ③ **커스텀 `StringEncryptor` 빈으로 KMS 연동**이 권장안입니다(4.2 예제).
@@ -142,7 +131,7 @@ Jasypt와의 차이:
 | 전송 구간 | 해당 없음 | **평문 전송** → mTLS 필수 |
 | 로테이션 | 전체 앱 재배포 | Config Server만 + 값 재암호화 |
 
-MSA에서 앱이 수십 개면 Config Server 방식이 키 배포 면에서 유리하지만, **Config Server가 단일 실패점이자 최고가치 공격 대상**이 됩니다. `/encrypt`, `/decrypt` 엔드포인트는 반드시 인증으로 막아야 합니다([../../MSA](../../MSA) 참고).
+MSA에서 앱이 수십 개면 Config Server 방식이 키 배포 면에서 유리하지만, **Config Server가 단일 실패점이자 최고가치 공격 대상**이 됩니다. `/encrypt`, `/decrypt` 엔드포인트는 반드시 인증으로 막고, 클라이언트-서버 구간은 [04번 문서](04-tls-and-transport-security.md)의 mTLS로 보호해야 합니다.
 
 ### 3.3 시크릿 관리 방식 비교
 
@@ -207,9 +196,7 @@ package com.example.security.crypto
 class AesGcmCryptoUtil(private val keyProvider: KeyProvider) {
 
     private companion object {
-        const val TRANSFORMATION = "AES/GCM/NoPadding"
-        const val IV_LENGTH = 12
-        const val TAG_BITS = 128
+        const val TRANSFORMATION = "AES/GCM/NoPadding"; const val IV_LENGTH = 12; const val TAG_BITS = 128
     }
 
     // SecureRandom은 스레드 안전. 인스턴스 하나를 공유해도 된다.
@@ -268,18 +255,17 @@ class JasyptConfig {
 }
 
 class KmsStringEncryptor(private val kms: KmsClient) : StringEncryptor {
-    override fun encrypt(message: String): String =
-        Base64.getEncoder().encodeToString(
-            kms.encrypt {
-                it.keyId("alias/app-config").plaintext(SdkBytes.fromUtf8String(message))
-            }.ciphertextBlob().asByteArray()
-        )
+    override fun encrypt(message: String): String = Base64.getEncoder().encodeToString(
+        kms.encrypt { it.keyId(KEY).plaintext(SdkBytes.fromUtf8String(message)) }
+            .ciphertextBlob().asByteArray()
+    )
 
-    override fun decrypt(encryptedMessage: String): String =
-        kms.decrypt {
-            it.ciphertextBlob(SdkBytes.fromByteArray(Base64.getDecoder().decode(encryptedMessage)))
-              .keyId("alias/app-config")
-        }.plaintext().asUtf8String()
+    override fun decrypt(encryptedMessage: String): String = kms.decrypt {
+        it.ciphertextBlob(SdkBytes.fromByteArray(Base64.getDecoder().decode(encryptedMessage)))
+          .keyId(KEY)
+    }.plaintext().asUtf8String()
+
+    private companion object { const val KEY = "alias/app-config" }
 }
 ```
 
@@ -432,7 +418,7 @@ security/advanced/04-tls-and-transport-security.md
 - [02-database-field-encryption.md](02-database-field-encryption.md) — 이 유틸리티를 JPA 컨버터에 적용
 - [04-tls-and-transport-security.md](04-tls-and-transport-security.md) — Config Server 통신 구간 보호(mTLS)
 - [../main/03-block-cipher-modes.md](../main/03-block-cipher-modes.md) — GCM vs CBC
-- [해시 함수와 비밀번호 저장](../main/07-hashing-and-password-storage.md) — `PasswordEncoder` 와의 구분
+- [../main/07-hashing-and-password-storage.md](../main/07-hashing-and-password-storage.md) — `PasswordEncoder` 와의 구분
 - [../02-jwt-jwk-oauth-comparison.md](../02-jwt-jwk-oauth-comparison.md) — 토큰 서명 키 관리
 
 ---

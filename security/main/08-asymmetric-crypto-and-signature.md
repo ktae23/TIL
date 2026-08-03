@@ -29,28 +29,21 @@ AES는 빠르고 안전하지만 근본 문제가 있습니다. **키를 어떻�
 
 ### 1.2 수학적 기반
 
-**RSA — 소인수분해의 어려움**
-
 ```
-n = p × q  (p, q는 큰 소수),  e = 65537,  d = e⁻¹ mod φ(n)
-공개키 = (n, e)   개인키 = (n, d)
+[RSA — 소인수분해의 어려움]
+  n = p × q (p, q는 큰 소수),  e = 65537,  d = e⁻¹ mod φ(n)
+  공개키 = (n, e)   개인키 = (n, d)
+  암호화: c = m^e mod n     복호화: m = c^d mod n
 
-암호화: c = m^e mod n        복호화: m = c^d mod n
+  n을 p, q로 분해할 수 있으면 d를 계산할 수 있다.
+  2048비트(약 617자리) n은 현존 컴퓨터로 분해 불가.
+  (공개 분해 최고 기록: RSA-250 = 829비트, 2020년)
 
-안전성: n을 p, q로 분해할 수 있으면 d를 계산할 수 있다.
-        2048비트(약 617자리) n은 현존 컴퓨터로 분해 불가.
-        (공개 분해 최고 기록: RSA-250 = 829비트, 2020년)
-```
-
-**ECC — 타원곡선 이산로그의 어려움**
-
-```
-곡선 y² = x³ + ax + b 위의 생성점 G와 정수 k에 대해  P = k·G
-
-  k, G → P  : 쉬움 (double-and-add)
-  P, G → k  : 매우 어려움 (ECDLP)
-
-개인키 = k,  공개키 = P = k·G
+[ECC — 타원곡선 이산로그의 어려움]
+  곡선 y² = x³ + ax + b 위의 생성점 G와 정수 k에 대해  P = k·G
+    k, G → P : 쉬움 (double-and-add)
+    P, G → k : 매우 어려움 (ECDLP)
+  개인키 = k,  공개키 = P = k·G
 ```
 
 RSA의 소인수분해에는 **준지수 시간** 알고리즘(GNFS)이 있지만, 타원곡선 이산로그에는 **완전 지수 시간** 알고리즘(Pollard ρ)뿐입니다. 이 차이가 곧 키 길이 차이입니다.
@@ -103,22 +96,16 @@ RSA의 소인수분해에는 **준지수 시간** 알고리즘(GNFS)이 있지�
 
 ### 2.1 RSA 패딩 취약점
 
-**Bleichenbacher 공격 (1998)** — 서버가 PKCS#1 v1.5 패딩 검증 결과를 알려주면(오라클), 약 100만 건의 요청으로 개인키 없이 암호문을 복호화할 수 있습니다. "백만 메시지 공격"입니다.
+**Bleichenbacher 공격(1998)** — 서버가 PKCS#1 v1.5 패딩 검증 결과를 알려주면(오라클), 약 100만 건의 요청으로 개인키 없이 암호문을 복호화할 수 있습니다. 이 공격은 죽지 않고 20년 뒤 **ROBOT(2017)** 으로 부활해 Facebook, PayPal, Cisco의 TLS 구현이 여전히 취약함이 드러났습니다. 원인은 [패딩 오라클 공격](./05-padding-and-oracle-attack.md)과 동일한 구조 — 에러 응답의 차이입니다.
 
-이 공격은 죽지 않았습니다. 20년 뒤 **ROBOT(2017)** 으로 부활해 Facebook, PayPal, Cisco의 TLS 구현이 여전히 취약함이 드러났습니다. 원인은 [패딩 오라클 공격](./05-padding-and-oracle-attack.md)과 동일한 구조 — 에러 응답의 차이입니다.
+서명 쪽도 마찬가지로, PKCS#1 v1.5 서명 검증이 허술하면(특히 지수 `e=3`) 개인키 없이 유효해 보이는 서명을 위조할 수 있습니다(Bleichenbacher'06, BERserk). Firefox의 NSS와 OpenSSL이 반복적으로 겪었습니다.
 
-서명 쪽도 마찬가지입니다. PKCS#1 v1.5 서명 검증 구현이 허술하면(특히 지수 `e=3`) 개인키 없이 유효해 보이는 서명을 위조할 수 있습니다(Bleichenbacher'06, BERserk). Firefox의 NSS와 OpenSSL이 반복적으로 겪었습니다.
+| 용도 | 레거시 (취약) | 권장 | Java 표기 |
+|------|--------------|------|----------|
+| 암호화 | PKCS#1 v1.5 | **OAEP** (랜덤성+MGF1) | `"RSA/ECB/OAEPWithSHA-256AndMGF1Padding"` |
+| 서명 | PKCS#1 v1.5 | **PSS** (salt로 확률적) | `Signature.getInstance("RSASSA-PSS")` |
 
-| 용도 | 레거시 (취약) | 권장 | 특징 |
-|------|--------------|------|------|
-| 암호화 | PKCS#1 v1.5 | **OAEP** | 랜덤성 주입 + MGF1, 안전성 증명 있음 |
-| 서명 | PKCS#1 v1.5 | **PSS** | salt로 확률적 서명, 안전성 증명 있음 |
-
-```
-Java 표기
-  암호화: "RSA/ECB/OAEPWithSHA-256AndMGF1Padding"  ← ECB는 표기상 잔재일 뿐
-  서명:   Signature.getInstance("RSASSA-PSS")
-```
+두 방식 모두 형식적 안전성 증명이 있습니다. 암호화 표기의 `ECB`는 블록 모드가 아니라 JCA의 표기상 잔재입니다.
 
 ### 2.2 alg=none 취약점 (JWT)
 
@@ -307,39 +294,32 @@ RSA 3072비트 키 생성은 소수 탐색 때문에 수백 ms~수 초가 걸립
 ### 4.2 서명과 검증 (PSS / ECDSA)
 
 ```java
-@Component
-public class DocumentSigner {
+// 알고리즘 문자열
+//   RSA + PKCS#1 v1.5 : "SHA256withRSA"   (레거시 호환용)
+//   RSA + PSS         : "RSASSA-PSS"      (권장)
+//   ECDSA             : "SHA256withECDSA"        EdDSA : "Ed25519"
 
-    // 알고리즘 문자열
-    //   RSA + PKCS#1 v1.5 : "SHA256withRSA"   (레거시 호환용)
-    //   RSA + PSS         : "RSASSA-PSS"      (권장)
-    //   ECDSA             : "SHA256withECDSA"
-    //   EdDSA             : "Ed25519"
+private static PSSParameterSpec pssSpec() {
+    return new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
+            32,   // salt 길이 — 해시 길이와 맞추는 것이 관례
+            1);
+}
 
-    private static PSSParameterSpec pssSpec() {
-        return new PSSParameterSpec(
-                "SHA-256",                  // 메시지 해시
-                "MGF1", MGF1ParameterSpec.SHA256,
-                32,                         // salt 길이 — 해시 길이와 맞추는 것이 관례
-                1);
-    }
+public byte[] sign(PrivateKey privateKey, byte[] data) throws GeneralSecurityException {
+    Signature signature = Signature.getInstance("RSASSA-PSS");
+    signature.setParameter(pssSpec());
+    signature.initSign(privateKey, SecureRandom.getInstanceStrong());
+    signature.update(data);
+    return signature.sign();
+}
 
-    public byte[] sign(PrivateKey privateKey, byte[] data) throws GeneralSecurityException {
-        Signature signature = Signature.getInstance("RSASSA-PSS");
-        signature.setParameter(pssSpec());
-        signature.initSign(privateKey, SecureRandom.getInstanceStrong());
-        signature.update(data);
-        return signature.sign();
-    }
-
-    public boolean verify(PublicKey publicKey, byte[] data, byte[] sig)
-            throws GeneralSecurityException {
-        Signature signature = Signature.getInstance("RSASSA-PSS");
-        signature.setParameter(pssSpec());
-        signature.initVerify(publicKey);
-        signature.update(data);
-        return signature.verify(sig);   // 내부적으로 상수 시간 비교
-    }
+public boolean verify(PublicKey publicKey, byte[] data, byte[] sig)
+        throws GeneralSecurityException {
+    Signature signature = Signature.getInstance("RSASSA-PSS");
+    signature.setParameter(pssSpec());
+    signature.initVerify(publicKey);
+    signature.update(data);
+    return signature.verify(sig);   // 내부적으로 상수 시간 비교
 }
 ```
 
@@ -348,31 +328,27 @@ public class DocumentSigner {
 ### 4.3 RSA-OAEP — 봉투 암호화 용도로만
 
 ```java
-@Component
-public class RsaKeyWrapper {
+private static final String TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 
-    private static final String TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
+/** RSA로 대량 데이터를 직접 암호화하지 말 것. 대칭키(DEK)를 감싸는 용도로만 쓴다. */
+public byte[] wrapKey(PublicKey publicKey, SecretKey dek) throws GeneralSecurityException {
+    Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+    cipher.init(Cipher.WRAP_MODE, publicKey, oaepParams());
+    return cipher.wrap(dek);
+}
 
-    /** RSA로 대량 데이터를 직접 암호화하지 말 것. 대칭키(DEK)를 감싸는 용도로만 쓴다. */
-    public byte[] wrapKey(PublicKey publicKey, SecretKey dek) throws GeneralSecurityException {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.WRAP_MODE, publicKey, oaepParams());
-        return cipher.wrap(dek);
-    }
+public SecretKey unwrapKey(PrivateKey privateKey, byte[] wrapped)
+        throws GeneralSecurityException {
+    Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+    cipher.init(Cipher.UNWRAP_MODE, privateKey, oaepParams());
+    return (SecretKey) cipher.unwrap(wrapped, "AES", Cipher.SECRET_KEY);
+}
 
-    public SecretKey unwrapKey(PrivateKey privateKey, byte[] wrapped)
-            throws GeneralSecurityException {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.UNWRAP_MODE, privateKey, oaepParams());
-        return (SecretKey) cipher.unwrap(wrapped, "AES", Cipher.SECRET_KEY);
-    }
-
-    private OAEPParameterSpec oaepParams() {
-        // 문자열만으로 지정하면 MGF1 해시가 SHA-1로 떨어지는 구현이 있어
-        // 파라미터를 명시적으로 넘기는 편이 안전하다
-        return new OAEPParameterSpec("SHA-256", "MGF1",
-                MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT);
-    }
+private OAEPParameterSpec oaepParams() {
+    // 문자열만으로 지정하면 MGF1 해시가 SHA-1로 떨어지는 구현이 있어
+    // 파라미터를 명시적으로 넘기는 편이 안전하다
+    return new OAEPParameterSpec("SHA-256", "MGF1",
+            MGF1ParameterSpec.SHA256, PSource.PSpecified.DEFAULT);
 }
 ```
 
@@ -449,21 +425,14 @@ new ClassPathResource("keys/private.pem");   // 빌드 산출물과 Git에 남�
 개인키 자체는 애플리케이션 메모리에 두지 않는 것이 최선입니다.
 
 ```java
-@Component
-@RequiredArgsConstructor
-public class KmsSigner {
-
-    private final KmsClient kmsClient;
-
-    public byte[] sign(byte[] data) {
-        SignRequest request = SignRequest.builder()
-                .keyId("arn:aws:kms:ap-northeast-2:...:key/abcd-1234")
-                .message(SdkBytes.fromByteArray(sha256(data)))
-                .messageType(MessageType.DIGEST)
-                .signingAlgorithm(SigningAlgorithmSpec.RSASSA_PSS_SHA_256)
-                .build();
-        return kmsClient.sign(request).signature().asByteArray();
-    }
+public byte[] sign(byte[] data) {
+    SignRequest request = SignRequest.builder()
+            .keyId("arn:aws:kms:ap-northeast-2:...:key/abcd-1234")
+            .message(SdkBytes.fromByteArray(sha256(data)))
+            .messageType(MessageType.DIGEST)
+            .signingAlgorithm(SigningAlgorithmSpec.RSASSA_PSS_SHA_256)
+            .build();
+    return kmsClient.sign(request).signature().asByteArray();
 }
 ```
 

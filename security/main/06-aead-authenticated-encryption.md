@@ -138,27 +138,15 @@ Encrypt-then-MAC을 손으로 구현할 때 흔히 나오는 실수들입니다.
 
 ### 2.2 실제 사고 사례
 
-**Zoom E2E 암호화 논란 (2020)**
-Zoom은 "종단간 암호화"를 표방했지만 실제로는 AES-128 **ECB** 모드를 사용했습니다. ECB는 기밀성조차 제대로 제공하지 못하고(같은 평문 블록 → 같은 암호문 블록), 당연히 무결성도 없었습니다. 이후 AES-256-GCM으로 전환했습니다.
+**Zoom E2E 암호화 논란(2020)** — "종단간 암호화"를 표방했지만 실제로는 AES-128 **ECB** 모드였습니다. ECB는 기밀성조차 제대로 제공하지 못하고(같은 평문 블록 → 같은 암호문 블록) 무결성도 없었습니다. 이후 AES-256-GCM으로 전환했습니다.
 
-**Steam 티켓 위조 (2016 이전)**
-Valve의 인증 티켓 처리에서 CBC 암호문의 무결성 검증이 미흡해, 비트 플리핑으로 티켓 내용을 조작할 수 있었던 사례가 보고되었습니다.
+**Steam 티켓 위조** — 인증 티켓 처리에서 CBC 암호문의 무결성 검증이 미흡해, 비트 플리핑으로 티켓 내용을 조작할 수 있었던 사례가 보고되었습니다.
 
-**Nonce 재사용에 의한 GCM 붕괴**
-AEAD를 쓴다고 안심할 수는 없습니다. GCM은 **같은 키로 같은 nonce를 재사용하면 인증 키(H) 자체가 복원**되어 공격자가 임의의 메시지에 유효한 태그를 붙일 수 있게 됩니다. 2016년 다수의 TLS 서버가 nonce를 랜덤이 아닌 예측 가능한 값으로 생성하다 취약점이 발견되었습니다. 자세한 내용은 [IV와 Nonce](./04-iv-and-nonce.md)를 참고하세요.
+**Nonce 재사용에 의한 GCM 붕괴** — AEAD를 쓴다고 안심할 수는 없습니다. GCM은 **같은 키로 같은 nonce를 재사용하면 인증 키(H) 자체가 복원**되어 공격자가 임의 메시지에 유효한 태그를 붙일 수 있게 됩니다. 2016년 다수의 TLS 서버가 nonce를 예측 가능한 값으로 생성하다 취약점이 발견되었습니다. 자세한 내용은 [IV와 Nonce](./04-iv-and-nonce.md)를 참고하세요.
 
 ### 2.3 실무 판단 기준
 
-새로 코드를 짠다면 선택지는 단순합니다.
-
-```
-개인정보 필드 암호화, API 페이로드, 토큰, 세션 데이터
-  → AES-256-GCM (하드웨어 가속 있는 서버 환경)
-  → ChaCha20-Poly1305 (모바일/IoT, AES-NI 없는 환경)
-
-CBC + HMAC 은 레거시 호환이 필요할 때만
-ECB, CBC 단독 은 어떤 경우에도 금지
-```
+새로 코드를 짠다면 선택지는 단순합니다. 개인정보 필드 암호화·API 페이로드·토큰·세션 데이터는 **AES-256-GCM**(AES-NI 있는 서버) 또는 **ChaCha20-Poly1305**(모바일/IoT)입니다. CBC + HMAC은 레거시 호환이 필요할 때만이고, ECB와 CBC 단독은 어떤 경우에도 금지입니다.
 
 면접에서 "AES-CBC와 AES-GCM의 차이"를 물으면 "GCM은 인증 태그가 있다" 수준을 넘어 **"CBC는 무결성이 없어 비트 플리핑에 취약하고, GCM은 Encrypt-then-MAC이 알고리즘에 통합되어 있으며 병렬 처리도 가능하다"** 까지 말할 수 있어야 합니다.
 
@@ -235,37 +223,24 @@ Encrypt(key, nonce, plaintext, aad)
 왜 필요할까요? 대표적인 시나리오는 **암호문 교체 공격(ciphertext substitution)** 방어입니다.
 
 ```
-DB에 이렇게 저장되어 있다고 하자.
-
   users 테이블
-  ┌────┬───────────┬──────────────────────────┐
-  │ id │ tenant_id │ encrypted_ssn            │
-  ├────┼───────────┼──────────────────────────┤
-  │ 1  │ 100       │ [IV][CT][TAG]  ← A사 직원 │
-  │ 2  │ 200       │ [IV][CT][TAG]  ← B사 직원 │
-  └────┴───────────┴──────────────────────────┘
+  ┌────┬───────────┬────────────────────────────┐
+  │ id │ tenant_id │ encrypted_ssn              │
+  ├────┼───────────┼────────────────────────────┤
+  │ 1  │ 100       │ [IV][CT][TAG]  ← A사 직원   │
+  │ 2  │ 200       │ [IV][CT][TAG]  ← B사 직원   │
+  └────┴───────────┴────────────────────────────┘
 
-공격: DB 쓰기 권한을 얻은 내부자가 id=1의 encrypted_ssn을
-      id=2의 값으로 통째로 복사한다.
-
+공격: DB 쓰기 권한을 얻은 내부자가 id=1의 encrypted_ssn을 id=2의 값으로 복사한다.
   → 암호문 자체는 정상이므로 GCM 태그 검증도 통과한다!
   → A사 조회 화면에 B사 직원의 주민번호가 나온다.
+
+방어: AAD로 컨텍스트를 묶는다
+  암호화 시  aad = "users:1:ssn:tenant=100"
+  복호화 시  aad = "users:2:ssn:tenant=200"  ← 다름 → 태그 검증 실패 → 예외
 ```
 
-AAD로 컨텍스트를 묶으면 이 공격이 막힙니다.
-
-```
-암호화 시:  aad = "users:1:ssn:tenant=100"
-복호화 시:  aad = "users:2:ssn:tenant=200"  ← 다름 → 태그 검증 실패 → 예외
-```
-
-AAD에 넣기 좋은 것들:
-- 테넌트 ID / 조직 ID (멀티테넌시 격리)
-- 레코드 PK, 컬럼명 (행·열 간 교체 방지)
-- 키 버전, 스키마 버전 (키 로테이션 추적)
-- 목적 태그 (`purpose=ssn` vs `purpose=phone`)
-
-AAD에 넣으면 **안 되는** 것: 자주 바뀌는 값(수정 시각 등). AAD가 바뀌면 기존 암호문을 복호화할 수 없게 되므로, **불변 식별자만** 사용해야 합니다.
+AAD에 넣기 좋은 것은 **테넌트/조직 ID**(멀티테넌시 격리), **레코드 PK와 컬럼명**(행·열 간 교체 방지), **키 버전**(로테이션 추적), **목적 태그**(`purpose=ssn` vs `purpose=phone`)입니다. 반대로 **넣으면 안 되는 것**은 자주 바뀌는 값(수정 시각 등)입니다 — AAD가 바뀌면 기존 암호문을 복호화할 수 없게 되므로 **불변 식별자만** 사용해야 합니다.
 
 ### 3.4 ChaCha20-Poly1305
 
@@ -396,35 +371,21 @@ process(cis.read(...));  // 태그 검증 전의 평문을 이미 사용해버�
 ### 4.3 태그 검증 실패의 운영 처리
 
 ```java
-@Service
-public class SecureDataService {
+public String read(Long recordId, Long tenantId) {
+    FieldContext ctx = new FieldContext(tenantId, "users", "ssn", recordId);
+    try {
+        return encryptor.decrypt(repository.findEncrypted(recordId), ctx);
 
-    private static final Logger log = LoggerFactory.getLogger(SecureDataService.class);
-
-    private final MeterRegistry meterRegistry;
-    private final SecurityEventPublisher eventPublisher;
-
-    public String read(Long recordId, Long tenantId) {
-        String stored = repository.findEncrypted(recordId);
-        FieldContext ctx = new FieldContext(tenantId, "users", "ssn", recordId);
-
-        try {
-            return encryptor.decrypt(stored, ctx);
-
-        } catch (TamperDetectedException e) {
-            // 1. 메트릭 — 급증 시 알림
-            meterRegistry.counter("crypto.tamper.detected",
-                    "table", "users", "tenant", String.valueOf(tenantId)).increment();
-
-            // 2. 보안 이벤트 발행 — SIEM 연동
-            eventPublisher.publish(SecurityEvent.tamperDetected(recordId, tenantId));
-
-            // 3. 상세 로그는 내부에만
-            log.error("AEAD tag verification failed. record={} tenant={}", recordId, tenantId, e);
-
-            // 4. 외부 응답은 일반화된 메시지로
-            throw new DataAccessException("데이터를 조회할 수 없습니다");
-        }
+    } catch (TamperDetectedException e) {
+        // 1. 메트릭 — 급증 시 알림
+        meterRegistry.counter("crypto.tamper.detected",
+                "table", "users", "tenant", String.valueOf(tenantId)).increment();
+        // 2. 보안 이벤트 발행 — SIEM 연동
+        eventPublisher.publish(SecurityEvent.tamperDetected(recordId, tenantId));
+        // 3. 상세 로그는 내부에만
+        log.error("AEAD tag verification failed. record={} tenant={}", recordId, tenantId, e);
+        // 4. 외부 응답은 일반화된 메시지로
+        throw new DataAccessException("데이터를 조회할 수 없습니다");
     }
 }
 ```
@@ -434,54 +395,27 @@ public class SecureDataService {
 ### 4.4 ChaCha20-Poly1305 (JDK 11+)
 
 ```java
-public class ChaChaEncryptor {
+public byte[] encrypt(SecretKey key, byte[] plain, byte[] aad)
+        throws GeneralSecurityException {
+    byte[] nonce = new byte[12];
+    SecureRandom.getInstanceStrong().nextBytes(nonce);
 
-    private static final String TRANSFORMATION = "ChaCha20-Poly1305";
-    private static final int NONCE_SIZE = 12;
+    Cipher cipher = Cipher.getInstance("ChaCha20-Poly1305");
+    // GCMParameterSpec이 아니라 IvParameterSpec을 쓴다
+    // (태그 길이가 128비트 고정이라 지정할 필요가 없음)
+    cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(nonce));
+    if (aad != null) cipher.updateAAD(aad);
 
-    public byte[] encrypt(SecretKey key, byte[] plain, byte[] aad)
-            throws GeneralSecurityException {
-        byte[] nonce = new byte[NONCE_SIZE];
-        SecureRandom.getInstanceStrong().nextBytes(nonce);
-
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        // GCMParameterSpec 이 아니라 IvParameterSpec 을 쓴다
-        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(nonce));
-        if (aad != null) {
-            cipher.updateAAD(aad);
-        }
-        byte[] ct = cipher.doFinal(plain);   // 태그가 뒤에 붙어서 반환됨
-
-        return ByteBuffer.allocate(nonce.length + ct.length)
-                .put(nonce).put(ct).array();
-    }
+    byte[] ct = cipher.doFinal(plain);   // 태그가 뒤에 붙어서 반환됨
+    return ByteBuffer.allocate(nonce.length + ct.length).put(nonce).put(ct).array();
 }
 ```
 
-API 형태는 GCM과 거의 같습니다. 차이는 `GCMParameterSpec` 대신 `IvParameterSpec`을 쓴다는 것(태그 길이가 128비트 고정이라 지정할 필요가 없음)과, 키가 256비트 고정이라는 점입니다.
+API 형태는 GCM과 거의 같고, 차이는 파라미터 스펙과 키가 256비트 고정이라는 점입니다.
 
-### 4.5 Spring Boot에서 AttributeConverter로 적용
+### 4.5 Spring Boot 적용 시 주의점
 
-```java
-@Converter
-public class EncryptedStringConverter implements AttributeConverter<String, String> {
-
-    // JPA Converter는 Spring 빈 주입이 까다로워 정적 홀더 패턴을 자주 쓴다
-    @Override
-    public String convertToDatabaseColumn(String attribute) {
-        if (attribute == null) return null;
-        return CryptoHolder.encryptor().encryptGlobal(attribute);
-    }
-
-    @Override
-    public String convertToEntityAttribute(String dbData) {
-        if (dbData == null) return null;
-        return CryptoHolder.encryptor().decryptGlobal(dbData);
-    }
-}
-```
-
-다만 `AttributeConverter`는 **엔티티의 다른 필드(테넌트 ID, PK)에 접근할 수 없어 AAD를 제대로 구성하기 어렵습니다.** PK는 INSERT 시점에 아직 채번되지 않았을 수도 있습니다. 레코드 단위 AAD가 필요하다면 `@PrePersist`/`@PostLoad` 콜백이나 서비스 레이어에서 명시적으로 처리하는 편이 낫습니다. 자세한 패턴은 [데이터베이스 필드 암호화](../advanced/02-database-field-encryption.md)를 참고하세요.
+JPA `AttributeConverter`로 필드 암호화를 붙이는 패턴이 흔하지만, **엔티티의 다른 필드(테넌트 ID, PK)에 접근할 수 없어 AAD를 제대로 구성하기 어렵습니다.** PK는 INSERT 시점에 아직 채번되지 않았을 수도 있습니다. 레코드 단위 AAD가 필요하다면 `@PrePersist`/`@PostLoad` 콜백이나 서비스 레이어에서 명시적으로 처리하는 편이 낫습니다. 자세한 패턴은 [데이터베이스 필드 암호화](../advanced/02-database-field-encryption.md)를 참고하세요.
 
 ---
 
