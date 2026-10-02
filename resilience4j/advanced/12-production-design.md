@@ -204,9 +204,15 @@ resilience4j:
         wait-duration: 300ms
         enable-randomized-wait: true      # jitter 필수 — 재시도 폭풍 방지
         randomized-wait-factor: 0.5
-        retry-exceptions:
+        retry-exceptions:                 # 허용 목록 — 여기 없는 예외는 재시도 안 함
           - java.io.IOException
           - java.util.concurrent.TimeoutException
+        # CallNotPermittedException 이 목록에 없는 게 중요하다. Retry 가
+        # CircuitBreaker 바깥(기본값)이므로, 서킷이 OPEN 이면 즉시 그 예외가
+        # 올라온다. 재시도해도 계속 거절될 뿐이라 지연만 늘어난다.
+        # ignore-exceptions 방식을 쓴다면 반드시 명시적으로 넣어야 한다:
+        #   ignore-exceptions:
+        #     - io.github.resilience4j.circuitbreaker.CallNotPermittedException
     instances:
       recommendation: { base-config: default }
       search: { base-config: default }
@@ -289,7 +295,7 @@ management:
 
 `POST /actuator/circuitbreakers/{name}` 은 서킷 상태를 외부에서 강제 전환할 수 있다. 게다가 내부적으로 `circuitBreakerRegistry.circuitBreaker(name)` 를 쓰므로 **이름을 오타내면 404가 아니라 새 인스턴스가 생긴다**([`../main/02-registry-and-config.md`](../main/02-registry-and-config.md)의 `computeIfAbsent` 패턴). 인증 없이 열어두면 안 된다.
 
-### 4.4 안티패턴 10
+### 4.4 안티패턴 11
 
 | # | 안티패턴 | 결과 | 고치는 법 |
 |---|---|---|---|
@@ -303,6 +309,7 @@ management:
 | 8 | 서킷은 걸었지만 지표·알럿 없음 | 열린 걸 아무도 모름 | 상태 전이 알럿 필수 |
 | 9 | 로컬 RateLimiter로 전역 쿼터 방어 | 인스턴스 수만큼 초과 | 쿼터 ÷ 대수, 또는 Redis 기반 |
 | 10 | 비멱등 API에 Hedge | 중복 처리 2배 | 읽기 전용에만 ([`./11-hedge.md`](./11-hedge.md)) |
+| 11 | 서킷이 OPEN인데 `CallNotPermittedException` 을 재시도 | 거절만 반복하며 지연 누적 | Retry 의 허용 목록에서 제외하거나 `ignore-exceptions` 에 추가 |
 
 ### 4.5 장애 시나리오별 기대 동작
 
@@ -328,6 +335,7 @@ Toxiproxy로 지연·끊김을 주입하고 위 지표가 실제로 그렇게 �
 
 - [ ] 같은 빈 내부 호출(self-invocation)로 애너테이션이 무력화되지 않는가
 - [ ] Retry가 걸린 호출이 멱등인가
+- [ ] Retry가 `CallNotPermittedException` 을 재시도하지 않는가 (허용 목록 또는 ignore 처리)
 - [ ] 타임아웃 예산 부등식이 성립하는가 (상위 > 시도 × 하위 + 백오프)
 - [ ] HTTP 클라이언트 자체 타임아웃이 TimeLimiter보다 짧은가
 - [ ] 임계값에 근거가 있는가 (p99·평시 에러율·TPS 기반인가)
