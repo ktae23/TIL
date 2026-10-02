@@ -34,7 +34,7 @@
       "label": "Architecture & Design",
       "icon": "🏗️",
       "order": 5,
-      "categories": ["MSA", "backend-roadmap", "domain", "network"]
+      "categories": ["MSA", "backend-roadmap", "domain", "network", "resilience4j"]
     },
     {
       "id": "quality",
@@ -62,7 +62,8 @@
     "AI": "AI / ML",
     "data & messaging": "Data & Messaging",
     "elk": "ELK Stack",
-    "aws-cicd-ecs": "AWS CI/CD & ECS"
+    "aws-cicd-ecs": "AWS CI/CD & ECS",
+    "resilience4j": "Resilience4j"
   },
   "defaultCollapsed": true
 }
