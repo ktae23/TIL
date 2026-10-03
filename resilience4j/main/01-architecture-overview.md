@@ -45,13 +45,31 @@ static <T> Supplier<T> decorateSupplier(CircuitBreaker circuitBreaker, Supplier<
 
 기본값도 함께 외워두면 코드 리뷰에서 바로 쓸 수 있다.
 
-| 컴포넌트 | 주요 기본값 (소스 상수) |
-|---|---|
-| CircuitBreaker | `DEFAULT_FAILURE_RATE_THRESHOLD = 50`(%), `DEFAULT_SLIDING_WINDOW_SIZE = 100`, `DEFAULT_MINIMUM_NUMBER_OF_CALLS = 100`, `DEFAULT_WAIT_DURATION_IN_OPEN_STATE = 60`(초), `DEFAULT_SLIDING_WINDOW_TYPE = COUNT_BASED` |
-| RateLimiter | `Builder` 기본값 — `limitForPeriod = 50`, `limitRefreshPeriod = 500ns`, `timeoutDuration = 5s` |
-| Retry | `DEFAULT_MAX_ATTEMPTS = 3`, `DEFAULT_WAIT_DURATION = 500`(ms) |
-| Bulkhead | `DEFAULT_MAX_CONCURRENT_CALLS = 25`, `DEFAULT_MAX_WAIT_DURATION = 0s` |
-| TimeLimiter | `timeoutDuration = 1s`, `cancelRunningFuture = true` |
+- **CircuitBreaker** (`CircuitBreakerConfig` 상수)
+  - `DEFAULT_FAILURE_RATE_THRESHOLD = 50` (%) — 윈도 안 호출 중 실패 비율이 이 값 이상이면 OPEN 으로 넘어간다.
+  - `DEFAULT_SLOW_CALL_RATE_THRESHOLD = 100` (%) — "느린 호출" 비율 기준. 기본 100% 라 **전부 느려야** 열린다.
+  - `DEFAULT_SLOW_CALL_DURATION_THRESHOLD = 60` (초) — 이보다 오래 걸린 호출을 "느린 호출"로 센다. 기본 60초라 사실상 느린 호출 판정이 꺼져 있는 셈이다.
+  - `DEFAULT_SLIDING_WINDOW_TYPE = COUNT_BASED` — 최근 N**건**으로 판단한다(시간 기반은 `TIME_BASED`).
+  - `DEFAULT_SLIDING_WINDOW_SIZE = 100` — 최근 100건을 기억하는 윈도 크기.
+  - `DEFAULT_MINIMUM_NUMBER_OF_CALLS = 100` — 이만큼 호출이 쌓이기 전에는 실패율을 계산하지 않는다(= 서킷이 안 열린다).
+  - `DEFAULT_WAIT_DURATION_IN_OPEN_STATE = 60` (초) — OPEN 으로 막아 두는 시간. 지나면 HALF_OPEN 으로 시험한다.
+  - `DEFAULT_PERMITTED_CALLS_IN_HALF_OPEN_STATE = 10` — HALF_OPEN 에서 시험 삼아 통과시키는 호출 수. 이 결과로 CLOSED/OPEN 을 정한다.
+  - 기록 대상 예외 기본값 = **모든 예외를 실패로** 센다(`recordException` 기본 `throwable -> true`, ignore 기본 없음). 비즈니스 예외를 거르지 않으면 서킷이 오염된다.
+- **RateLimiter** (`RateLimiterConfig.Builder` 기본값 — 상수가 아니라 필드 초기값)
+  - `limitForPeriod = 50` — 한 주기에 허용하는 호출 수.
+  - `limitRefreshPeriod = 500ns` — 허용 수가 다시 채워지는 주기. 기본값은 사실상 "제한 없음"에 가까워서 그대로 쓰면 안 된다.
+  - `timeoutDuration = 5s` — 허용을 못 받았을 때 기다리는 최대 시간. 지나면 `RequestNotPermitted`.
+- **Retry** (`RetryConfig` 상수)
+  - `DEFAULT_MAX_ATTEMPTS = 3` — **첫 호출 포함** 총 시도 횟수(재시도는 2번).
+  - `DEFAULT_WAIT_DURATION = 500` (ms) — 시도 사이 대기. 기본은 고정 간격이라 백오프·지터가 없다.
+  - 재시도 대상 예외 기본값 = **모든 예외**를 재시도한다. 비멱등 호출에 그대로 붙이면 이중 처리가 난다.
+- **Bulkhead** (`BulkheadConfig` 상수, 세마포어 방식)
+  - `DEFAULT_MAX_CONCURRENT_CALLS = 25` — 동시에 들어갈 수 있는 호출 수(세마포어 permit 수).
+  - `DEFAULT_MAX_WAIT_DURATION = 0s` — 자리가 없을 때 기다리지 않고 바로 `BulkheadFullException`.
+  - `DEFAULT_FAIR_CALL_HANDLING_STRATEGY_ENABLED = true` — 공정(FIFO) 세마포어. 순서는 지키지만 처리량은 조금 손해다.
+- **TimeLimiter** (`TimeLimiterConfig` 필드 초기값)
+  - `timeoutDuration = 1s` — 이 시간 안에 안 끝나면 `TimeoutException`.
+  - `cancelRunningFuture = true` — 시간 초과 시 실행 중인 `Future` 를 취소한다(비동기 호출 대상, 동기 메서드에는 못 붙는다).
 
 > `DEFAULT_MINIMUM_NUMBER_OF_CALLS = 100` 은 리뷰에서 가장 자주 지적할 지점이다. 기본 설정으로는 **100번 호출이 모일 때까지 서킷이 절대 열리지 않는다.** 하루 수십 건 호출되는 배치성 API 에 기본값을 붙여놓고 "왜 안 열려요?" 하는 상황이 여기서 나온다.
 
