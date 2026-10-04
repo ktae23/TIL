@@ -6,8 +6,15 @@ Resilience4j 는 "상속해서 커맨드를 만드는" 라이브러리가 아니
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [🖼 그림으로 보기 — 4층 구조로 줄인 모듈 지도](#-그림으로-보기--4층-구조로-줄인-모듈-지도)
+  - [🖼 그림으로 보기 — 데코레이터 하나의 실행 흐름](#-그림으로-보기--데코레이터-하나의-실행-흐름)
+  - [🖼 그림으로 보기 — 양파 껍질과 호출 한 번의 왕복](#-그림으로-보기--양파-껍질과-호출-한-번의-왕복)
 - [4. 실전 예제](#4-실전-예제)
 - [5. 정리](#5-정리)
+- [6. 🔢 숫자로 따라가기](#6--숫자로-따라가기)
+- [7. 🔥 시나리오](#7--시나리오)
+- [8. ❓ 헷갈리는 포인트](#8--헷갈리는-포인트)
+- [9. 🧾 한 장 요약](#9--한-장-요약)
 
 ---
 
@@ -178,6 +185,37 @@ graph TD
 - **`resilience4j-micrometer` 는 단순 부가 모듈이 아니다.** `resilience4j-framework-common/build.gradle` 이 `api(project(":resilience4j-micrometer"))` 를 선언한다. 지표 바인딩(`TaggedCircuitBreakerMetrics`)만 주는 게 아니라 `Timer` 라는 **6번째 데코레이터**를 제공하기 때문이다. `Decorators` 의 모든 빌더에 `withTimer(Timer timer)` 가 있다.
 - **어댑터 모듈들은 `compileOnly` 를 적극적으로 쓴다.** `resilience4j-kotlin/build.gradle` 은 5개 컴포넌트를 전부 `compileOnly` 로 잡는다. Kotlin 확장함수만 쓰는 사람에게 안 쓰는 컴포넌트가 끌려오지 않게 하려는 의도다. `resilience4j-spring6` 도 Spring·AspectJ·Reactor·RxJava 를 전부 `compileOnly` 로 둔다.
 
+### 🖼 그림으로 보기 — 4층 구조로 줄인 모듈 지도
+
+위 그래프는 화살표가 많아 처음 보면 길을 잃는다. 같은 내용을 "층"으로만 줄이면 이렇다. 아래층은 위층을 모른다 — core 는 CircuitBreaker 를 모르고, CircuitBreaker 는 Spring 을 모른다.
+
+```mermaid
+flowchart TD
+    subgraph L3["4층 · 프레임워크 통합"]
+        direction LR
+        s6["spring6"] --- sb["spring-boot3 / 4"] --- mn["micronaut"]
+    end
+    subgraph L2["3층 · 공통 설정·지표"]
+        direction LR
+        fc["framework-common<br/>(yml 프로퍼티 → Config)"] --- mm["micrometer<br/>(지표 + Timer)"]
+    end
+    subgraph L1["2층 · 5개 핵심 컴포넌트"]
+        direction LR
+        cb["circuitbreaker"] --- rt["retry"] --- rl["ratelimiter"] --- bh["bulkhead"] --- tl["timelimiter"]
+    end
+    subgraph L0["1층 · 공통 뼈대"]
+        core["core<br/>Registry · EventProcessor · Metrics · functions"]
+    end
+    side["옆 갈래 · 어댑터<br/>reactor / rxjava / kotlin / vavr / feign"]
+
+    L0 --> L1
+    L1 --> L2
+    L2 --> L3
+    L1 -.-> side
+```
+
+읽는 법: **Spring 없이 쓰고 싶으면 2층까지만** 가져오면 된다(예제 2). Spring Boot 의 `application.yml` 이 Config 객체로 바뀌는 곳은 3층(`framework-common`)이고, 애너테이션(`@CircuitBreaker`)이 동작하는 곳은 4층이다.
+
 ### `decorateSupplier()` 안쪽: 데코레이터 하나의 전체 모습
 
 `CircuitBreaker.decorateSupplier()` 가 하는 일은 20줄이 안 된다. 이 20줄이 Resilience4j 전체의 설계 패턴이다.
@@ -213,6 +251,23 @@ static <T> Supplier<T> decorateSupplier(CircuitBreaker circuitBreaker, Supplier<
 
 5개 컴포넌트의 `decorateXxx()` 는 전부 이 구조의 변형이다. 그래서 하나를 읽으면 나머지가 다 읽힌다.
 
+### 🖼 그림으로 보기 — 데코레이터 하나의 실행 흐름
+
+위 20줄을 갈림길 기준으로 그리면 네 갈래다. 핵심은 **왼쪽 끝 갈래에서 원본 호출이 아예 일어나지 않는다**는 것과, **오른쪽 끝 갈래(`Error`)는 아무것도 기록하지 않는다**는 것이다.
+
+```mermaid
+flowchart TD
+    start["decorated.get() 호출"] --> perm{"acquirePermission()<br/>통과?"}
+    perm -->|"거부 (OPEN)"| rej["CallNotPermittedException<br/>원본 supplier 는 호출되지 않음"]
+    perm -->|"통과"| ts["start = getCurrentTimestamp()"]
+    ts --> run["supplier.get() — 진짜 원격 호출"]
+    run -->|"값 반환"| ok["onResult(duration, unit, result)<br/>recordResultPredicate 로 성공/실패 판정"]
+    ok --> ret["result 반환"]
+    run -->|"Exception"| err["onError(duration, unit, e)<br/>윈도에 실패(또는 ignore) 기록"]
+    err --> rethrow["throw e — 그대로 다시 던짐"]
+    run -->|"java.lang.Error"| pass["catch 대상 아님<br/>집계 없이 그대로 전파"]
+```
+
 ### 데코레이터 체인과 순서
 
 `Decorators` 의 javadoc 이 순서 규칙을 명시한다.
@@ -243,6 +298,64 @@ graph LR
 | `TimerAspect` | `LOWEST_PRECEDENCE` | 가장 안쪽 |
 
 `Ordered` 값이 작을수록 우선순위가 높고 바깥에 온다. **Retry 가 CircuitBreaker 보다 바깥**이라는 점이 중요하다. 재시도가 서킷 바깥이면 "서킷이 OPEN 인데도 재시도가 계속 돌아 `CallNotPermittedException` 을 3번 받는" 동작이 된다. 반대로 Retry 를 안쪽에 두면 재시도 전체가 한 번의 서킷 호출로 집계되어, 실패율이 과소 집계된다. 둘 다 정답이 있는 게 아니라 **의도적으로 선택해야 하는 지점**이고, 리뷰에서 "왜 이 순서냐"를 물을 수 있어야 한다.
+
+### 🖼 그림으로 보기 — 양파 껍질과 호출 한 번의 왕복
+
+위의 일렬 화살표 그림을 "감싸는 관계"로 다시 그리면 양파가 된다. 바깥 껍질일수록 **먼저 들어가고 나중에 나온다.** 요청은 바깥에서 안으로, 결과·예외는 안에서 바깥으로 지나간다.
+
+```mermaid
+flowchart LR
+    client(["호출자"]) --> R
+    subgraph R["Retry — 가장 바깥, 실패하면 통째로 다시"]
+        subgraph C["CircuitBreaker — 열려 있으면 여기서 거부"]
+            subgraph RL["RateLimiter — 속도 초과면 거부"]
+                subgraph T["TimeLimiter — 제한 시간 감시"]
+                    subgraph B["Bulkhead — 동시 실행 수 제한"]
+                        call["실제 원격 호출"]
+                    end
+                end
+            end
+        end
+    end
+```
+
+호출 한 번이 실제로 어떤 순서로 지나가는지 시간 순서로 펴면 아래와 같다. 첫 시도는 원격 서버가 `IOException` 을 던지고, Retry 가 대기 후 두 번째 시도에서 성공하는 경우다.
+
+```mermaid
+sequenceDiagram
+    participant U as 호출자
+    participant R as Retry
+    participant C as CircuitBreaker
+    participant L as RateLimiter
+    participant T as TimeLimiter
+    participant B as Bulkhead
+    participant S as 원격 서버
+
+    U->>R: get()
+    R->>C: 시도 1
+    C->>C: acquirePermission() — CLOSED 라 통과
+    C->>L: 위임
+    L->>L: permit 1개 소비
+    L->>T: 위임
+    T->>B: 위임 (타이머 시작)
+    B->>B: 세마포어 획득
+    B->>S: 호출
+    S-->>B: IOException
+    B-->>T: 세마포어 반납 후 예외 전파
+    T-->>L: 예외 전파
+    L-->>C: 예외 전파
+    C->>C: onError — 윈도에 실패 1건 기록
+    C-->>R: IOException
+    R->>R: 대기 (기본 500ms)
+    R->>C: 시도 2 — 같은 경로를 처음부터 다시
+    C->>S: (L → T → B 를 거쳐) 호출
+    S-->>C: 성공 응답
+    C->>C: onResult — 윈도에 성공 1건 기록
+    C-->>R: 결과
+    R-->>U: 결과
+```
+
+이 그림에서 읽어야 할 사실 두 개. **(1)** CircuitBreaker 입장에서는 "실패 1 + 성공 1" 로 **2건**이 기록된다 — Retry 가 바깥에 있으면 시도 하나하나가 CircuitBreaker 의 호출이다. **(2)** RateLimiter 도 permit 을 **2개** 쓴다. 재시도가 많아질수록 허용 속도를 빨리 소진한다.
 
 ## 4. 실전 예제
 
@@ -401,6 +514,71 @@ public final class LegacySoapClientRunner {
 | 가장 흔한 함정 | `minimumNumberOfCalls` 기본값 100. 저트래픽 API 에서 서킷이 영원히 안 열림 |
 | 두 번째 함정 | `withTimeLimiter` 는 `DecorateCompletionStage` 에만 있음. 동기 `Supplier` 에는 타임아웃을 걸 수 없다 |
 
+## 6. 🔢 숫자로 따라가기
+
+"Retry 가 CircuitBreaker 바깥"이라는 말이 숫자로 어떤 차이를 만드는지 따라간다. 원격 서버는 완전히 죽어 있어 모든 호출이 `IOException` 을 던진다고 가정한다.
+
+- Retry: 기본값 그대로 — `maxAttempts=3`(첫 호출 포함), 대기 500ms 고정, **모든 예외 재시도**
+- CircuitBreaker: `COUNT_BASED`, `slidingWindowSize=10`, `minimumNumberOfCalls=5`, `failureRateThreshold=50`
+- 조립: `Decorators.ofSupplier(call).withCircuitBreaker(cb).withRetry(retry)` → `Retry(CircuitBreaker(call))`
+
+| 시각 | 사용자 요청 | Retry 시도 | CircuitBreaker 판정 | 윈도 (기록/실패) | 실패율 | 상태 | 원격 호출 |
+|---|---|---|---|---|---|---|---|
+| 0.0s | A | 1 | 통과 → 실패 기록 | 1 / 1 | 판단 보류(1 < 5) | CLOSED | 1회째 |
+| 0.5s | A | 2 | 통과 → 실패 기록 | 2 / 2 | 판단 보류 | CLOSED | 2회째 |
+| 1.0s | A | 3 | 통과 → 실패 기록 | 3 / 3 | 판단 보류 | CLOSED | 3회째 → A 는 `IOException` 으로 끝남 |
+| 1.2s | B | 1 | 통과 → 실패 기록 | 4 / 4 | 판단 보류 | CLOSED | 4회째 |
+| 1.7s | B | 2 | 통과 → 실패 기록 | 5 / 5 | **100% ≥ 50%** | **OPEN** | 5회째 |
+| 2.2s | B | 3 | `acquirePermission()` 거부 | 5 / 5 (거부는 기록 안 됨) | — | OPEN | 없음 → B 는 `CallNotPermittedException` 으로 끝남 |
+| 3.0s | C | 1 | 거부 | 5 / 5 | — | OPEN | 없음 |
+| 3.5s | C | 2 | 거부 | 5 / 5 | — | OPEN | 없음 |
+| 4.0s | C | 3 | 거부 | 5 / 5 | — | OPEN | 없음 → C 는 1초를 기다린 뒤 `CallNotPermittedException` |
+
+여기서 나오는 결론 세 가지.
+
+1. **사용자 요청 2건이 CircuitBreaker 에는 실패 5건으로 보인다.** `minimumNumberOfCalls=5` 를 "사용자 요청 5건"으로 생각하면 틀린다. Retry 가 바깥이면 기준은 "시도 수"다.
+2. **요청 C 는 원격 서버를 한 번도 안 불렀는데 1초를 기다렸다.** Retry 기본값이 `CallNotPermittedException` 까지 재시도하기 때문이다. 예제 1처럼 `ignoreExceptions(CallNotPermittedException.class)` 를 주면 C 는 0초 만에 실패(또는 fallback)한다.
+3. **거부된 시도는 윈도에 들어가지 않는다.** OPEN 상태의 거부는 `circuitBreakerMetrics.onCallNotPermitted()` 로 별도 카운터만 올린다. 윈도는 5/5 그대로다.
+
+## 7. 🔥 시나리오
+
+**상황: "결제 승인 API" 가 외부 승인 서버를 비동기로 호출한다.** 설정은 위 예제 1(`PaymentGateway`)과 같다 — TimeLimiter 3초, Bulkhead 30, RateLimiter 초당 100, CircuitBreaker(윈도 200 / 최소 20 / 실패율 50% / 느린 호출 2초·60% / OPEN 10초 / HALF_OPEN 5건), Retry 3회(`IOException`·`TimeoutException` 만, `CallNotPermittedException` 무시), fallback `"DEGRADED"`.
+
+| 순서 | 외부 상황 | 어느 층이 움직이나 | 사용자가 보는 것 | 운영자가 보는 것 |
+|---|---|---|---|---|
+| ① | 평상시. 승인 서버 응답 200ms | 모든 층이 통과만 시킨다 | 정상 승인 | 지표 평온 |
+| ② | 승인 서버가 4초씩 걸리기 시작 | **TimeLimiter** 가 3초에서 `TimeoutException`. CircuitBreaker 는 이를 실패이자 느린 호출(`SLOW_ERROR`, 3초 > 2초)로 기록. **Retry** 가 `TimeoutException` 이라 재시도 | 응답이 길게는 "3초 × 3회 + 백오프" 만큼 늦다가 `"DEGRADED"` | 타임아웃·재시도 이벤트 증가 |
+| ③ | 늦은 요청이 쌓여 동시 실행이 30개 도달 | **Bulkhead** 가 31번째를 `BulkheadFullException` 으로 즉시 거부. Bulkhead 가 CircuitBreaker 안쪽이라 이 거부도 **CircuitBreaker 실패로 기록**된다(기본값은 모든 예외를 실패로 셈) | fallback 대상이 아니라 그대로 오류 | Bulkhead 거부 지표 상승 |
+| ④ | 윈도의 실패율이 50% 이상 (기록 20건 이상) | **CircuitBreaker** 가 OPEN. 이후 호출은 `acquirePermission()` 에서 거부되어 승인 서버로 나가지 않는다. Retry 는 `CallNotPermittedException` 을 무시하므로 재시도하지 않는다 | 즉시 `"DEGRADED"` (기다림 없음) | 상태 전이 이벤트 CLOSED → OPEN |
+| ⑤ | 10초 뒤 | CircuitBreaker 가 HALF_OPEN 으로 넘어가 5건만 시험 통과 | 일부는 정상 처리, 나머지는 `"DEGRADED"` | OPEN → HALF_OPEN |
+| ⑥ | 승인 서버 복구 | 시험 5건 결과가 임계값 아래면 CLOSED | 정상 승인 | HALF_OPEN → CLOSED |
+
+③ 이 이 시나리오의 함정이다. Bulkhead 가 "우리 쪽 자원 보호"로 거부한 것까지 "상대 서버 장애"로 세면 서킷이 의도보다 빨리 열린다. 그게 싫으면 CircuitBreaker 에 `ignoreExceptions(BulkheadFullException.class)` 를 주거나 순서를 바꾼다. 순서를 정하는 일이 곧 "무엇을 상대 장애로 볼 것인가"를 정하는 일이다.
+
+## 8. ❓ 헷갈리는 포인트
+
+- **Q. `decorateSupplier()` 를 부르는 순간 원격 호출이 나가나?**
+  A. 아니다. 새 `Supplier` 람다를 돌려줄 뿐이다. 호출은 돌려받은 객체의 `get()` 을 부를 때 일어난다. 그래서 시작 시 한 번 조립해 필드에 두는 게 정석이다.
+- **Q. `Decorators` 빌더에서 먼저 쓴 것이 바깥인가?**
+  A. 반대다. **나중에 쓴 것이 바깥**이다. `.withCircuitBreaker(cb).withRetry(retry)` 는 `Retry(CircuitBreaker(call))` 이다.
+- **Q. Retry 가 3번 시도하면 CircuitBreaker 에는 1건으로 기록되나?**
+  A. Retry 가 바깥이면 **3건**이다(6절 표). Retry 가 안쪽이면 재시도 묶음 전체가 1건이다.
+- **Q. `OutOfMemoryError` 도 실패율에 잡히나?**
+  A. 안 잡힌다. `decorateSupplier` 는 `catch (Exception)` 만 하므로 `java.lang.Error` 는 기록 없이 통과한다.
+- **Q. 동기 메서드에도 TimeLimiter 로 타임아웃을 걸 수 있나?**
+  A. `Decorators.ofSupplier()` 체인에는 `withTimeLimiter` 가 없다. `CompletionStage` 로 바꾸거나, 클라이언트 라이브러리 자체의 타임아웃(커넥션·읽기 타임아웃)을 써야 한다.
+
+## 9. 🧾 한 장 요약
+
+- Resilience4j 는 상속이 아니라 **함수를 감싼다** — `Supplier` 를 넣으면 `Supplier` 가 나오므로 몇 겹이든 쌓인다.
+- 모듈은 **core → 5개 컴포넌트 → framework-common·micrometer → spring/micronaut** 4층. core 는 런타임 의존성이 0이다.
+- 데코레이터 하나는 `acquirePermission → 실행 → onResult/onError → 그대로 반환/재던짐` 20줄짜리 구조다.
+- OPEN 이면 **원본 호출 자체가 일어나지 않는다** — 그게 서킷의 본질이다.
+- 빌더에서 **나중에 쓴 것이 바깥**. Spring 기본 순서는 Retry → CircuitBreaker → RateLimiter → TimeLimiter → Bulkhead.
+- Retry 가 바깥이면 **시도마다** CircuitBreaker 에 기록되고, OPEN 거부(`CallNotPermittedException`)까지 재시도하지 않도록 막아야 한다.
+- 안쪽 컴포넌트의 거부 예외(예: `BulkheadFullException`)도 바깥 CircuitBreaker 의 실패로 세어진다. 순서 = 무엇을 장애로 볼지의 결정이다.
+- `java.lang.Error` 는 집계하지 않고, 동기 `Supplier` 에는 TimeLimiter 를 걸 수 없다.
+
 ---
 
 ## 관련 문서
@@ -409,3 +587,5 @@ public final class LegacySoapClientRunner {
 - 참고: [Spring Boot 자동 설정](../advanced/01-spring-boot-autoconfiguration.md), [AOP 애스펙트](../advanced/02-aop-aspects.md), [TimeLimiter와 조합](./12-timelimiter-and-composition.md)
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

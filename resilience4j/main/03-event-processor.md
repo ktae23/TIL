@@ -4,10 +4,17 @@
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
+  - [🖼 그림으로 보기 — 소비자는 어디에 꽂히나](#-그림으로-보기--소비자는-어디에-꽂히나)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [🖼 그림으로 보기 — 실패 한 건이 서킷을 여는 순간의 이벤트 순서](#-그림으로-보기--실패-한-건이-서킷을-여는-순간의-이벤트-순서)
 - [4. 실전 예제](#4-실전-예제)
+  - [🖼 그림으로 보기 — 나쁜 소비자와 좋은 소비자](#-그림으로-보기--나쁜-소비자와-좋은-소비자)
 - [5. 정리](#5-정리)
+- [6. 🔢 숫자로 따라가기](#6--숫자로-따라가기)
+- [7. 🔥 시나리오](#7--시나리오)
+- [8. ❓ 헷갈리는 포인트](#8--헷갈리는-포인트)
+- [9. 🧾 한 장 요약](#9--한-장-요약)
 
 ---
 
@@ -29,6 +36,35 @@ public class EventProcessor<T> implements EventPublisher<T> { ... }   // 위 인
 |---|---|---|---|
 | 전역 | `getEventPublisher().onEvent(c)` | `onEventConsumers` (`CopyOnWriteArraySet`) | 그 컴포넌트의 **모든** 이벤트 |
 | 타입별 | `getEventPublisher().onStateTransition(c)` 등 | `eventConsumerMap` (`ConcurrentHashMap<String, CopyOnWriteArraySet<...>>`) | 키가 일치하는 **한 종류**만 |
+
+### 🖼 그림으로 보기 — 소비자는 어디에 꽂히나
+
+`EventProcessor` 안에는 통이 두 종류 있다. 전역 통 하나, 그리고 이벤트 클래스 이름(FQCN)별로 나뉜 통 여러 개. 이벤트가 오면 **전역 통을 먼저 전부**, 그다음 **이름이 정확히 같은 통 하나**를 돈다.
+
+```mermaid
+flowchart LR
+    subgraph reg["등록 (시작 시 한 번)"]
+        direction TB
+        r1["publisher.onEvent(counter)"]
+        r2["publisher.onStateTransition(notifier)"]
+        r3["publisher.onError(errorLogger)"]
+    end
+    subgraph ep["EventProcessor"]
+        direction TB
+        g["onEventConsumers<br/>(전역 통)"]
+        subgraph map["eventConsumerMap (FQCN → 통)"]
+            k1["...OnStateTransitionEvent"]
+            k2["...OnErrorEvent"]
+        end
+    end
+    r1 --> g
+    r2 -->|"registerConsumer(FQCN, c)"| k1
+    r3 -->|"registerConsumer(FQCN, c)"| k2
+    evt(["CircuitBreakerOnErrorEvent 발생"]) -->|"① 전부 호출"| g
+    evt -->|"② getClass().getName() 으로 정확히 일치하는 통만"| k2
+```
+
+같은 `CircuitBreakerOnErrorEvent` 를 `counter` 와 `errorLogger` 가 받고, `notifier` 는 받지 않는다. 그리고 이 전부가 **호출한 스레드 위에서 차례로** 실행된다.
 
 > v2.4.0 의 필드명은 위 표 그대로다. 과거 버전 문서에서 보던 `onEventConsumerMap`, `consumerRegistered` 플래그는 이 버전에 **없다** — 플래그 대신 `hasConsumers()` 가 컬렉션을 직접 들여다본다. 컬렉션도 `CopyOnWriteArrayList` 가 아니라 `CopyOnWriteArraySet` 이다.
 
@@ -151,6 +187,34 @@ flowchart TD
     exc -->|"Retry / Bulkhead<br/>RateLimiter / TimeLimiter"| prop["호출 경로로 전파<br/>비즈니스 실패"]
 ```
 
+### 🖼 그림으로 보기 — 실패 한 건이 서킷을 여는 순간의 이벤트 순서
+
+CircuitBreaker 가 CLOSED 이고, 이번 실패로 실패율이 임계값에 도달한다고 하자. 사용자 코드의 `catch` 블록에 예외가 도착하기 **전에** 이벤트 세 개가 같은 스레드에서 차례로 소비된다(`CircuitBreakerStateMachine.handleThrowable()` → `ClosedState.onError()` → `checkIfThresholdsExceeded()` → `transitionToOpenState()`).
+
+```mermaid
+sequenceDiagram
+    participant T as 호출 스레드
+    participant SM as CircuitBreakerStateMachine
+    participant EP as EventProcessor
+    participant C as 소비자들
+
+    T->>SM: onError(duration, unit, IOException)
+    SM->>EP: ① ERROR (CLOSED, allowPublish=true)
+    EP->>C: 전역 + OnErrorEvent 소비자 실행
+    C-->>EP: 리턴
+    SM->>SM: ClosedState.onError → 윈도 기록 → 실패율 ≥ 임계값
+    SM->>EP: ② FAILURE_RATE_EXCEEDED
+    EP->>C: 전역 + 해당 타입 소비자 실행
+    SM->>SM: transitionToOpenState()
+    SM->>EP: ③ STATE_TRANSITION (CLOSED_TO_OPEN, forcePublish)
+    EP->>C: 전역 + onStateTransition 소비자 실행
+    SM-->>T: 리턴
+    T->>T: 원래 예외를 다시 던짐 → 사용자 catch 블록
+    Note over T,C: 소비자 셋 중 하나라도 느리면 그 시간이 이 요청의 응답 시간에 그대로 더해진다
+```
+
+다음 요청부터는 OPEN 이라 `acquirePermission()` 에서 거부되고 `NOT_PERMITTED` 이벤트가 나간다. OPEN 의 `allowPublish` 는 `true` 라 이 이벤트도 소비자에게 간다 — 즉 **OPEN 중에는 들어오는 요청 수만큼 `NOT_PERMITTED` 가 쏟아진다.** `onEvent()` 로 전역 소비자를 단 경우 이 폭주를 그대로 받는다.
+
 ### 컴포넌트별 이벤트 타입과 발행 시점
 **CircuitBreaker** — `event/` 에 이벤트 클래스 9개, `Type` enum 값은 10개다 (`FORCED_OPEN`, `DISABLED` 는 `Type` 에만 있고 전용 이벤트 클래스가 없다). 공통 접근자는 `getCircuitBreakerName()`, `getEventType()`, `getCreationTime()`. 아래 표의 `...` 은 `CircuitBreaker` 접두사.
 
@@ -165,7 +229,7 @@ flowchart TD
 | `...OnFailureRateExceededEvent` | FAILURE_RATE_EXCEEDED | false | 실패율이 임계값 초과로 판정된 순간 |
 | `...OnSlowCallRateExceededEvent` | SLOW_CALL_RATE_EXCEEDED | false | 느린호출률이 임계값 초과로 판정된 순간 |
 
-> `FAILURE_RATE_EXCEEDED` 는 상태 전이와 **별개**다. 임계값 초과 판정이 날 때마다 발행되므로 OPEN 전이 뒤에도 또 나올 수 있다. "서킷이 열렸다"를 세려면 `STATE_TRANSITION`, "위험하다"를 조기 경보하려면 `FAILURE_RATE_EXCEEDED` 를 봐라.
+> `FAILURE_RATE_EXCEEDED` 는 **CLOSED 에서 임계값을 넘는 순간 한 번만** 발행되고, 바로 이어서 OPEN 전이(`STATE_TRANSITION`)가 일어난다(`ClosedState.checkIfThresholdsExceeded` 의 `isClosed` CAS). HALF_OPEN 시험 호출이 실패해 다시 OPEN 될 때는 발행되지 않고, `METRICS_ONLY` 상태에서는 상태가 유지되는 동안 한 번만 나온다. 그래서 "서킷이 몇 번 열렸나"는 `STATE_TRANSITION`(→ OPEN)으로 세고, `FAILURE_RATE_EXCEEDED` 는 "CLOSED 에서 왜 열렸나(실패율 때문인지, 느린 호출 때문인지)"의 원인 기록으로 본다.
 
 **Retry** — 4종. 공통 접근자는 `getName()`, `getNumberOfRetryAttempts()`, `getLastThrowable()`, `getCreationTime()`.
 
@@ -310,6 +374,27 @@ public final class SlackStateTransitionNotifier implements AutoCloseable {
 
 조립은 `CircuitBreakerRegistry.custom().addRegistryEventConsumer(notifier.asRegistryConsumer()).build()` 로 한 번만 한다. 주목할 점 둘. **(1) `EventProcessor` 에는 소비자 해제 API 가 없다** — `onEvent()`/`registerConsumer()` 는 있지만 `removeConsumer()` 가 없으므로, 요청마다 소비자를 등록하는 코드는 `CopyOnWriteArraySet` 이 무한히 커지는 **확정된 메모리 누수**다. 리뷰에서 반드시 잡아야 한다. **(2) 중복 제거에 기대지 마라** — `CopyOnWriteArraySet` 이라 같은 객체를 두 번 등록하면 한 번만 들어가지만, `this::onStateTransition` 같은 메서드 참조는 매번 새 객체가 될 수 있다. 등록 지점을 한 곳으로 모으는 게 답이다.
 
+### 🖼 그림으로 보기 — 나쁜 소비자와 좋은 소비자
+
+예제 1의 설계를 한 장으로 비교한다. 차이는 "느린 일(HTTP)을 **누구의 스레드**가 하느냐" 하나다.
+
+```mermaid
+flowchart TB
+    subgraph bad["나쁜 예 — 소비자 안에서 HTTP"]
+        direction LR
+        b1["요청 스레드"] --> b2["consumeEvent()"]
+        b2 --> b3["Slack webhook POST<br/>(수백 ms ~ 타임아웃)"]
+        b3 --> b4["그제야 요청 스레드 복귀"]
+    end
+    subgraph good["좋은 예 — 큐에 넣고 바로 복귀"]
+        direction LR
+        g1["요청 스레드"] --> g2["consumeEvent()"]
+        g2 --> g3["queue.offer() — 수십 ns<br/>가득 차면 버리고 dropped++"]
+        g3 --> g4["요청 스레드 즉시 복귀"]
+        g3 -.->|"비동기"| g5["데몬 스레드<br/>poll() → Slack POST"]
+    end
+```
+
 ### 예제 2 — 이벤트를 저렴하게 세는 소비자 + 최근 N건 보관
 HTTP 도 로그도 없이 카운터만 올리고 버퍼에 넣는다. 이 정도는 동기로 해도 안전하다.
 
@@ -383,6 +468,74 @@ public final class CircuitBreakerObservability {
 | 최근 N건 | `CircularEventConsumer`(consumer) + `ConcurrentEvictingQueue`(circularbuffer, `StampedLock` 기반). Actuator 엔드포인트의 백킹 |
 | 올바른 비동기 패턴 | 소비자에서 `queue.offer()` 만(`put()` 금지), 별도 데몬 스레드가 디스패치, 소비자 안에서 `catch (Throwable)` |
 
+## 6. 🔢 숫자로 따라가기
+
+이벤트 소비자 비용이 사용자 응답 시간에 얼마나 붙는지 숫자로 따라간다. 아래 소요 시간은 **설명을 위한 가정값**이다 — 핵심은 값 자체가 아니라 "어디에 더해지는가"다.
+
+- CircuitBreaker 에 소비자 세 개: `onEvent(counter)`(전역, `LongAdder.increment()` ≈ 50ns), `onError(errorLogger)`(로그 한 줄 ≈ 20µs), `onStateTransition(notifier)`
+- `notifier` 는 두 가지 구현으로 비교: **나쁜 구현** = 소비자 안에서 Slack webhook 동기 POST(≈ 800ms), **좋은 구현** = `queue.offer()`(≈ 100ns)
+- 원격 호출은 120ms 만에 `IOException` 으로 실패하고, 이 실패로 실패율이 임계값에 도달한다
+
+| 순서 | 무슨 일 | 호출되는 소비자 | 나쁜 구현 누적 응답 시간 | 좋은 구현 누적 응답 시간 |
+|---|---|---|---|---|
+| 0 | 원격 호출 실패 | — | 120ms | 120ms |
+| ① | `ERROR` 발행 | `counter` + `errorLogger` | ≈ 120.02ms | ≈ 120.02ms |
+| ② | `FAILURE_RATE_EXCEEDED` 발행 | `counter` (타입별 소비자 없음) | ≈ 120.02ms | ≈ 120.02ms |
+| ③ | `STATE_TRANSITION` (CLOSED → OPEN) 발행 | `counter` + `notifier` | **≈ 920ms** | ≈ 120.02ms |
+| 4 | 사용자에게 `IOException` 도착 | — | **920ms** | 120ms |
+
+이어서 OPEN 동안 초당 500건이 들어온다고 하자.
+
+| 항목 | 값 |
+|---|---|
+| 초당 `NOT_PERMITTED` 이벤트 | 500건 (요청마다 1건) |
+| `counter`(전역) 호출 수 | 초당 500회 × 50ns = 초당 25µs — 무시할 수준 |
+| `notifier` 호출 수 | 0회 — `onStateTransition` 은 타입별 소비자라 `NOT_PERMITTED` 를 받지 않는다 |
+| 만약 `notifier` 를 `onEvent()` 로 달았다면 | 초당 500번 Slack POST 를 **요청 스레드에서** 시도 → 거부 응답마저 수백 ms 씩 늦어진다 |
+| 소비자가 하나도 없다면 | `hasConsumers()` 가 `false` → 이벤트 객체를 **하나도 만들지 않는다** |
+
+## 7. 🔥 시나리오
+
+**상황: "추천 API" 가 외부 추천 엔진을 호출한다.** 앞단에 Retry, 안쪽에 CircuitBreaker. 한 개발자가 "장애 알림"과 "재시도 로깅"을 붙였다.
+
+```java
+cb.getEventPublisher().onStateTransition(e -> slack.post(...));          // 동기 HTTP
+retry.getEventPublisher().onRetry(e -> log.info(e.getLastThrowable().getMessage().trim()));
+```
+
+| 시각 | 무슨 일 | `EventProcessor` 단에서 일어나는 일 | 사용자·운영자가 보는 것 |
+|---|---|---|---|
+| 10:00 | 추천 엔진이 간헐적으로 `IOException` | Retry 가 재시도할 때마다 `RetryOnRetryEvent` → `onRetry` 소비자 실행 | 대부분 재시도로 성공 |
+| 10:02 | 메시지가 `null` 인 예외가 섞여 옴 | `onRetry` 소비자에서 `getMessage().trim()` 이 NPE. `RetryImpl.publishRetryEvent` 에는 try/catch 가 없어 **NPE 가 재시도 루프를 끊고 밖으로 나감** | 다음 시도에서 성공했을 요청이 NPE 로 500. 운영자는 "추천 엔진 문제"로 오해 |
+| 10:05 | 추천 엔진이 완전히 다운, 실패율 임계값 도달 | `STATE_TRANSITION` → `onStateTransition` 소비자가 Slack 에 동기 POST. Slack 이 느려 3초 걸림 | 서킷을 연 바로 그 요청이 **3초 더** 늦게 실패. 알림은 도착 |
+| 10:05~ | OPEN 유지 | 상태가 그대로라 `STATE_TRANSITION` 은 더 안 나옴(`isInternalTransition`). `NOT_PERMITTED` 는 계속 나오지만 받는 소비자가 없음 | 사용자는 즉시 fallback. 운영자: "알림이 한 번만 왔다" — 정상 |
+| 10:30 | 수정 배포 | `onRetry` 소비자를 `try/catch` 로 감싸고, Slack 은 예제 1의 큐 + 데몬 스레드 방식으로 교체 | 소비자 문제로 요청이 실패하거나 늦어지는 일이 사라짐 |
+
+같은 실수라도 **CircuitBreaker 소비자에서 난 예외였다면** `publishEvent()` 의 `catch (Throwable)` 이 삼켜 WARN 로그만 남았을 것이다. 컴포넌트마다 안전망이 다르다는 것이 이 시나리오의 핵심이다.
+
+## 8. ❓ 헷갈리는 포인트
+
+- **Q. 이벤트 소비자는 별도 스레드에서 비동기로 도나?**
+  A. 아니다. `processEvent()` 는 for 루프이고, 이벤트를 만든 **호출 스레드**에서 그대로 실행된다. 비동기가 필요하면 소비자가 직접 큐로 넘겨야 한다.
+- **Q. `CircuitBreakerEvent` 같은 상위 타입으로 등록하면 하위 이벤트를 다 받나?**
+  A. 타입별 통은 `event.getClass().getName()` 으로 **정확히 일치**하는 것만 찾는다. 전부 받으려면 `onEvent()` 를 쓴다.
+- **Q. 구독자가 없어도 이벤트 객체는 매번 만들어지나?**
+  A. 각 컴포넌트가 `hasConsumers()` 로 먼저 확인하므로, 구독자가 없으면 이벤트 객체 생성 비용이 없다.
+- **Q. 서킷이 OPEN 으로 계속 유지되는데 상태 전이 알림이 반복해서 오나?**
+  A. 안 온다. `OPEN_TO_OPEN` 같은 자기 전이는 `isInternalTransition` 으로 걸러져 발행되지 않는다. 반복 경보가 필요하면 `NOT_PERMITTED` 를 세서 따로 판단한다.
+- **Q. 등록한 소비자를 나중에 떼어낼 수 있나?**
+  A. `EventProcessor` 에는 해제 API 가 없다. 그래서 요청마다 등록하는 코드는 그대로 메모리 누수다. 등록은 Registry 의 `EntryAddedEvent` 같은 한 지점에서 한 번만 한다.
+
+## 9. 🧾 한 장 요약
+
+- `EventProcessor` 는 약 60줄 — 전역 통(`onEventConsumers`)과 FQCN 별 통(`eventConsumerMap`) 두 개가 전부다.
+- 디스패치는 **전역 전부 → 정확히 일치하는 타입 통** 순서이고, **호출 스레드에서 동기로** 실행된다.
+- 소비자 시간은 사용자 응답 시간에 그대로 더해진다. 서킷이 열리는 그 요청은 `ERROR` → `FAILURE_RATE_EXCEEDED` → `STATE_TRANSITION` 세 이벤트를 모두 기다린다.
+- `hasConsumers()` 가드 덕분에 구독자가 없으면 비용이 0 이다.
+- 소비자 예외는 CircuitBreaker 만 삼키고(`LOG.warn`), Retry·Bulkhead·RateLimiter·TimeLimiter 는 **호출 경로로 전파**한다.
+- OPEN 중에는 요청마다 `NOT_PERMITTED` 가 나간다 — 전역 소비자(`onEvent`)에 무거운 일을 두지 않는다.
+- 올바른 패턴: 소비자는 `offer()` 만, 느린 일은 데몬 스레드, 소비자 안은 `catch (Throwable)`, 등록은 한 번.
+
 ---
 
 ## 관련 문서
@@ -391,3 +544,5 @@ public final class CircuitBreakerObservability {
 - 참고: [CircuitBreaker 상태 머신](./06-circuitbreaker-state-machine.md), [Actuator와 헬스](../advanced/05-actuator-and-health.md)
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

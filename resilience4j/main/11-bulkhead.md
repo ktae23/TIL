@@ -4,10 +4,16 @@ Resilience4j의 Bulkhead는 이름이 하나지만 구현이 둘입니다. `Sema
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
+  - [🖼 그림으로 보기 — 칸막이, 그리고 같은 스레드냐 갈아타냐](#-그림으로-보기--칸막이-그리고-같은-스레드냐-갈아타냐)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
 - [4. 실전 예제](#4-실전-예제)
+  - [4-5. 🔢 숫자로 따라가기](#4-5--숫자로-따라가기)
+  - [4-6. 🔥 시나리오 — 외부 원장 서버가 2초로 느려진 날](#4-6--시나리오--외부-원장-서버가-2초로-느려진-날)
+  - [4-7. 🔥 시나리오 — 마케팅 푸시로 요청이 10배 몰린 날](#4-7--시나리오--마케팅-푸시로-요청이-10배-몰린-날)
 - [5. 정리](#5-정리)
+- [6. ❓ 헷갈리는 포인트](#6--헷갈리는-포인트)
+- [7. 🧾 한 장 요약](#7--한-장-요약)
 
 ---
 
@@ -43,6 +49,66 @@ Tomcat 스레드풀 200개
 | 거절 예외 | `BulkheadFullException` | `BulkheadFullException` |
 
 핵심 차이는 "스레드가 바뀌는가"입니다. 그 한 줄에서 나머지 모든 차이가 파생됩니다.
+
+### 🖼 그림으로 보기 — 칸막이, 그리고 같은 스레드냐 갈아타냐
+
+먼저 "격벽"이 서버 안에서 어떻게 생겼는지부터 봅니다. Tomcat 스레드 200개는 모든 API가 같이 쓰는 공용 자원입니다. Bulkhead는 그중 "외부 원장 서버를 기다리는 데 쓸 수 있는 몫"에 칸을 칩니다.
+
+```mermaid
+flowchart LR
+    REQ["유입 요청"] --> TP["Tomcat 스레드 200개<br/>(모든 API 공용)"]
+    TP --> P["/points 포인트 지급"]
+    TP --> B["/balance 잔액 조회"]
+    TP --> H["/health"]
+    P --> BH{"Bulkhead ledger<br/>maxConcurrentCalls=50"}
+    BH -->|"permit 있음 (최대 50개)"| L["외부 원장 서버 호출"]
+    BH -->|"50개 모두 사용 중"| X["BulkheadFullException<br/>→ 폴백 응답 (수 ms)"]
+    B --> DB["DB"]
+```
+
+원장 서버가 아무리 느려져도 **원장을 기다리는 스레드는 50개를 넘지 못합니다.** 나머지 150개는 `/balance`, `/health`의 몫으로 남습니다.
+
+이제 두 구현에서 한 번의 호출이 어떤 스레드 위에서 도는지 나란히 봅니다. 먼저 `SemaphoreBulkhead`입니다.
+
+```mermaid
+sequenceDiagram
+    participant T as Tomcat 스레드 exec-7
+    participant SB as SemaphoreBulkhead
+    participant L as 외부 원장 서버
+
+    T->>SB: tryAcquirePermission()<br/>semaphore.tryAcquire(maxWaitDuration)
+    alt permit 있음
+        SB-->>T: true
+        T->>L: 같은 exec-7 위에서 호출 (MDC · 인증 · TX 그대로)
+        L-->>T: 응답
+        T->>SB: onComplete() → release()
+    else permit 없음, maxWaitDuration 경과
+        SB-->>T: false → BulkheadFullException
+    end
+```
+
+다음은 `ThreadPoolBulkhead`(`FixedThreadPoolBulkhead`)입니다. 호출자 스레드는 일을 **맡기고 돌아오고**, 실제 호출은 `bulkhead-<name>-N` 스레드에서 일어납니다.
+
+```mermaid
+sequenceDiagram
+    participant T as Tomcat 스레드 exec-7
+    participant EX as ThreadPoolExecutor<br/>(core · queue · max)
+    participant W as 워커 bulkhead-report-1
+    participant L as 하류 작업
+
+    T->>EX: submit(callable)
+    alt 스레드 or 큐에 자리 있음
+        EX-->>T: CompletableFuture 즉시 반환
+        Note over T: exec-7 은 여기서 풀려남
+        EX->>W: 큐에서 꺼내 실행
+        W->>L: 호출 (MDC · 인증 · TX 없음,<br/>ContextPropagator 로 옮긴 것만)
+        L-->>W: 응답
+        W-->>T: future 완료 → whenComplete 콜백
+    else 큐 full 이고 스레드 == max
+        EX--xT: RejectedExecutionException
+        Note over T: BulkheadFullException 이 submit() 에서<br/>동기적으로 던져짐 (future 로 오지 않음)
+    end
+```
 
 ### 설정값
 
@@ -617,6 +683,116 @@ public class BulkheadObservability {
 - `rejected`가 평시에 발생 → 한도가 너무 낮거나, 하류가 이미 느려짐. 4-2로 돌아가 재계산
 - `thread.active`가 `coreThreadPoolSize`에 붙어 있고 `queue.depth`도 양수 → 3.4에서 설명한 "큐가 차기 전엔 스레드가 안 늘어난다" 상태. 큐를 줄이거나 core를 늘려야 합니다
 
+### 4-5. 🔢 숫자로 따라가기
+
+**(A) `SemaphoreBulkhead` — `maxConcurrentCalls=3`, `maxWaitDuration=0`**
+
+`maxWaitDuration=0`이면 `tryEnterBulkhead()`가 `semaphore.tryAcquire(0, MILLISECONDS)`를 부릅니다. 판단은 이것 하나입니다.
+
+```mermaid
+flowchart LR
+    IN["호출 도착"] --> Q{"지금 남은 permit > 0 ?"}
+    Q -->|yes| RUN["permit 1개 가져가고 즉시 실행<br/>(기다림 0)"]
+    Q -->|no| REJ["기다리지 않고 바로 false<br/>→ BulkheadFullException"]
+    RUN --> DONE["호출이 끝나야 onComplete() 로 반납"]
+```
+
+호출 7건이 겹쳐서 들어옵니다(시각·소요 시간 단위: 초).
+
+| 호출 | 도착 | 소요 | 도착 순간 실행 중 | 결과 | 끝나는 시각 |
+|---|---|---|---|---|---|
+| A | 0.0 | 1.0 | 없음 | ✅ 진입 (사용 1/3) | 1.0 |
+| B | 0.1 | 0.5 | A | ✅ 진입 (2/3) | 0.6 |
+| C | 0.2 | 1.0 | A, B | ✅ 진입 (3/3) | 1.2 |
+| D | 0.3 | 0.5 | A, B, C | ❌ **BulkheadFullException** (즉시) | — |
+| E | 0.7 | 0.5 | A, C (B는 0.6에 반납) | ✅ 진입 (3/3) | 1.2 |
+| F | 0.8 | 0.3 | A, C, E | ❌ **BulkheadFullException** (즉시) | — |
+| G | 1.15 | 0.3 | C, E (A는 1.0에 반납) | ✅ 진입 (3/3) | 1.45 |
+
+동시 실행은 어느 순간에도 3을 넘지 않고, 거절된 D·F는 **0ms 만에** 실패합니다. 호출 스레드를 붙잡지 않으니 그 스레드는 바로 폴백 응답을 만들러 갑니다.
+
+**(B) 같은 호출, `maxWaitDuration=500ms`** (fair 세마포어라 먼저 기다린 쪽이 먼저 들어감)
+
+| 호출 | 도착 | 기다림 | 진입 시각 | 끝나는 시각 |
+|---|---|---|---|---|
+| A, B, C | 0.0 / 0.1 / 0.2 | 0 | 즉시 | 1.0 / 0.6 / 1.2 |
+| D | 0.3 | 0.3 (B 반납 0.6까지) | 0.6 | 1.1 |
+| E | 0.7 | 0.3 (A 반납 1.0까지) | 1.0 | 1.5 |
+| F | 0.8 | 0.3 (D 반납 1.1까지) | 1.1 | 1.4 |
+| G | 1.15 | 0.05 (C 반납 1.2까지) | 1.2 | 1.5 |
+
+이번엔 7건 모두 성공했지만 D·E·F·G가 **0.05~0.3초씩 호출 스레드를 잡고 기다렸습니다.** 짧은 버스트에는 대기가 이득이고, 하류가 계속 느린 상황에서는 이 대기가 그대로 스레드 점유가 됩니다. 그래서 "대기는 짧게, 0이 기본"입니다.
+
+**(C) 리틀의 법칙 — 응답이 느려지면 동시 실행이 몇 개가 되나** (`L = λ × W`, 유입 20 req/s 고정)
+
+| 하류 응답 시간 W | 동시 실행 L | `maxConcurrentCalls=10`이면 |
+|---|---|---|
+| 100ms (정상) | 20 × 0.1 = **2** | 여유. 거절 없음 |
+| 500ms | 20 × 0.5 = **10** | 딱 한계 |
+| 2s (열화) | 20 × 2 = **40** | 동시 10개까지만. 성공 처리량 최대 10 / 2s = **5 req/s**, 나머지 15 req/s는 즉시 거절 |
+| 10s (사실상 장애) | 20 × 10 = **200** | 성공 1 req/s, 거절 19 req/s. Bulkhead가 없으면 Tomcat 200개가 전부 이 호출을 기다린다 |
+
+유입은 그대로인데 **응답이 20배 느려지면 동시 실행도 20배**가 됩니다. RateLimiter(유입 속도 제한)로는 이 증가를 막을 수 없는 이유입니다. 그리고 Bulkhead를 건 순간 처리량의 상한은 **`maxConcurrentCalls / W`**가 됩니다 — 4-7 시나리오에서 이 식이 다시 나옵니다.
+
+**(D) `ThreadPoolBulkhead` — core 4 · max 8 · queue 8, 작업당 1초, 20건이 동시에 도착**
+
+3.4의 `ThreadPoolExecutor` 규칙(core → 큐 → max → 거절)을 그대로 적용합니다.
+
+| 도착 순번 | 그 순간 상태 | 처리 | 실행 시간대 |
+|---|---|---|---|
+| 1~4 | 스레드 < core(4) | 코어 스레드 새로 생성, 즉시 실행 | 0~1s |
+| 5~12 | 스레드 = core, 큐에 자리 있음 | **큐에 적재** (8건) | 1~2s |
+| 13~16 | 큐 가득, 스레드 < max(8) | 비코어 스레드 생성, 즉시 실행 | 0~1s |
+| 17~20 | 큐 가득, 스레드 = max | `RejectedExecutionException` → **`BulkheadFullException`을 `submit()`에서 동기 throw** | — |
+
+먼저 온 5~12번이 나중에 온 13~16번보다 **1초 늦게** 끝납니다. 큐는 순서를 지켜 주지 않습니다. 같은 20건을 기본값 `queueCapacity=100`에 core 4·max 8로 넣으면 어떻게 될까요? 큐가 차지 않으니 스레드는 4개에서 늘지 않고, 20건이 4개씩 다섯 번에 걸쳐 0~5초 동안 처리됩니다. 거절은 0건이지만 마지막 요청은 **4초를 큐에서** 기다립니다.
+
+### 4-6. 🔥 시나리오 — 외부 원장 서버가 2초로 느려진 날
+
+**상황.** 포인트 지급 API가 외부 원장 서버를 호출합니다. 인스턴스당 유입 120 req/s, 원장 응답 평소 100ms → 동시 실행 `L = 120 × 0.1 = 12`. Tomcat 최대 스레드 200개. 같은 서버에 잔액 조회 API와 헬스체크도 있습니다.
+
+**Bulkhead가 없을 때.**
+
+| 시각 | 무슨 일 | 원장 대기 스레드 |
+|---|---|---|
+| 14:00:00.0 | 원장 서버 응답이 2초로 늘어남 (아직 실패는 아님 → CircuitBreaker 실패율은 0%) | 12 |
+| 14:00:00.5 | 새 요청은 계속 들어오는데 아무도 끝나지 않음 | 12 + 60 = 72 |
+| 14:00:01.0 | | 132 |
+| 14:00:01.6 | **200개 소진.** 잔액 조회·헬스체크 요청도 Tomcat 대기열에서 멈춤 | 200 |
+| 14:00:02~ | 정상 상태로 가려면 `120 × 2 = 240`개가 필요한데 200개뿐 → 계속 포화 | 200 |
+| 14:00:10~ | 헬스체크 실패로 인스턴스가 재시작 → 남은 인스턴스로 부하가 몰려 연쇄 포화 | — |
+
+느린호출 기반 CircuitBreaker를 걸어 뒀더라도 `minimumNumberOfCalls`만큼 호출이 **끝나야** 판정이 시작됩니다. 2초짜리 호출이 끝나기도 전에 1.6초 만에 스레드가 바닥났습니다.
+
+**`SemaphoreBulkhead`(`maxConcurrentCalls=50`, `maxWaitDuration=0`)가 있을 때.**
+
+| 시각 | 무슨 일 | 원장 대기 스레드 |
+|---|---|---|
+| 14:00:00.0 | 응답 2초로 늘어남 | 12 |
+| 14:00:00.3 | 12 + 120 × 0.3 ≈ 50 → **permit 소진** | 50 |
+| 14:00:00.3~ | 이후 원장 호출 성공 처리량 = 50 / 2s = **25 req/s**. 나머지 95 req/s는 `BulkheadFullException`으로 **수 ms 안에** 폴백("지급 요청이 접수되었습니다" + 재처리 큐 적재) | 50 고정 |
+| 계속 | Tomcat 200개 중 150개는 잔액 조회·헬스체크가 그대로 사용. **포인트 지급 기능만 열화, 서비스는 생존** | 50 |
+| 수십 초 뒤 | 끝난 느린 호출이 `minimumNumberOfCalls`를 채우면 느린호출 CircuitBreaker가 OPEN → 원장 호출 자체를 멈춤. Bulkhead는 그 판정이 나기 전 구간을 버텨 준 셈 | ↓ |
+
+`maxConcurrentCalls=50`은 4-2 절차대로 `min(L_degraded, 자원 상한)`에서 나온 값이어야 합니다. 원장용 HTTP 커넥션 풀이 30이라면 50이 아니라 30입니다.
+
+### 4-7. 🔥 시나리오 — 마케팅 푸시로 요청이 10배 몰린 날
+
+**상황.** 위 서비스에 오후 7시 마케팅 푸시가 나갑니다. 원장 서버는 **멀쩡합니다**(응답 100ms). 유입만 120 → 1,200 req/s로 30초간 뜁니다.
+
+| 항목 | 계산 |
+|---|---|
+| 필요한 동시 실행 | `L = 1,200 × 0.1 = 120` |
+| Bulkhead 상한 50일 때 최대 처리량 | `50 / 0.1s = 500 req/s` |
+| 거절 | 1,200 − 500 = **700 req/s** (하류가 건강한데도) |
+| `maxWaitDuration=50ms`로 바꾸면 | 처리량 상한은 그대로 500 req/s. 대신 거절될 700 req/s가 50ms씩 스레드를 잡아 **35개**가 추가로 대기 |
+
+Bulkhead는 "느려짐"뿐 아니라 "몰림"에도 똑같이 반응합니다. 처리량 상한이 `maxConcurrentCalls / W`이기 때문입니다. 이 상황에서 할 수 있는 선택은 셋입니다.
+
+1. **상한을 피크 기준으로 다시 잡는다** — 원장 커넥션 풀과 원장 서버의 동시 허용치가 받쳐 준다면 `L_peak = 120` 이상으로.
+2. **대기를 늘리지 않는다** — `maxWaitDuration`은 초 단위 피크를 흡수하지 못하고 스레드 점유만 늘립니다. 수십 ms 단위 순간 버스트용입니다.
+3. **줄을 세울 곳을 바꾼다** — 푸시처럼 예고된 피크는 지급 요청을 큐에 적재하고 비동기로 소화하는 편이 낫습니다. 유입 자체를 고르게 하려면 RateLimiter([RateLimiter ②의 4-3](./10-ratelimiter-semaphore.md#4-3-ratelimiter-vs-bulkhead--혼동하지-않는-기준))를 앞에 둡니다.
+
 ---
 
 ## 5. 정리
@@ -643,9 +819,34 @@ public class BulkheadObservability {
 
 ---
 
+## 6. ❓ 헷갈리는 포인트
+
+- **Q. 벌크헤드랑 레이트 리미터는 뭐가 다른가요?** — RateLimiter는 **초당 몇 건 들어오나(λ)**를, Bulkhead는 **지금 동시에 몇 개 떠 있나(L)**를 셉니다. 하류가 느려지면 λ는 그대로인데 L이 폭증합니다(4-5 (C)). 느린 의존성에서 스레드를 지키는 건 Bulkhead의 일입니다.
+- **Q. 세마포어 벌크헤드가 느린 호출을 중간에 끊어 주나요?** — 아닙니다. `SemaphoreBulkhead`는 **입구에서 permit을 나눠 줄 뿐**이고, 들어간 호출은 끝날 때까지(`onComplete()`) permit을 쥐고 있습니다. 끊는 건 HTTP 클라이언트 타임아웃이나 TimeLimiter의 몫입니다 — [TimeLimiter와 조합 순서](./12-timelimiter-and-composition.md).
+- **Q. `maxWaitDuration=0`이면 자리가 있어도 거절되나요?** — 아닙니다. `tryAcquire(0, MILLISECONDS)`는 permit이 남아 있으면 즉시 성공하고, **없을 때만** 기다리지 않고 실패합니다.
+- **Q. `ThreadPoolBulkhead`에 `maxThreadPoolSize`를 크게 주면 바쁠 때 스레드가 늘어나죠?** — 큐가 **가득 찬 뒤에만** 늘어납니다. 기본 큐 100이면 대부분 core에 머뭅니다(3.4, 4-5 (D)).
+- **Q. 거절을 줄이려면 `maxConcurrentCalls`를 크게 잡으면 되나요?** — 상한을 커넥션 풀보다 크게 잡으면 대기가 Bulkhead 밖(커넥션 풀)으로 옮겨가 보이지 않게 될 뿐입니다. 처리량 상한은 `maxConcurrentCalls / W`이므로, 가장 희소한 자원 안에서 피크 L을 기준으로 정하세요(4-2, 4-7).
+
+---
+
+## 7. 🧾 한 장 요약
+
+- Bulkhead는 **동시 실행 수(L)**에 칸을 쳐서, 느린 의존성 하나가 공용 스레드풀을 다 먹지 못하게 한다.
+- `SemaphoreBulkhead` = 호출 스레드 그대로 + 세마포어 permit. 컨텍스트가 유지되고, 트랜잭션 경로에서는 이것만 쓴다.
+- `ThreadPoolBulkhead` = 다른 스레드로 넘기고 `CompletionStage`를 받는다. MDC·인증·트랜잭션이 끊기고, 포화 시 `BulkheadFullException`이 `submit()`에서 **동기로** 던져진다.
+- `maxWaitDuration=0`은 "자리가 있으면 즉시, 없으면 즉시 거절". 대기는 짧은 버스트용이고, 대기한 만큼 스레드를 잡는다.
+- 리틀의 법칙 `L = λW`: 같은 유입에서 응답이 20배 느려지면 동시 실행도 20배. 상한은 열화 시 L과 커넥션 풀 등 **가장 희소한 자원**의 min으로.
+- Bulkhead를 걸면 처리량 상한은 `maxConcurrentCalls / W`. 하류가 건강해도 피크 유입이 이를 넘으면 거절된다.
+- `ThreadPoolExecutor`는 큐가 가득 차야 max까지 스레드를 늘린다. 큰 큐는 거절을 지연으로 바꿀 뿐이다.
+- Bulkhead는 입구만 지킨다. 들어간 호출을 끊는 건 HTTP 타임아웃 · TimeLimiter다.
+
+---
+
 ## 관련 문서
 - 선행: [RateLimiter ② Semaphore 방식과 둘의 선택 기준](./10-ratelimiter-semaphore.md)
 - 후행: [TimeLimiter와 조합 순서 — 데코레이터를 거꾸로 끼우면 안 되는 이유](./12-timelimiter-and-composition.md)
 
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

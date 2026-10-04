@@ -6,8 +6,14 @@
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [🖼 그림으로 보기 — 기록 한 번이 판정까지 가는 길](#-그림으로-보기--기록-한-번이-판정까지-가는-길)
 - [4. 실전 예제](#4-실전-예제)
 - [5. 정리](#5-정리)
+- [6. 🔢 숫자로 따라가기](#6--숫자로-따라가기)
+  - [🖼 그림으로 보기 — 8번째 호출 직후의 원형 배열과 상태 변화](#-그림으로-보기--8번째-호출-직후의-원형-배열과-상태-변화)
+- [7. 🔥 시나리오](#7--시나리오)
+- [8. ❓ 헷갈리는 포인트](#8--헷갈리는-포인트)
+- [9. 🧾 한 장 요약](#9--한-장-요약)
 ---
 
 ## 1. 핵심 개념 (What)
@@ -171,6 +177,27 @@ flowchart TD
 | `getNumberOfSuccessfulCalls()` / `getNumberOfSlowSuccessfulCalls()` | `total - failed` / `slow - slowFailed` | 별도 카운터가 없다. 뒤쪽은 이중 집계의 결과물 |
 
 앞의 네 개는 모두 `if (totalNumberOfCalls == 0) return 0;`(또는 `Duration.ZERO`) 가드로 시작한다. 하지만 서킷이 "호출 0건 = 실패율 0%" 로 판단하는 건 아니다 — `CircuitBreakerMetrics.getFailureRate(Snapshot)` 가 한 겹 더 감싸, `bufferedCalls == 0 || bufferedCalls < minimumNumberOfCalls` 면 `-1.0f` 를 돌려준다. 이 `-1.0f` 가 "판단 보류"의 센티넬이고 `checkIfThresholdsExceeded()` 가 받아 `Result.BELOW_MINIMUM_CALLS_THRESHOLD` 로 바꾼다. **`Snapshot` 레벨의 0 과 `CircuitBreakerMetrics` 레벨의 -1 을 혼동하지 말 것.**
+
+### 🖼 그림으로 보기 — 기록 한 번이 판정까지 가는 길
+
+`record()` 는 락 안에서 끝나고, 판정은 락 밖에서 불변 `Snapshot` 으로 한다. 판정에는 문이 두 개 있다 — **최소 호출 수 문**을 먼저 통과해야 **임계값 문**에 갈 수 있다.
+
+```mermaid
+flowchart TD
+    call["호출 결과 도착<br/>(SUCCESS / ERROR / SLOW_*)"] --> lock
+    subgraph lock["ReentrantLock 구간 — FixedSizeSlidingWindowMetrics.record()"]
+        direction TB
+        a1["totalAggregation.record() — 전체에 더함"] --> a2["headIndex = (headIndex + 1) % windowSize"]
+        a2 --> a3["removeBucket(그 슬롯) — 가장 오래된 값을 전체에서 뺌"]
+        a3 --> a4["슬롯 reset() 후 새 값 기록"]
+        a4 --> a5["new SnapshotImpl(totalAggregation)"]
+    end
+    lock --> g1{"기록 수 == 0 또는<br/>기록 수 < minimumNumberOfCalls?"}
+    g1 -->|"예"| hold["실패율 -1 → BELOW_MINIMUM_CALLS_THRESHOLD<br/>판단 보류, CLOSED 유지"]
+    g1 -->|"아니오"| g2{"실패율 ≥ failureRateThreshold<br/>또는 느린호출률 ≥ slowCallRateThreshold?"}
+    g2 -->|"아니오"| keep["BELOW_THRESHOLDS — CLOSED 유지"]
+    g2 -->|"예"| open["*_ABOVE_THRESHOLDS<br/>→ OPEN 전이"]
+```
 
 ### `PackedAggregation` — lock-free 구현의 배열 레이아웃
 `LOCK_FREE` 를 고르면 집계 타입이 `PackedAggregation` 으로 바뀐다. 필드가 두 개의 원시 배열이다.
@@ -386,6 +413,112 @@ public final class FlappingDemo {
 | `minimumNumberOfCalls` | 횟수 기반은 `Math.min(min, windowSize)` 로 보정, **시간 기반은 보정 없음**. HALF_OPEN 은 설정과 무관하게 **항상 횟수 기반**이고 크기는 `permittedNumberOfCallsInHalfOpenState` |
 | 사이징·플래핑 | `slidingWindowSize = 초당 요청 수 × 관측 구간(초)`, 최소 100 이상(그 이하면 `TIME_BASED`). `failureRateThreshold` 는 평상시 실패율의 2배 이상 |
 
+## 6. 🔢 숫자로 따라가기
+
+설정: `COUNT_BASED`, `slidingWindowSize=5`, `minimumNumberOfCalls=3`, `failureRateThreshold=50`, 느린 호출 없음(모든 호출이 `slowCallDurationThreshold` 이내). 생성 직후 `headIndex=0`, 슬롯 5개는 비어 있다. S=성공, E=실패, 위첨자는 호출 번호.
+
+| 호출 | 결과 | `headIndex` | 밀려난 값 | 윈도 (슬롯 0~4) | 기록 / 실패 | `Snapshot` 실패율 | `CircuitBreakerMetrics` 판정 | 상태 |
+|---|---|---|---|---|---|---|---|---|
+| 1 | S | 0 → 1 | (빈 슬롯) | `[ -, S¹, -, -, - ]` | 1 / 0 | 0% | **-1 (보류, 1 < 3)** | CLOSED |
+| 2 | E | 1 → 2 | (빈 슬롯) | `[ -, S¹, E², -, - ]` | 2 / 1 | **50%** | **-1 (보류, 2 < 3)** | CLOSED |
+| 3 | S | 2 → 3 | (빈 슬롯) | `[ -, S¹, E², S³, - ]` | 3 / 1 | 33.3% | 33.3 < 50 → `BELOW_THRESHOLDS` | CLOSED |
+| 4 | S | 3 → 4 | (빈 슬롯) | `[ -, S¹, E², S³, S⁴ ]` | 4 / 1 | 25% | `BELOW_THRESHOLDS` | CLOSED |
+| 5 | E | 4 → 0 | (빈 슬롯) | `[ E⁵, S¹, E², S³, S⁴ ]` ← 가득 | 5 / 2 | 40% | `BELOW_THRESHOLDS` | CLOSED |
+| 6 | S | 0 → 1 | **S¹** | `[ E⁵, S⁶, E², S³, S⁴ ]` | 5 / 2 | 40% | `BELOW_THRESHOLDS` | CLOSED |
+| 7 | E | 1 → 2 | **E²** | `[ E⁵, S⁶, E⁷, S³, S⁴ ]` | 5 / 2 | 40% | `BELOW_THRESHOLDS` | CLOSED |
+| 8 | E | 2 → 3 | **S³** | `[ E⁵, S⁶, E⁷, E⁸, S⁴ ]` | 5 / 3 | **60%** | 60 ≥ 50 → `FAILURE_RATE_ABOVE_THRESHOLDS` | **OPEN** |
+| 9 | — | 변화 없음 | — | 그대로 | 5 / 3 | — | `acquirePermission()` 거부 → `CallNotPermittedException` | OPEN |
+
+읽는 법.
+
+- **2번 호출이 핵심이다.** `Snapshot` 의 실패율은 이미 50% 지만, 기록이 2건뿐이라 `CircuitBreakerMetrics.getFailureRate()` 가 `-1` 을 돌려준다. 임계값과 같아도 열리지 않는다.
+- **7번 호출은 실패가 들어왔는데 실패율이 그대로다.** 밀려난 값도 실패(E²)라 더하기 1, 빼기 1 이 상쇄됐다. subtract-on-evict 가 눈에 보이는 순간이다.
+- **8번은 성공(S³)이 밀려나고 실패가 들어와** 실패 수가 2 → 3 으로 올라 60% 가 됐다.
+- **9번 이후 거부된 호출은 윈도에 들어가지 않는다.** `circuitBreakerMetrics.onCallNotPermitted()` 로 별도 카운터만 오른다.
+
+### 🖼 그림으로 보기 — 8번째 호출 직후의 원형 배열과 상태 변화
+
+화살표 방향이 `headIndex` 가 전진하는 방향이다. 지금 `headIndex` 는 슬롯3(가장 최근)을 가리키고, 그다음 칸인 슬롯4가 가장 오래된 값이라 다음 호출 때 밀려난다.
+
+```mermaid
+flowchart LR
+    s0["슬롯0<br/>E⁵"] --> s1["슬롯1<br/>S⁶"]
+    s1 --> s2["슬롯2<br/>E⁷"]
+    s2 --> s3["슬롯3<br/>E⁸<br/>headIndex (가장 최근)"]
+    s3 --> s4["슬롯4<br/>S⁴<br/>가장 오래됨 → 다음에 밀려남"]
+    s4 --> s0
+    tot["totalAggregation<br/>calls=5, failed=3 → 60%"]
+```
+
+같은 9번의 호출을 상태로만 그리면 이렇다.
+
+```mermaid
+stateDiagram-v2
+    state "CLOSED · 판단 보류 (기록 < 3)" as hold
+    state "CLOSED · 판정 중 (실패율 25~40%)" as judge
+    state "OPEN · 호출 거부" as open
+    [*] --> hold : 1~2번째 호출
+    hold --> judge : 3번째 호출로 최소 호출 수 도달
+    judge --> judge : 4~7번째 호출 (임계값 미만)
+    judge --> open : 8번째 호출, 실패율 60% ≥ 50%
+    open --> open : 9번째 호출은 기록 없이 거부
+```
+
+## 7. 🔥 시나리오
+
+**상황: "포인트 지급 API" 가 외부 원장 서버를 호출한다.** 인스턴스당 초당 약 10건. 설정은 `slidingWindowSize=100`, `minimumNumberOfCalls=20`, `failureRateThreshold=50`. 09:00:00 에 원장 서버 배포 사고로 모든 호출이 실패하기 시작한다. 같은 장애가 **윈도 상태에 따라** 얼마나 다르게 감지되는지 세 경우로 본다.
+
+**경우 A — 평소처럼 윈도가 성공 100건으로 가득 찬 상태**
+
+| 시각 | 누적 실패 | 윈도 (기록 / 실패) | 실패율 | 상태 | 사용자가 보는 것 |
+|---|---|---|---|---|---|
+| 09:00:01 | 10 | 100 / 10 | 10% | CLOSED | 지급 실패 오류 (원장 서버 오류가 그대로 전달) |
+| 09:00:03 | 30 | 100 / 30 | 30% | CLOSED | 계속 실패 |
+| 09:00:04.9 | 49 | 100 / 49 | 49% | CLOSED | 계속 실패 |
+| 09:00:05 | 50 | 100 / 50 | **50%** | **OPEN** | 이 요청까지 실패 |
+| 09:00:05 이후 | — | 변화 없음 | — | OPEN | 원장 서버를 부르지 않고 즉시 fallback("지급 접수, 잠시 후 반영") |
+
+실패 하나가 들어올 때마다 성공 하나가 밀려나므로 실패율은 1%p 씩 오른다. 감지까지 **약 5초, 사용자 실패 50건**.
+
+**경우 B — 앱이 09:00:00 에 막 재시작해 윈도가 비어 있는 상태**
+
+| 시각 | 윈도 (기록 / 실패) | 판정 | 상태 |
+|---|---|---|---|
+| 09:00:00 ~ 09:00:01.9 | 1/1 ~ 19/19 | `-1` (보류, 기록 < 20) | CLOSED |
+| 09:00:02 | 20 / 20 | 100% ≥ 50% | **OPEN** |
+
+같은 장애인데 **약 2초, 실패 20건** 만에 열린다. 쌓아둔 성공 기록이 없어서다.
+
+**경우 C — 새벽 시간, 초당 0.2건(5초에 1건)이고 윈도는 성공 100건으로 가득**
+
+윈도 100건이 담는 과거는 500초(약 8분)다. 실패 50건이 쌓여야 열리므로 **250초(약 4분)** 동안 지급 요청이 하나하나 실패한다. 운영자가 알람을 받고 들어왔을 때 서킷은 아직 CLOSED 다. 이 트래픽이면 2절과 예제 1의 결론대로 `TIME_BASED` 가 맞다.
+
+복구 쪽도 하나 기억해 둔다. 원장 서버가 살아나 HALF_OPEN 시험을 통과하면 CLOSED 로 돌아가는데, 이때 `ClosedState` 생성자가 `CircuitBreakerMetrics.forClosed()` 로 **새 윈도**를 만든다. 장애 시점의 실패 기록은 들고 오지 않는다.
+
+## 8. ❓ 헷갈리는 포인트
+
+- **Q. `minimumNumberOfCalls` 전에는 실패율이 계산되나?**
+  A. `Snapshot` 은 계산한다(6절 2번 호출: 50%). 하지만 `CircuitBreakerMetrics` 가 `-1` 로 덮어 판정을 보류한다. `cb.getMetrics().getFailureRate()` 도 같은 경로라 대시보드에 `-1` 이 보이면 "아직 최소 호출 수 미달"이라는 뜻이다.
+- **Q. 윈도가 가득 차야 판정을 시작하나?**
+  A. 아니다. 기준은 `minimumNumberOfCalls` 다. 6절에서는 윈도 5칸 중 3칸이 찼을 때부터 판정했다.
+- **Q. 실패율이 임계값과 정확히 같으면 열리나?**
+  A. 열린다. 비교가 `failureRateInPercentage >= failureRateThreshold` 다.
+- **Q. OPEN 중 거부된 호출도 윈도에 "실패"로 쌓이나?**
+  A. 쌓이지 않는다. 거부는 `numberOfNotPermittedCalls` 라는 별도 카운터에만 남는다.
+- **Q. `ignoreExceptions` 에 걸린 예외는 성공으로 세나?**
+  A. 어느 쪽으로도 세지 않는다. `handleThrowable()` 이 `releasePermission()` 후 `IGNORED_ERROR` 이벤트만 내고 윈도에는 기록하지 않는다. 반면 `recordException` 조건에 안 맞는 예외는 **성공으로** 기록된다.
+
+## 9. 🧾 한 장 요약
+
+- 횟수 기반 윈도는 호출 기록이 아니라 **슬롯별 집계 + 전체 합계**만 들고 있다.
+- 매 호출: 전체에 더하기 → `headIndex` 한 칸 전진 → 그 칸(가장 오래된 값)을 전체에서 빼기 → 그 칸에 새 값 기록 (subtract-on-evict).
+- 실패율은 `failed * 100 / total` — **퍼센트**다. 계산은 O(1).
+- 기록이 `minimumNumberOfCalls` 미만이면 `-1` 로 판정 보류. 같거나 넘으면 `>=` 비교로 OPEN 여부를 정한다.
+- 횟수 기반에서는 `minimumNumberOfCalls` 가 `slidingWindowSize` 로 잘린다. 시간 기반은 안 잘린다.
+- 같은 장애라도 윈도에 성공이 많이 쌓여 있으면 늦게, 비어 있으면 빨리 열린다. 트래픽이 적으면 "늦게"가 몇 분이 된다 → `TIME_BASED`.
+- OPEN 중 거부는 윈도에 안 들어가고, CLOSED 로 돌아오면 윈도는 새로 시작한다.
+- 기본 구현(`SYNCHRONIZED`)은 `ReentrantLock` + 할당 0, `LOCK_FREE` 는 CAS + 호출당 객체 할당.
+
 ---
 
 ## 관련 문서
@@ -394,3 +527,5 @@ public final class FlappingDemo {
 - 참고: [CircuitBreaker 상태 머신](./06-circuitbreaker-state-machine.md), [프로덕션 설계](../advanced/12-production-design.md)
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

@@ -6,8 +6,12 @@
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+- [🔢 숫자로 따라가기](#-숫자로-따라가기)
 - [4. 실전 예제](#4-실전-예제)
+- [🔥 시나리오](#-시나리오)
+- [❓ 헷갈리는 포인트](#-헷갈리는-포인트)
 - [5. 정리](#5-정리)
+- [🧾 한 장 요약](#-한-장-요약)
 
 ---
 
@@ -33,6 +37,23 @@
 | `writableStackTraceEnabled` / `ignoreExceptionsPrecedenceEnabled` | `boolean` | **true** / **false** | - | 스택트레이스 생성 여부(프로덕션은 false 권장) / `getRecordExceptionPredicate()` 가 ignore 반영 여부 |
 | `clock` | `java.time.Clock` | `Clock.systemUTC()` | null → 기본값 | OPEN 만료 판정, TIME_BASED(SYNCHRONIZED) 윈도 |
 | `currentTimestampFunction` + `timestampUnit` | `Function<Clock,Long>` + `TimeUnit` | `System.nanoTime()`, `NANOSECONDS` | - | 호출 duration 측정 |
+
+### 🖼 그림으로 보기 — 숫자 옵션들은 어떤 순서로 맞물리나
+
+옵션이 많아 보이지만 판정 경로는 하나다. **① 분류 → ② 최소 호출 수 관문 → ③ 두 비율 중 하나라도 `>=` 임계값**이면 OPEN 이다(`CircuitBreakerMetrics.checkIfThresholdsExceeded()`).
+
+```mermaid
+flowchart TD
+    CALL["호출 1건 종료"] --> CLS["① 분류: ignore / 실패 / 성공<br/>(ignoreExceptions, recordExceptions, recordResultPredicate)"]
+    CLS -->|"ignore"| DROP["윈도에 기록 안 함"]
+    CLS -->|"실패 또는 성공"| SLOWQ{"duration > slowCallDurationThreshold?<br/>(기본 60s, 초과만 느림)"}
+    SLOWQ --> WIN["윈도에 기록<br/>(slidingWindowType / slidingWindowSize)"]
+    WIN --> GATE{"② 윈도 호출 수 >= minimumNumberOfCalls?"}
+    GATE -->|"아니오"| BMC["BELOW_MINIMUM_CALLS_THRESHOLD<br/>실패율 100%여도 판정 안 함"]
+    GATE -->|"예"| RATE{"③ 실패율 >= failureRateThreshold (기본 50)<br/>또는<br/>느린호출율 >= slowCallRateThreshold (기본 100)"}
+    RATE -->|"아니오"| STAY["BELOW_THRESHOLDS → 유지"]
+    RATE -->|"예"| OPEN["OPEN<br/>대기 = waitIntervalFunctionInOpenState(attempts)"]
+```
 
 ---
 
@@ -76,6 +97,29 @@ flowchart TD
     DUR{"duration > slowCallDurationThreshold?"}
     DUR -->|"예"| SLOW["Outcome.SLOW_ERROR / SLOW_SUCCESS"]
     DUR -->|"아니오"| FAST["Outcome.ERROR / SUCCESS"]
+```
+
+#### 🖼 그림으로 보기 — 호출 1건이 올리는 카운터
+
+`AbstractAggregation.record()` 는 Outcome 4종에 따라 카운터를 다르게 올린다. **느리면서 실패한 호출은 실패율과 느린호출율 양쪽 분자에 다 들어간다.**
+
+```mermaid
+flowchart LR
+    subgraph OUT["Outcome (실패 여부 × 느림 여부)"]
+        S["SUCCESS"]
+        SS["SLOW_SUCCESS"]
+        E["ERROR"]
+        SE["SLOW_ERROR"]
+    end
+    S --> N["numberOfCalls +1"]
+    SS --> N
+    E --> N
+    SE --> N
+    SS --> SL["numberOfSlowCalls +1"]
+    SE --> SL
+    E --> F["numberOfFailedCalls +1"]
+    SE --> F
+    SE --> SF["numberOfSlowFailedCalls +1"]
 ```
 
 런타임 순서는 **ignore → record → (둘 다 아니면) success** 다.
@@ -191,6 +235,66 @@ private IntervalFunction validateWaitIntervalFunctionInOpenState() {
 ```
 
 둘이 같은 필드를 쓰고 호출 횟수를 센다. **카운터가 2 이상이면 `build()` 가 터진다** — 같은 메서드를 두 번 호출해도 마찬가지이고, Spring 프로퍼티와 Customizer 양쪽에서 각각 설정하면 이 예외를 본다. `IntervalFunction` 의 인자 `attempts` 는 상태 객체를 거쳐 누적된다 — `transitionToOpenState()` 가 `new OpenState(currentState.attempts() + 1, currentState.getMetrics())` 를 만든다. `ClosedState.attempts()` 가 0이므로 CLOSED→OPEN 은 항상 `attempts=1` 이고, HALF_OPEN→OPEN 은 누적된 값을 물려받는다. 즉 **복구 실패가 반복될 때만 백오프가 길어지고, CLOSED 진입 후에는 1로 리셋된다.** 이게 OPEN 대기에 지수 백오프를 쓰는 설계 의도다.
+
+#### 🖼 그림으로 보기 — `attempts` 와 OPEN 대기 시간
+
+4.2절 결제 설정 `ofExponentialBackoff(30s, 2.0, 5m)` 기준이다. `of(initial, x -> (long)(x * m))` 을 `attempts-1` 번 반복 적용한 뒤 상한 `Math.min` 을 건다(`IntervalFunction` 96~103행).
+
+```mermaid
+flowchart LR
+    C0["CLOSED<br/>attempts 0"] -->|"임계값 초과"| O1["OPEN attempts 1<br/>대기 30s"]
+    O1 --> H1["HALF_OPEN"]
+    H1 -->|"시험 실패"| O2["OPEN attempts 2<br/>대기 60s"]
+    O2 --> H2["HALF_OPEN"]
+    H2 -->|"시험 실패"| O3["OPEN attempts 3<br/>대기 120s"]
+    O3 --> H3["HALF_OPEN"]
+    H3 -->|"시험 실패"| O4["OPEN attempts 4<br/>대기 240s"]
+    O4 --> H4["HALF_OPEN"]
+    H4 -->|"시험 실패"| O5["OPEN attempts 5<br/>대기 min(480s, 300s) = 300s"]
+    H1 -->|"시험 성공"| C1["CLOSED<br/>attempts 0 으로 리셋"]
+    H4 -->|"시험 성공"| C1
+```
+
+
+## 🔢 숫자로 따라가기
+
+### 예제 1 — 같은 10건, slow-call 설정만 바꿔 보기
+
+공통: `slidingWindow(10, 10, COUNT_BASED)`, `failureRateThreshold=50`, 외부 API read timeout 5s. 10번째 호출에서 처음으로 `minimumNumberOfCalls=10` 을 채우므로 **판정은 #10 기록 직후 한 번** 일어난다.
+
+| # | 소요 시간 | 결과 | `slowCallDurationThreshold=60s`(기본) | `slowCallDurationThreshold=1s` |
+|---|---|---|---|---|
+| 1 | 120ms | 성공 | SUCCESS | SUCCESS |
+| 2 | 2,300ms | 성공 | SUCCESS | **SLOW_SUCCESS** |
+| 3 | 4,100ms | 성공 | SUCCESS | **SLOW_SUCCESS** |
+| 4 | 130ms | 성공 | SUCCESS | SUCCESS |
+| 5 | 2,800ms | 성공 | SUCCESS | **SLOW_SUCCESS** |
+| 6 | 5,000ms | `SocketTimeoutException` | ERROR | **SLOW_ERROR** |
+| 7 | 3,500ms | 성공 | SUCCESS | **SLOW_SUCCESS** |
+| 8 | 1,000ms (정확히 1s) | 성공 | SUCCESS | SUCCESS — `>` 비교라 같으면 느리지 않다 |
+| 9 | 2,600ms | 성공 | SUCCESS | **SLOW_SUCCESS** |
+| 10 | 1,900ms | 성공 | SUCCESS | **SLOW_SUCCESS** |
+
+| 설정 조합 | 실패율 | 느린호출율 | #10 직후 `Result` | 상태 |
+|---|---|---|---|---|
+| 기본 (60s / rate 100) | 1/10 = 10% | 0/10 = 0% | BELOW_THRESHOLDS | CLOSED |
+| 1s / rate **100**(기본) | 10% | 7/10 = 70% | BELOW_THRESHOLDS (70 < 100) | CLOSED |
+| 1s / rate **50** | 10% | 70% | **SLOW_CALL_RATE_ABOVE_THRESHOLDS** | **OPEN** |
+
+`slowCallDurationThreshold` 만 1s 로 바꾸면 **분류는 바뀌지만 판정은 그대로**다. 느린 호출 비율 임계값까지 낮춰야 비로소 서킷이 반응한다 — 2장 "`slowCallRateThreshold` 기본값 100의 함정"을 숫자로 본 것이다. #6 처럼 느리면서 실패한 호출은 `numberOfFailedCalls` 와 `numberOfSlowCalls` 를 **둘 다** 올린다(`AbstractAggregation` 64~68행).
+
+### 예제 2 — 같은 10건, 예외 분류만 바꿔 보기
+
+공통: `slidingWindow(10, 10, COUNT_BASED)`, `failureRateThreshold=50`. 10건 = 원장 타임아웃(`SocketTimeoutException`) 4건 + 비즈니스 예외 `PointLimitExceededException`(지급 한도 초과) 3건 + 성공 3건.
+
+| 설정 | 타임아웃 4건 | 비즈니스 예외 3건 | 윈도 (호출/실패) | 판정 |
+|---|---|---|---|---|
+| 기본 (모든 예외 = 실패) | 실패 | 실패 | 10 / 7 = 70% | **OPEN** — 고객이 한도를 넘겼을 뿐인데 열린다 |
+| `ignoreExceptions(PointLimitExceededException.class)` | 실패 | **무시** (윈도 기록 없음) | 7 / 4 | BELOW_MINIMUM_CALLS (7 < 10) — 3건 더 성공하면 10/4 = 40% → CLOSED |
+| `recordExceptions(SocketTimeoutException.class)` | 실패 | **성공으로 집계** | 10 / 4 = 40% | BELOW_THRESHOLDS → CLOSED |
+| 위 화이트리스트 + 장애 유형이 `ConnectException` 으로 바뀜 | **성공으로 집계** | 성공으로 집계 | 10 / 0 = 0% | 원장이 완전히 죽어도 **영원히 CLOSED** |
+
+세 번째 줄과 두 번째 줄은 지금은 같은 판정이지만, 화이트리스트는 **목록 밖 장애를 성공으로 바꿔 버린다**(마지막 줄). 3.2절 원인 ③ 그대로다.
 
 ---
 
@@ -356,6 +460,85 @@ public final class InfrastructureFailurePredicate implements Predicate<Throwable
 
 ---
 
+## 🔥 시나리오
+
+### 시나리오 A — 원장이 "부분적으로 느려짐" vs "완전히 멈춤"
+
+> 포인트 지급 API 가 외부 원장 서버를 호출한다. 평소 40 RPS, 정상 응답 100ms, read timeout 2s. 서킷: `COUNT_BASED 50 / min 20 / failureRateThreshold 50`.
+> 비교 대상 — **설정 X**: slow-call 기본값(60s / 100%) · **설정 Y**: `slowCallDurationThreshold=1s`, `slowCallRateThreshold=50`.
+
+**상황 1: 원장 DB 일부 파티션이 느려짐.** 요청의 30%는 서버에서 2~9초가 걸려 클라이언트가 2초에 `SocketTimeoutException` 으로 끊는다. 나머지 70%는 1.2~1.8초 만에 성공한다.
+
+| 항목 | 설정 X (기본) | 설정 Y (1s / 50%) |
+|---|---|---|
+| 새 호출의 분류 | 30% ERROR, 70% SUCCESS (60초를 넘는 호출은 없다 — read timeout 이 2초라서) | 30% SLOW_ERROR, 70% SLOW_SUCCESS → **100% 느림** |
+| 윈도 50건이 새 호출로 반쯤 바뀐 시점(장애 후 약 25건 기록) | 실패율 ≈ 15% (최근 50건 중 25건의 30%) | 느린호출율 ≈ 50% → **OPEN** |
+| 장애 시작 → OPEN | **열리지 않는다** (실패율 30% 에서 수렴) | 첫 응답까지 약 1.2초 + 25건 기록 약 0.6초 ≈ **2초 안팎** |
+| 그 동안 사용자 | 30%는 2초 기다려 실패, 70%는 1.5초 대기 | 폴백 즉시 응답 |
+| 워커 스레드 점유 (Little's law) | 40 RPS × (0.3×2s + 0.7×1.5s ≈ 1.65s) ≈ **66개 상시 점유** (평소 4개) | OPEN 이후 거의 0 |
+
+**상황 2: 원장 서버 프로세스가 멈춤.** 모든 호출이 2초 뒤 타임아웃.
+
+| 항목 | 설정 X | 설정 Y |
+|---|---|---|
+| 새 호출의 분류 | 100% ERROR | 100% SLOW_ERROR |
+| OPEN 시점 | 실패가 25건 쌓이는 약 2.6초 후 (`FAILURE_RATE_ABOVE_THRESHOLDS`) | 같은 시점 (`ABOVE_THRESHOLDS` — 두 비율 모두 초과) |
+
+**교훈:** "완전히 멈춤"은 기본 설정도 잡는다. 서비스를 실제로 갉아먹는 건 "부분적으로 느려짐"이고, 이건 **slow-call 두 옵션을 쌍으로 설정해야만** 잡힌다. 그리고 `slowCallDurationThreshold` 는 read timeout(2s)보다 작아야 의미가 있다 — 기본 60s 는 이 API 에서 영원히 발동하지 않는다.
+
+### 시나리오 B — 요청 폭주가 만든 "자기유발 OPEN"
+
+> 결제 승인 API 에 `@CircuitBreaker` 와 `@Bulkhead`(기본 `maxConcurrentCalls=25`, `maxWaitDuration=0`)를 함께 걸었다. 서킷은 `COUNT_BASED 50 / min 20 / 실패율 50%`, 예외 분류는 기본값(모든 예외 = 실패).
+
+Spring AOP 기본 순서에서 Bulkhead(`LOWEST_PRECEDENCE - 1`)는 CircuitBreaker(`- 4`)보다 **안쪽**이다. 그래서 Bulkhead 가 던진 거절 예외가 서킷의 `onError()` 로 들어간다.
+
+```mermaid
+flowchart LR
+    REQ["동시 요청 200건"] --> CB["CircuitBreaker (바깥)"]
+    CB --> BH["Bulkhead (안쪽)<br/>maxConcurrentCalls 25, maxWaitDuration 0"]
+    BH -->|"25건 통과"| DS["외부 승인 서버<br/>정상 150ms"]
+    BH -->|"175건 즉시 BulkheadFullException"| CB
+    CB -->|"기본 분류: 모든 예외 = 실패"| WIN["윈도: 실패 급증 → OPEN"]
+    WIN --> ALL["이후 모든 요청 CallNotPermittedException<br/>(외부 서버는 멀쩡한데 결제 전면 차단)"]
+```
+
+| 시각 | 사건 | 서킷 |
+|---|---|---|
+| 20:00:00.000 | 이벤트 시작 알림 발송. 동시 요청 200건 | CLOSED |
+| 20:00:00.001 | 175건이 Bulkhead 에서 즉시 거절 → 서킷 윈도에 실패로 기록 | 최근 50건 대부분 실패 → **OPEN** |
+| 20:00:00.150 | 통과한 25건은 정상 성공 (이미 OPEN 이라 늦게 온 결과로만 기록) | OPEN |
+| 20:00:00 ~ 20:01:00 | 기본 `waitDurationInOpenState=60s` 동안 결제 **전면 차단** | OPEN |
+
+외부 서버는 단 한 번도 실패하지 않았다. **우리 쪽 보호 장치(Bulkhead)의 거절을 다운스트림 장애로 오인**한 것이다. 해법:
+
+```java
+CircuitBreakerConfig.custom()
+    .slidingWindow(50, 20, SlidingWindowType.COUNT_BASED)
+    .failureRateThreshold(50f)
+    // 동시성 거절은 다운스트림 상태와 무관하다 → 윈도에서 제외
+    .ignoreExceptions(BulkheadFullException.class, RequestNotPermitted.class)
+    .build();
+```
+
+`ignoreExceptions` 에 넣으면 `handleThrowable()` 1단계에서 걸러져 윈도에 기록되지 않는다. 같은 이유로 RateLimiter 의 `RequestNotPermitted` 도 함께 넣는다(RateLimiter 도 기본 order `-3` 으로 CircuitBreaker 안쪽이다). 또는 aspect order 를 바꿔 Bulkhead 를 CircuitBreaker 바깥으로 빼는 방법도 있지만, 조합 순서 전체를 같이 검토해야 한다([12번 문서](./12-timelimiter-and-composition.md)).
+
+---
+
+## ❓ 헷갈리는 포인트
+
+- **Q. `slowCallRateThreshold=100` 이면 느린 호출 판정이 완전히 꺼진 건가?**
+  꺼진 건 아니다. 비교가 `>=` 이므로 윈도의 **모든** 호출이 느리면(100%) 열린다. 하나라도 빠른 호출이 섞이면 안 열리니 "사실상 비활성"인 것이다.
+- **Q. 정확히 `slowCallDurationThreshold` 만큼 걸린 호출은 느린 호출인가?**
+  아니다. `durationUnit.toNanos(duration) > slowCallDurationThresholdInNanos` — **초과**만 느리다(`CircuitBreakerMetrics` 111, 126행). 다만 측정은 나노초라서 현실에서 "정확히 1초"는 거의 없다.
+- **Q. 실패율이 정확히 50% 이고 임계값이 50 이면 열리나?**
+  열린다. 비율 비교는 `>=` 다(148~157행). 6건 중 3건 실패면 OPEN.
+- **Q. `minimumNumberOfCalls` 미만이어도 느린 호출 비율은 보나?**
+  안 본다. 두 비율 모두 같은 관문을 쓴다 — 호출 수가 모자라면 둘 다 `-1` 이 되어 `BELOW_MINIMUM_CALLS_THRESHOLD` 다(145~147행).
+- **Q. ignore 한 예외도 느리면 느린 호출로 세나?**
+  안 센다. ignore 는 `handleThrowable()` 에서 윈도 기록 전에 return 하므로 duration 판정까지 가지 않는다.
+
+---
+
 ## 5. 정리
 
 ### 예외/결과 분류 우선순위 (확정)
@@ -390,6 +573,18 @@ public final class InfrastructureFailurePredicate implements Predicate<Throwable
 
 ---
 
+## 🧾 한 장 요약
+
+- 판정 경로는 하나다: **분류(ignore/실패/성공) → `minimumNumberOfCalls` 관문 → 실패율 또는 느린호출율 `>=` 임계값 → OPEN.**
+- 기본값 함정 3종: `minimumNumberOfCalls=100`, `slowCallDurationThreshold=60s`, `slowCallRateThreshold=100%` — 셋 다 "판정이 거의 안 일어나는" 쪽이다.
+- slow-call 은 **두 옵션을 쌍으로** 설정하고, 기준 시간은 read timeout 보다 작게 잡는다. 느리면서 실패한 호출은 두 비율에 다 들어간다.
+- 예외 분류 순서는 **ignore → record → 나머지는 성공**. `recordExceptions` 화이트리스트는 목록 밖 장애를 성공으로 만든다 → 기본은 `ignoreExceptions` 블랙리스트.
+- 우리 쪽 보호 장치의 거절(`BulkheadFullException`, `RequestNotPermitted`)이 서킷 안쪽에 있으면 **자기유발 OPEN** 을 만든다 → ignore 에 넣는다.
+- OPEN 대기는 `attempts` 로 백오프된다. 복구 실패가 반복될 때만 길어지고 CLOSED 에서 리셋된다.
+- `transitionOnResult` 는 `transitionToOpenAndWaitFor/Until` 로만, `waitDurationInOpenState` 와 `waitIntervalFunctionInOpenState` 는 둘 중 하나만.
+
+---
+
 ## 관련 문서
 - 선행: [CircuitBreaker 상태 머신 — 전이는 어떻게 일어나는가](./06-circuitbreaker-state-machine.md)
 - 후행: [Retry와 백오프 — 재시도가 장애를 키우지 않게](./08-retry-internals.md)
@@ -397,3 +592,5 @@ public final class InfrastructureFailurePredicate implements Predicate<Throwable
 
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

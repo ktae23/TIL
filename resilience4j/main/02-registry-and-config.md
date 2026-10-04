@@ -4,10 +4,18 @@
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
+  - [🖼 그림으로 보기 — Registry 가 하는 세 가지 일](#-그림으로-보기--registry-가-하는-세-가지-일)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [🖼 그림으로 보기 — 첫 호출과 두 번째 호출의 갈림길](#-그림으로-보기--첫-호출과-두-번째-호출의-갈림길)
+  - [🖼 그림으로 보기 — 설정은 어디서 어떻게 합쳐지나](#-그림으로-보기--설정은-어디서-어떻게-합쳐지나)
+  - [🖼 그림으로 보기 — 두 스레드가 동시에 같은 이름을 요청할 때](#-그림으로-보기--두-스레드가-동시에-같은-이름을-요청할-때)
 - [4. 실전 예제](#4-실전-예제)
 - [5. 정리](#5-정리)
+- [6. 🔢 숫자로 따라가기](#6--숫자로-따라가기)
+- [7. 🔥 시나리오](#7--시나리오)
+- [8. ❓ 헷갈리는 포인트](#8--헷갈리는-포인트)
+- [9. 🧾 한 장 요약](#9--한-장-요약)
 
 ---
 
@@ -26,6 +34,25 @@ Registry 는 세 가지를 동시에 한다. ① **이름 → 인스턴스 캐�
 `Registry<E, C>` 인터페이스가 선언하는 건 `addConfiguration`, `removeConfiguration`, `getConfiguration`, `getDefaultConfig`, `find`, `remove`, `replace`, `getTags`, `getEventPublisher` 뿐이다.
 
 눈에 띄는 건 **`E get(String name)` 같은 조회 메서드가 없다**는 점이다. 조회는 각 컴포넌트 Registry 가 자기 이름으로 선언한다 — `CircuitBreakerRegistry.circuitBreaker(name)`, `RetryRegistry.retry(name)`, `BulkheadRegistry.bulkhead(name)` 처럼. 반환 타입이 `Optional` 이 아니라 구체 타입인 이유도 여기 있다. **없으면 만들기** 때문이다.
+
+### 🖼 그림으로 보기 — Registry 가 하는 세 가지 일
+
+Registry 를 "이름표가 붙은 사물함"으로 생각하면 쉽다. 사물함(저장소)에 인스턴스가 들어 있고, 옆 서랍(설정 맵)에 설정이 이름별로 꽂혀 있고, 사물함 문이 열리고 닫힐 때마다 벨(이벤트)이 울린다.
+
+```mermaid
+flowchart LR
+    app["애플리케이션<br/>registry.circuitBreaker(name)"] --> reg
+    subgraph reg["CircuitBreakerRegistry"]
+        direction TB
+        store["① 저장소 RegistryStore<br/>이름 → 인스턴스"]
+        cfg["② 설정 맵 configurations<br/>default / slow-backend / ..."]
+        ev["③ 이벤트 발행<br/>Added / Removed / Replaced"]
+    end
+    cfg -.->|"없을 때만 꺼내 씀"| store
+    store -->|"새로 만들어지면"| ev
+    ev --> mp["MetricsPublisher<br/>(Micrometer 미터 등록·제거)"]
+    ev --> other["직접 등록한 RegistryEventConsumer<br/>(알림 소비자 부착 등)"]
+```
 
 ## 2. 왜 알아야 하는가 (Why)
 
@@ -89,6 +116,21 @@ protected E computeIfAbsent(String name, Supplier<E> supplier) {
 - **`supplier.get()` 안에서 설정이 해석된다.** 즉 설정 해석은 **인스턴스가 실제로 없을 때만** 일어난다. 이미 있으면 설정 이름이 틀려도 예외가 안 난다.
 - **`EntryAddedEvent` 는 매핑 함수 안에서, "저장소에 들어가기 직전"에 정확히 한 번 발행된다.**
 
+### 🖼 그림으로 보기 — 첫 호출과 두 번째 호출의 갈림길
+
+같은 메서드 `circuitBreaker(name, configName)` 이라도 저장소에 이름이 있느냐에 따라 하는 일이 완전히 다르다. **왼쪽 길(이미 있음)에서는 설정 인자를 쳐다보지도 않는다.**
+
+```mermaid
+flowchart TD
+    q["circuitBreaker('ledger', 'slow-backend')"] --> has{"저장소에<br/>'ledger' 가 있나?"}
+    has -->|"있다 (두 번째 호출부터)"| same["기존 인스턴스 그대로 반환<br/>configName 은 평가조차 안 됨"]
+    has -->|"없다 (첫 호출)"| look{"getConfiguration('slow-backend')<br/>있나?"}
+    look -->|"없다 (오타 등)"| ex["ConfigurationNotFoundException<br/>저장소에는 아무것도 남지 않음 → 다음 호출이 다시 시도"]
+    look -->|"있다"| mk["CircuitBreaker.of(name, config, getAllTags(tags))"]
+    mk --> added["EntryAddedEvent 발행<br/>→ MetricsPublisher.publishMetrics()"]
+    added --> put["저장소에 등록 후 반환"]
+```
+
 ### 설정 해석 — `configurations` 맵과 `DEFAULT_CONFIG`
 
 ```java
@@ -98,6 +140,28 @@ protected final ConcurrentHashMap<String, C> configurations;
 ```
 
 `"default"` 는 예약어다. `addConfiguration(configName, ...)` 과 `removeConfiguration(configName)` 둘 다 첫 줄에서 `configName.equals(DEFAULT_CONFIG)` 를 검사해 `IllegalArgumentException` 을 던진다. 반면 생성자로는 들어갈 수 있다 — `InMemoryCircuitBreakerRegistry(Map<String, CircuitBreakerConfig> configs)` 는 `configs.getOrDefault(DEFAULT_CONFIG, CircuitBreakerConfig.ofDefaults())` 로 맵에서 `"default"` 키를 꺼내 기본 설정으로 쓴다. Spring Boot 의 `resilience4j.circuitbreaker.configs.default.*` 가 동작하는 경로다.
+
+### 🖼 그림으로 보기 — 설정은 어디서 어떻게 합쳐지나
+
+먼저 선을 그어둔다. **core 의 Registry 는 설정을 "합치지" 않는다.** `configurations` 맵에서 이름 하나를 골라 그대로 쓸 뿐이다. "기본값 → 공유 설정 → 인스턴스 설정" 으로 덮어쓰는 상속은 Spring Boot·Micronaut 가 쓰는 `resilience4j-framework-common` 의 `CommonCircuitBreakerConfigurationProperties.createCircuitBreakerConfig()` 가 yml 프로퍼티를 `CircuitBreakerConfig` 로 바꾸면서 한다. 그 함수의 갈래는 세 개다.
+
+```mermaid
+flowchart TD
+    inst["instances.ledger 의 프로퍼티"] --> b{"baseConfig 지정?"}
+    b -->|"예: baseConfig: shared"| s1["configs.shared 를 라이브러리 기본값 위에 적용<br/>CircuitBreakerConfig.custom() + shared"]
+    b -->|"아니오"| d{"configs 에 인스턴스와<br/>같은 이름이 있나?"}
+    d -->|"예"| s2["configs.ledger 를 라이브러리 기본값 위에 적용"]
+    d -->|"아니오"| e{"configs.default 가 있나?"}
+    e -->|"예"| s3["configs.default 를 라이브러리 기본값 위에 적용"]
+    e -->|"아니오"| s4["라이브러리 기본값만<br/>CircuitBreakerConfig.custom()"]
+    s1 --> fin["from(위 결과) 에<br/>instances.ledger 값을 덮어씀"]
+    s2 --> fin
+    s3 --> fin
+    s4 --> fin
+    fin --> out["최종 CircuitBreakerConfig → Registry 로"]
+```
+
+그림에서 놓치기 쉬운 곳은 첫 갈래다. **`baseConfig: shared` 를 쓰면 `configs.default` 는 끼어들지 않는다.** `shared` 는 `configs.default` 위가 아니라 라이브러리 기본값(`custom()`) 위에 만들어진다. "default 에 공통값을 적고 shared 에 차이만 적으면 되겠지" 라고 생각하면 default 의 값이 빠진다. 체인이 필요하면 `configs.shared.baseConfig: default` 처럼 명시해야 한다(`createBaseConfig()` 가 재귀로 따라간다).
 
 ### 이름 기반 조회 세 갈래
 
@@ -164,6 +228,30 @@ public E computeIfAbsent(String key, Function<? super String, ? extends E> mappi
 - **소스 주석이 못을 박아뒀다**: "This is a performance optimization for virtual thread environments and should NOT be 'simplified' to standard computeIfAbsent in future JDK versions, as it would reintroduce the pinning issue."
 
 `find()`, `values()` 는 `isSuccessfullyCompleted(future)` — `future != null && future.isDone() && !future.isCompletedExceptionally()` — 를 통과한 것만 돌려준다. **생성 중인 인스턴스는 `find()` 에 보이지 않는다.**
+
+### 🖼 그림으로 보기 — 두 스레드가 동시에 같은 이름을 요청할 때
+
+스레드 A 와 B 가 거의 동시에 `circuitBreaker("ledger")` 를 부른다. 맵에 먼저 "빈 약속(future)"을 꽂은 쪽이 승자다.
+
+```mermaid
+sequenceDiagram
+    participant A as 스레드 A
+    participant B as 스레드 B
+    participant M as entryMap (ConcurrentHashMap)
+    participant F as future (CompletableFuture)
+
+    A->>M: putIfAbsent("ledger", futureA)
+    M-->>A: null — 승자
+    B->>M: putIfAbsent("ledger", futureB)
+    M-->>B: futureA — 패자
+    B->>F: futureA.join() — 대기 (가상 스레드면 캐리어를 놓아줌)
+    A->>A: mappingFunction 실행 — 맵 락 밖<br/>설정 해석 + CircuitBreaker.of + EntryAddedEvent
+    A->>F: futureA.complete(cb)
+    F-->>B: cb
+    Note over A,B: 둘 다 같은 cb 객체를 받는다. 생성은 정확히 1번
+```
+
+생성이 실패하면(예: 설정 이름 오타) A 가 `completeExceptionally` 에 성공한 뒤 맵에서 `futureA` 를 지운다. 기다리던 B 도 `join()` 에서 그 예외(`CompletionException` 으로 감싸진)를 받고, **그 다음 호출은 처음부터 다시 시도한다.**
 
 ### `replace()`, `remove()`, tags
 
@@ -381,6 +469,64 @@ CircuitBreakerRegistry ttlCircuitBreakerRegistry(MeterRegistry meterRegistry) {
 | 여러 소비자 | `CompositeRegistryEventConsumer` 로 묶음. 하나가 예외 던지면 **뒤의 소비자는 호출 안 됨** |
 | `replace()` / `find()` | `replace()` 는 키 없으면 `Optional.empty()`, 추가하지 않음 — 기존 윈도/상태는 버려진다. `find()` 는 생성 중(미완료 future)인 인스턴스를 보여주지 않는다 |
 
+## 6. 🔢 숫자로 따라가기
+
+Registry 하나에 아래 순서로 요청을 보낸다. 시작 상태: 설정 맵에 `default`(윈도 100) 와 `slow-backend`(최소 호출 10) 두 개, 저장소는 비어 있고, `TaggedCircuitBreakerMetricsPublisher` 가 소비자로 걸려 있다. `cb#n` 은 n번째로 만들어진 객체를 뜻한다.
+
+| # | 호출 | 저장소에 이름이 있었나 | 설정 해석 | 결과 | 발행 이벤트 → 지표 | 저장소 크기 |
+|---|---|---|---|---|---|---|
+| 1 | `circuitBreaker("ledger")` | 없음 | `getDefaultConfig()` → `default` | 새 `cb#1` | `EntryAddedEvent` → 미터 등록 | 1 |
+| 2 | `circuitBreaker("ledger", fastConfig)` | 있음 | **평가 안 함** | 기존 `cb#1` (fastConfig 무시) | 없음 | 1 |
+| 3 | `circuitBreaker("ledger-b", "slow-backnd")` (오타) | 없음 | `getConfiguration` 이 빈 값 | `ConfigurationNotFoundException` | 없음 (만들기 전에 실패) | 1 (실패한 future 는 지워짐) |
+| 4 | `circuitBreaker("ledger-b", "slow-backend")` | 없음 | `slow-backend` | 새 `cb#2` | `EntryAddedEvent` → 미터 등록 | 2 |
+| 5 | `CircuitBreaker.of("ledger", config)` (Registry 밖) | — | 인자 그대로 | 새 `cb#3`, **Registry 와 무관** | 없음 — 지표도 안 붙음 | 2 |
+| 6 | `replace("ledger", cb#3)` | 있음 | — | `Optional.of(cb#1)` 반환, 이제 `"ledger"` 는 `cb#3` | `EntryReplacedEvent` → `cb#1` 미터 제거 → `cb#3` 미터 등록 | 2 |
+| 7 | `replace("unknown", cb#3)` | 없음 | — | `Optional.empty()`, **아무것도 안 넣음** | 없음 | 2 |
+| 8 | `remove("ledger-b")` | 있음 | — | `Optional.of(cb#2)` | `EntryRemovedEvent` → 미터 제거 | 1 |
+| 9 | `circuitBreaker("ledger-b")` | 없음 | `default` | 새 `cb#4` — `cb#2` 의 윈도·상태는 사라짐 | `EntryAddedEvent` → 미터 등록 | 2 |
+| 10 | `addConfiguration("default", x)` | — | — | `IllegalArgumentException` | 없음 | 2 |
+
+표에서 볼 것: 2번의 "무시", 3번의 "실패해도 저장소에 흔적이 남지 않아 4번이 성공", 6번의 "윈도가 처음부터 다시 시작", 7번의 "replace 는 추가가 아니다".
+
+## 7. 🔥 시나리오
+
+**상황: "포인트 지급 API" 가 외부 원장 서버를 호출한다.** 지급 요청마다 `registry.circuitBreaker("ledger", "ledger-slow")` 로 서킷을 꺼내 쓴다.
+
+| 시각 | 무슨 일이 일어나나 | Registry 안에서 일어나는 일 | 사용자·운영자가 보는 것 |
+|---|---|---|---|
+| 09:00 | 배포. 설정 등록 코드에 `addConfiguration("ledger-slw", ...)` 오타가 있다 | 설정 맵에 `ledger-slw` 가 들어감. 인스턴스는 아직 없음 | 부팅 성공. 헬스 체크 정상 — **아무도 모른다** |
+| 09:03 | 첫 지급 요청 | `computeIfAbsent` 의 승자 스레드가 `getConfiguration("ledger-slow")` → 빈 값 → `ConfigurationNotFoundException`. 실패한 future 는 맵에서 지워진다 | 사용자: 지급 실패(500). 운영자: 처음 보는 예외 로그 |
+| 09:03~ | 이후 요청 전부 | 매번 다시 만들기를 시도하고 매번 같은 예외 | 지급 API 전체 실패. 서킷브레이커가 장애를 막는 게 아니라 **만들고 있다** |
+| 09:20 | 핫픽스: 설정 이름 수정 + 시작 시 `getConfiguration("ledger-slow").orElseThrow()` 검증 추가 (예제 1과 같은 방식) | 첫 요청에서 `cb` 생성, `EntryAddedEvent` → 지표 등록 | 정상화. 다음부터는 오타가 있으면 **부팅이 실패**하므로 배포 단계에서 잡힌다 |
+| 14:00 | 원장 서버가 느려져 운영자가 OPEN 대기 시간을 늘리려 함. 코드에서 `circuitBreaker("ledger", newConfig)` 를 호출하도록 바꿈 | 이미 `"ledger"` 가 있으므로 `newConfig` 는 **평가되지 않음** | 설정을 바꿨는데 동작이 그대로 — "왜 반영이 안 되지?" |
+| 14:10 | `registry.replace("ledger", CircuitBreaker.of("ledger", newConfig))` 로 교체 | `EntryReplacedEvent` → 옛 미터 제거, 새 미터 등록. 새 인스턴스의 윈도는 비어 있음 | 새 설정 반영. 단 **최소 호출 수가 다시 찰 때까지는 서킷이 열리지 않는** 공백이 생긴다 |
+
+이 시나리오의 교훈 두 가지. 설정 이름은 **부팅 시점에 검증**한다. 그리고 런타임 설정 변경은 `circuitBreaker(name, config)` 가 아니라 **`replace()`** 이고, 그 대가로 윈도가 초기화된다는 걸 알고 쓴다.
+
+## 8. ❓ 헷갈리는 포인트
+
+- **Q. Registry 에서 같은 이름으로 다른 설정을 넘겨 다시 만들면 새 설정이 적용되나?**
+  A. 안 된다. 이름이 이미 있으면 기존 인스턴스를 그대로 돌려주고 설정 인자(`config`, `configName`, `Supplier`)는 평가조차 하지 않는다. 바꾸려면 `replace()`.
+- **Q. `CircuitBreaker.of("ledger", ...)` 와 `registry.circuitBreaker("ledger")` 는 같은 객체인가?**
+  A. 다르다. `of()` 는 Registry 를 거치지 않으니 저장소에도 없고, `EntryAddedEvent` 도 없어 지표·Actuator 에도 안 보인다.
+- **Q. `addConfiguration()` 으로 설정을 고치면 이미 만들어진 인스턴스에 반영되나?**
+  A. 안 된다. 설정 맵에 넣을 뿐이고, 그 설정은 **앞으로 새로 만들어질** 인스턴스에만 쓰인다.
+- **Q. yml 에서 `configs.shared` 는 `configs.default` 를 이어받나?**
+  A. 자동으로는 아니다. `baseConfig: shared` 인 인스턴스는 `custom()`(라이브러리 기본값) + `shared` + 인스턴스 값으로 만들어진다. default 를 끼우려면 `shared` 에 `baseConfig: default` 를 명시한다.
+- **Q. `find(name)` 도 없으면 만들어 주나?**
+  A. 아니다. `find()` 는 조회만 하고 `Optional` 을 돌려준다. 게다가 생성이 끝나지 않은 인스턴스는 보이지 않는다.
+
+## 9. 🧾 한 장 요약
+
+- Registry 는 **이름 → 인스턴스 캐시 + 이름 → 설정 + 생명주기 이벤트** 세 가지를 한다.
+- 조회가 곧 생성이다(`computeIfAbsent`). 두 번째 호출부터는 설정 인자를 **보지도 않는다**.
+- 설정 이름 오타는 `ConfigurationNotFoundException` 으로 **첫 요청 때** 터진다 — 부팅 시 `getConfiguration().orElseThrow()` 로 미리 검증한다.
+- `"default"` 는 예약어라 `addConfiguration`/`removeConfiguration` 으로 건드릴 수 없다.
+- 설정 상속(default → shared → instance)은 core 가 아니라 `framework-common` 이 한다. `baseConfig` 를 쓰면 default 는 자동으로 끼지 않는다.
+- 저장소는 FutureHashMap — 승자 하나만 맵 락 밖에서 생성하고 패자는 `join()` 으로 기다린다. 실패하면 흔적을 지워 다음 호출이 재시도한다.
+- `replace()` 는 있는 키만 교체하고 **윈도를 초기화**한다. `remove()`/`replace()` 는 이벤트를 쏴 지표까지 정리한다.
+- `CircuitBreaker.of()` 를 메서드 안에서 부르는 코드는 리뷰에서 바로 의심한다.
+
 ---
 
 ## 관련 문서
@@ -389,3 +535,5 @@ CircuitBreakerRegistry ttlCircuitBreakerRegistry(MeterRegistry meterRegistry) {
 - 참고: [설정 계층](../advanced/04-config-hierarchy.md), [Micrometer 지표](../advanced/06-micrometer-metrics.md)
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

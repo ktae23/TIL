@@ -4,10 +4,17 @@ TimeLimiter는 `Future`/`CompletionStage`에만 붙습니다. 그리고 다섯 �
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
+  - [🖼 그림으로 보기 — TimeLimiter는 '기다림'을 자르지, '일'을 자르지 않는다](#-그림으로-보기--timelimiter는-기다림을-자르지-일을-자르지-않는다)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [3.6 양파 구조와 통과 흐름](#36-양파-구조와-통과-흐름)
+  - [3.9 🔢 숫자로 따라가기](#39--숫자로-따라가기)
 - [4. 실전 예제](#4-실전-예제)
+  - [4-5. 🔥 시나리오 — 동기 메서드에 @TimeLimiter](#4-5--시나리오--결제-승인-api의-동기-메서드에-timelimiter를-붙였다)
+  - [4-6. 🔥 시나리오 — 조합 순서를 거꾸로 하면](#4-6--시나리오--조합-순서를-거꾸로-하면-서킷이-세는-숫자가-바뀐다)
 - [5. 정리](#5-정리)
+- [6. ❓ 헷갈리는 포인트](#6--헷갈리는-포인트)
+- [7. 🧾 한 장 요약](#7--한-장-요약)
 
 ---
 
@@ -34,6 +41,51 @@ TimeLimiter는 `Future`/`CompletionStage`에만 붙습니다. 그리고 다섯 �
 둘 다 **이미 비동기로 돌고 있는 작업**을 받습니다. `Future`든 `CompletionStage`든, 작업은 다른 스레드에서 진행 중이고 TimeLimiter는 "결과를 얼마나 기다릴지"만 정합니다.
 
 그래서 **동기 블로킹 호출에는 적용할 수 없습니다.** `restTemplate.getForObject(...)`처럼 그냥 값을 반환하는 호출은 반환되는 순간 이미 끝났습니다. 기다릴 대상이 없으니 제한할 것도 없습니다. 필요하면 `CompletableFuture.supplyAsync(..., executor)`나 `ThreadPoolBulkhead`로 먼저 비동기로 만들어야 하고, 그러면 스레드 전환에 따르는 비용과 컨텍스트 유실을 받아들여야 합니다 — [Bulkhead](./11-bulkhead.md) 참고.
+
+### 🖼 그림으로 보기 — TimeLimiter는 '기다림'을 자르지, '일'을 자르지 않는다
+
+`timeoutDuration=1s`, 하류 호출이 1.5초 걸리는 상황입니다. 먼저 Spring `@TimeLimiter`와 `Decorators`가 쓰는 `decorateCompletionStage()` 경로입니다.
+
+```mermaid
+sequenceDiagram
+    participant C as 호출자
+    participant TL as TimeLimiter
+    participant SC as 스케줄러 스레드
+    participant W as 작업 스레드
+    participant L as 하류 서버
+
+    C->>TL: decorateCompletionStage(...).get()
+    TL->>W: supplier.get() → future (작업 시작)
+    W->>L: 요청
+    TL->>SC: Timeout.of(future, 1s) 예약
+    TL-->>C: future 반환 (호출자는 여기에 콜백을 건다)
+    Note over SC: t=1.0
+    SC->>TL: future.isDone() == false
+    SC-->>C: future.completeExceptionally(TimeoutException)
+    Note over W,L: 아무 신호도 받지 못함, 계속 대기
+    L-->>W: t=1.5 응답 도착
+    Note over W: 결과를 넣으려 해도 future 는 이미 완료됨 → 버려짐
+```
+
+`decorateFutureSupplier()` 경로만 `cancelRunningFuture`를 봅니다. 그마저도 "인터럽트를 보내 달라"는 요청일 뿐입니다.
+
+```mermaid
+flowchart TB
+    S["future = futureSupplier.get()"] --> G["future.get(timeout)<br/>호출 스레드가 블로킹"]
+    G -->|"timeout 안에 완료"| OK["onSuccess() · 결과 반환"]
+    G -->|"ExecutionException"| EX["원인 예외를 풀어서 다시 던짐"]
+    G -->|"TimeoutException"| TO["onError(TimeoutException)"]
+    TO --> Q{"cancelRunningFuture ?"}
+    Q -->|false| T1["TimeoutException 던짐<br/>작업은 그대로 계속"]
+    Q -->|true| CAN["future.cancel(true)"]
+    CAN --> Q2{"Future 종류와<br/>작업이 인터럽트에 반응하나?"}
+    Q2 -->|"FutureTask + sleep · wait · 인터럽트 가능 채널"| STOP["작업이 중단될 수 있음"]
+    Q2 -->|"블로킹 소켓 read · CompletableFuture"| GO["작업은 끝까지 계속"]
+    STOP --> T2["TimeoutException 던짐"]
+    GO --> T2
+```
+
+마지막 분기의 `CompletableFuture`에 주의하세요. JDK의 `CompletableFuture.cancel(mayInterruptIfRunning)`은 Javadoc에 "this value has no effect in this implementation"이라고 적혀 있습니다. `supplyAsync(...)`로 만든 future를 넘기면 `cancelRunningFuture=true`여도 **작업 스레드에 인터럽트조차 가지 않습니다.** `ExecutorService.submit()`이 돌려주는 `FutureTask`일 때만 인터럽트가 실제로 전달됩니다.
 
 ### 조합 순서
 
@@ -420,6 +472,52 @@ TimeLimiter(1s)( Retry( call ) )
 
 **여유는 상위 타임아웃의 20% 이상 남기세요.** GC 정지, 커넥션 획득 지연, 스레드 스케줄링은 예산표에 없는데 실제로는 발생합니다.
 
+### 3.9 🔢 숫자로 따라가기
+
+**(A) `timeoutDuration=1s`, 호출이 0.3초 / 1.5초 걸릴 때**
+
+| 호출 소요 | 사용 경로 | `cancelRunningFuture` | 호출자가 받는 것 (시각) | 하류 작업은? |
+|---|---|---|---|---|
+| 0.3s | 어느 경로든 | 무관 | 결과 (0.3s). `decorateCompletionStage`면 예약된 타임아웃 작업은 `timeoutFuture.cancel(false)`로 취소 | 정상 종료 |
+| 1.5s | `decorateFutureSupplier` + `FutureTask` | `true` | `TimeoutException` (1.0s) | `cancel(true)`로 인터럽트 전송. 인터럽트에 반응하는 코드면 1.0s 무렵 중단, 블로킹 소켓 read면 **1.5s까지 계속** |
+| 1.5s | `decorateFutureSupplier` | `false` | `TimeoutException` (1.0s) | 1.5s까지 계속, 결과는 버려짐 |
+| 1.5s | `decorateFutureSupplier` + `CompletableFuture` | `true` | `TimeoutException` (1.0s) | 인터럽트 안 감 → 1.5s까지 계속 |
+| 1.5s | `decorateCompletionStage` / `@TimeLimiter` | `true`든 `false`든 | `TimeoutException` (1.0s, `completeExceptionally`) | 1.5s까지 계속 (cancel 호출 자체가 없음) |
+
+다섯 줄 중 하류가 실제로 일찍 멈출 **가능성이라도** 있는 건 한 줄뿐입니다. 호출자는 언제나 1.0초에 풀려나지만, 자원은 대부분 1.5초까지 묶입니다.
+
+**(B) 다섯 겹을 다 두른 호출 1건 — 하류가 응답하지 않을 때**
+
+4-4의 설정(RateLimiter 대기 100ms, Retry `max-attempts: 2` · 백오프 200ms, TimeLimiter 800ms, Bulkhead 20 · 대기 50ms)을 쓰고, 실수로 HTTP 클라이언트 응답 타임아웃을 빠뜨려 하류가 **영원히** 응답하지 않는다고 해 봅니다.
+
+| 시각 | 레이어 | 일어나는 일 | 이 요청이 쥔 Bulkhead permit |
+|---|---|---|---|
+| 0ms | Retry | 시도 1 시작 | 0 |
+| 0ms | CircuitBreaker | CLOSED → 통과 | 0 |
+| 0ms | RateLimiter | permit 있음 → 대기 0 (쿼터 1개 소비) | 0 |
+| 0ms | TimeLimiter | 스케줄러에 800ms 타임아웃 예약 | 0 |
+| 0ms | Bulkhead | `tryAcquirePermission()` 성공 | **1** |
+| 0ms | 실제 호출 | 하류로 요청, 응답 없음 | 1 |
+| 800ms | TimeLimiter | Bulkhead가 돌려준 future를 `completeExceptionally(TimeoutException)` | 1 — 하류 stage가 끝나지 않았으므로 `onComplete()` 미호출 |
+| 800ms | CircuitBreaker | 실패 1건 기록 | 1 |
+| 800ms | Retry | `TimeoutException`은 `retry-exceptions` → 200ms 대기 | 1 |
+| 1,000ms | 전 레이어 | 시도 2: CB 통과 → RL permit(쿼터 1개 더) → TL 예약 → Bulkhead permit | **2** |
+| 1,800ms | TimeLimiter → CB → Retry | 타임아웃 → CB 실패 2건째 → 시도 소진 → `withFallback`이 `Recommendation.empty()` 반환 | 2 |
+| 1,800ms 이후 | — | 호출자는 1.8초에 폴백을 받고 떠남. **permit 2개는 하류가 응답하거나 연결이 끊길 때까지 계속 점유** | 2 |
+
+이게 반복되면 어떻게 되는지 이어서 계산합니다.
+
+```text
+논리 요청 1건  = Bulkhead permit 2개를 하류가 끝날 때까지 점유
+논리 요청 10건 = permit 20개 → Bulkhead 꽉 참
+11번째 요청부터 = Bulkhead 50ms 대기 → BulkheadFullException
+                  → Retry 는 ignore-exceptions 라 재시도 안 함
+                  → withFallback 이 즉시 폴백 (약 50ms)
+                  → CircuitBreaker 는 BulkheadFullException 도 실패로 기록 (ignore 설정 없음)
+```
+
+Bulkhead가 TimeLimiter 안쪽(기본 순서)에 있기 때문에 permit이 **실제 하류 작업의 수명**을 따라갑니다(`Bulkhead.decorateCompletionStage()`는 안쪽 stage의 `whenComplete`에서만 `onComplete()`를 부릅니다). 그래서 Bulkhead가 "하류에 아직 20개가 매달려 있다"는 진실을 보고하고, 21번째부터는 빠르게 거절합니다. 반대로 4-3처럼 Bulkhead가 바깥에 있으면 TimeLimiter가 끝내는 순간 permit이 반납되어, 하류에 매달린 작업이 수백 개여도 Bulkhead는 비어 있다고 보고합니다. 그리고 근본 처방은 여전히 3.3의 HTTP 클라이언트 타임아웃입니다 — 그게 있어야 permit이 800ms 근처에서 실제로 돌아옵니다.
+
 ---
 
 ## 4. 실전 예제
@@ -619,6 +717,73 @@ void timeout_budget_must_fit_in_the_gateway_deadline() {
 }
 ```
 
+### 4-5. 🔥 시나리오 — 결제 승인 API의 동기 메서드에 `@TimeLimiter`를 붙였다
+
+**상황.** 결제 승인 API가 PG 서버를 동기로 호출합니다. "타임아웃도 걸자"며 기존 애노테이션 옆에 `@TimeLimiter`를 추가해 배포했습니다. Retry·CircuitBreaker 인스턴스 설정은 따로 적지 않았습니다(= 기본값).
+
+```java
+@Retry(name = "approval")
+@CircuitBreaker(name = "approval", fallbackMethod = "approvalPending")
+@TimeLimiter(name = "approval")                      // ← 새로 추가
+public ApprovalResult approve(ApprovalRequest request) {   // 반환 타입이 CompletionStage 가 아니다
+    return pgClient.approve(request);
+}
+
+private ApprovalResult approvalPending(ApprovalRequest request, Throwable t) {
+    return ApprovalResult.pending();                 // "승인 확인 중" 응답
+}
+```
+
+**소스가 하는 일.** 기본 `@Order`대로 Retry → CircuitBreaker → TimeLimiter 순으로 감쌉니다(3.5).
+
+1. `TimeLimiterAspect.proceed()`가 반환 타입을 봅니다. Reactor/RxJava 확장(`TimeLimiterAspectExt`)이 처리하는 `Mono`/`Flux` 등도 아니고 `CompletionStage`도 아니므로 **`proceedingJoinPoint.proceed()`를 부르기 전에** `IllegalReturnTypeException`("... has unsupported by @TimeLimiter return type. CompletionStage expected.")을 던집니다. **`approve()` 본문은 한 번도 실행되지 않습니다.** 기동 시점 검사가 아니라 호출 시점 검사라서 배포는 조용히 성공합니다.
+2. `IllegalReturnTypeException`은 `IllegalArgumentException`의 하위 타입입니다. CircuitBreaker 기본 기록 조건(`throwable -> true`)에 따라 **실패로 기록**됩니다.
+3. CircuitBreaker의 `fallbackMethod`는 안 불립니다. `DefaultFallbackDecorator`가 `catch (IllegalReturnTypeException e) { throw e; }`로 이 예외만은 폴백하지 않고 다시 던지기 때문입니다.
+4. 바깥 Retry는 기본 설정(모든 예외 재시도, `maxAttempts=3`, 대기 500ms)대로 **두 번 더** 시도합니다. 요청 1건 = CB 실패 3건 + 약 1초 지연.
+
+**시간 순서** (유입 초당 10건, CircuitBreaker 기본값: 윈도우 100 · `minimumNumberOfCalls=100` · 실패율 50%)
+
+| 시각 | 사용자에게 보이는 것 | 내부 |
+|---|---|---|
+| 배포 직후 0~4초 | 결제 승인 요청이 약 1초 뒤 **500 에러** | 요청마다 CB 실패 3건 누적. PG 서버로 나간 요청 **0건** |
+| 약 4초 | | CB 기록 100건, 실패율 100% → **OPEN** |
+| 그 이후 | 즉시 "승인 확인 중"(폴백) 응답 | OPEN에서는 `CallNotPermittedException` → 이번엔 CB 폴백이 정상 동작 |
+| 대시보드 | CB OPEN 알람 → "PG 장애"로 오인 | PG 측 로그에는 우리 요청이 아예 없음 |
+
+**고친 방향.** ① 동기로 둘 거면 `@TimeLimiter`를 빼고 PG HTTP 클라이언트의 connect/read 타임아웃으로 시간을 자릅니다(3.3). ② 정말 TimeLimiter가 필요하면 반환 타입을 `CompletableFuture<ApprovalResult>`로 바꾸고 전용 executor에서 `supplyAsync`로 실행합니다 — 이때 MDC·인증·트랜잭션이 끊긴다는 [Bulkhead 3.6](./11-bulkhead.md#36-컨텍스트가-끊긴다)의 비용을 같이 받아들여야 합니다. ③ 어느 쪽이든 애노테이션을 추가하는 PR에는 **실제로 호출이 나가는지 확인하는 통합 테스트**를 붙입니다.
+
+### 4-6. 🔥 시나리오 — 조합 순서를 거꾸로 하면 서킷이 세는 숫자가 바뀐다
+
+**상황.** 위 결제 승인 API의 하류 PG가 **완전히 죽었습니다**(모든 호출이 즉시 실패). 유입은 초당 10건. Retry(3회, 대기 500ms)와 CircuitBreaker(기본값: 윈도우 100 · 최소 호출 100 · 실패율 50% · HALF_OPEN 시험 호출 10건)를 두 가지 순서로 붙여 비교합니다.
+
+```mermaid
+flowchart LR
+    subgraph OK["(A) Retry 바깥 · 기본 순서"]
+        direction TB
+        A0["논리 요청 1건"] --> A1["Retry"]
+        A1 --> A2["CB · 시도마다 1건 기록"]
+        A2 --> A3["PG"]
+        A2 -.->|"실패 x3"| A4["CB 기록 3건"]
+    end
+    subgraph NG["(B) Retry 안쪽 · 거꾸로"]
+        direction TB
+        B0["논리 요청 1건"] --> B1["CB · 묶음 끝에 1건 기록"]
+        B1 --> B2["Retry"]
+        B2 --> B3["PG"]
+        B1 -.->|"3번 다 실패해야 1건"| B4["CB 기록 1건"]
+    end
+```
+
+| 항목 | (A) Retry 바깥 | (B) Retry 안쪽 |
+|---|---|---|
+| 기록 시점 | 시도마다 (도착 +0s, +0.5s, +1.0s) | 묶음이 끝날 때 (도착 +1.0s) |
+| CB 기록 100건이 차는 시각 | 기록 ≈ 30t − 15 → **약 3.8초** | 기록 ≈ 10(t − 1) → **약 11초** |
+| OPEN까지 PG가 맞은 호출 | **약 100회** | **약 300회 이상** (논리 요청 100건 × 3 + 진행 중인 것) |
+| HALF_OPEN 시험 호출 10건이 PG에 주는 부하 | 10회 | **30회** (시험 1건마다 안쪽 Retry가 3번) |
+| OPEN 이후 | 남은 재시도는 `CallNotPermittedException`으로 PG에 안 나감 | CB가 바깥에서 즉시 차단 |
+
+같은 설정·같은 트래픽인데 (B)는 서킷이 **약 3배 늦게** 열리고, 그동안 PG를 **3배** 때리며, 막 살아나려는 PG를 HALF_OPEN에서 또 3배로 때립니다. 3.7의 (A)/(B) 비교가 실제 시간축에서는 이렇게 나타납니다. Spring 애노테이션이라면 `retry-aspect-order`를 건드리지 않는 한 (A)이고, `Decorators`라면 **`withRetry`를 `withCircuitBreaker`보다 나중에** 불러야 (A)입니다(3.4).
+
 ---
 
 ## 5. 정리
@@ -647,9 +812,34 @@ void timeout_budget_must_fit_in_the_gateway_deadline() {
 
 ---
 
+## 6. ❓ 헷갈리는 포인트
+
+- **Q. `@TimeLimiter`를 붙이면 동기 메서드도 1초에 끊기죠?** — 아닙니다. 반환 타입이 `CompletionStage`(또는 확장이 처리하는 Reactor/RxJava 타입)가 아니면 `TimeLimiterAspect`가 **메서드를 실행하기도 전에** `IllegalReturnTypeException`을 던집니다(4-5).
+- **Q. `cancelRunningFuture=true`면 하류 작업이 멈추나요?** — `decorateFutureSupplier()`에서만 `future.cancel(true)`가 불리고, 그것도 인터럽트 요청일 뿐입니다. `CompletionStage` 경로·`@TimeLimiter`에서는 아예 불리지 않고, `CompletableFuture.cancel()`은 인터럽트를 보내지도 않습니다(3.9 (A)).
+- **Q. TimeLimiter가 타임아웃을 내면 Bulkhead permit도 바로 돌아오나요?** — 기본 순서(TimeLimiter가 Bulkhead 바깥)에서는 아닙니다. permit은 **하류 stage가 실제로 끝날 때** 반납됩니다. 그래서 Bulkhead 지표가 하류의 실제 상태를 보여 줍니다(3.9 (B)).
+- **Q. `Decorators`에서 `withRetry`를 먼저 쓰면 Retry가 가장 바깥인가요?** — 반대입니다. `stageSupplier = wrap(stageSupplier)`라 **마지막에 부른 `withX`가 가장 바깥**입니다(3.4).
+- **Q. RateLimiter 대기도 TimeLimiter 예산에 포함되나요?** — 기본 순서에서 RateLimiter는 TimeLimiter 바깥이라 **포함되지 않고 더해집니다**(3.8).
+
+---
+
+## 7. 🧾 한 장 요약
+
+- TimeLimiter는 **이미 비동기로 도는 작업의 '기다림'을 자른다.** 작업 자체나 자원은 회수하지 않는다.
+- Spring `@TimeLimiter`는 `CompletionStage`(또는 Reactor/RxJava 타입) 반환 메서드에만 동작한다. 동기 메서드면 실행 전에 `IllegalReturnTypeException`.
+- `cancelRunningFuture`는 `decorateFutureSupplier()`에서만 쓰이고, 그것도 인터럽트 요청이다. 자원 회수의 1차 방어선은 **HTTP 클라이언트 타임아웃**이며, TimeLimiter는 그보다 약간 길게 둔다.
+- 기본 순서(바깥→안): **Retry → CircuitBreaker → RateLimiter → TimeLimiter → Bulkhead**(→ Timer). spring6 `*AspectOrder` 기본값 `LOWEST_PRECEDENCE - 5 … - 1`(Timer는 `LOWEST_PRECEDENCE`).
+- Retry가 CB 바깥이면 시도마다 기록되어 서킷이 빨리 열린다. 거꾸로면 약 3배 늦게 열리고 HALF_OPEN에서 하류를 3배로 때린다.
+- TimeLimiter가 Retry 안쪽이면 시도별 예산, 바깥이면 전체 예산.
+- Bulkhead가 TimeLimiter 안쪽이어야 permit이 실제 하류 작업의 수명을 따라간다.
+- `Decorators`는 마지막 `withX`가 가장 바깥. 예산표(시도 × 타임아웃 + 백오프 + 바깥 대기 + 여유 20%)를 테스트로 고정한다.
+
+---
+
 ## 관련 문서
 - 선행: [Bulkhead — 두 가지 격리와 스레드풀의 함정](./11-bulkhead.md)
 - 후행: [Spring Boot 자동설정](../advanced/01-spring-boot-autoconfiguration.md), [AOP 애스펙트](../advanced/02-aop-aspects.md), [프로덕션 설계](../advanced/12-production-design.md)
 
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

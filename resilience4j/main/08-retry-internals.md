@@ -6,8 +6,12 @@
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+- [🔢 숫자로 따라가기](#-숫자로-따라가기)
 - [4. 실전 예제](#4-실전-예제)
+- [🔥 시나리오](#-시나리오)
+- [❓ 헷갈리는 포인트](#-헷갈리는-포인트)
 - [5. 정리](#5-정리)
+- [🧾 한 장 요약](#-한-장-요약)
 
 ---
 
@@ -31,6 +35,24 @@ private void throwOrSleepAfterException() throws Exception {
 ```
 
 `numOfAttempts` 는 0에서 시작해 실패 1건당 1 증가하고, `>= maxAttempts` 면 마지막 예외를 다시 던진다. 1회차 실패 → `1 >= 3` 아님 → 대기, 2회차 실패 → 대기, 3회차 실패 → `3 >= 3` → **throw**. **실행 3회, 대기 2회.** `maxAttempts=1` 이면 재시도가 아예 없다.
+
+### 🖼 그림으로 보기 — 재시도 루프 한 바퀴
+
+```mermaid
+flowchart TD
+    START["호출 1건 시작<br/>retry.context() → numOfAttempts = 0"] --> RUN["supplier.get() 실행"]
+    RUN -->|"정상 반환"| RES{"retryOnResult predicate 가<br/>있고 true 인가?"}
+    RES -->|"아니오"| DONE["onComplete() → 결과 반환"]
+    RES -->|"예"| INC
+    RUN -->|"예외"| PRED{"exceptionPredicate.test(e)?<br/>(retryExceptions ∪ predicate) AND NOT ignoreExceptions"}
+    PRED -->|"false"| IGN["대기 없이 즉시 throw<br/>failedWithoutRetry +1"]
+    PRED -->|"true"| INC["numOfAttempts += 1"]
+    INC --> MAX{"numOfAttempts >= maxAttempts?"}
+    MAX -->|"예"| FAIL["예외: 마지막 예외 throw<br/>결과: 마지막 결과 반환 (failAfterMaxAttempts 면 예외)"]
+    MAX -->|"아니오"| IV["interval = intervalBiFunction.apply(numOfAttempts, 예외 또는 결과)"]
+    IV --> SLEEP["sleepFunction.accept(interval)<br/>동기: Thread.sleep → 호출 스레드 블로킹"]
+    SLEEP --> RUN
+```
 
 ### `RetryConfig` 전 항목
 
@@ -237,7 +259,78 @@ Spring AOP 기본 순서는 각 `*ConfigurationProperties` 의 기본값으로 �
 
 기본 순서(Retry 바깥 / CB 안쪽)에서는 CB 윈도가 **물리 시도 1건당 1회** 기록하므로 실제 실패 횟수가 그대로 반영되고, 서킷이 열린 뒤 남은 재시도는 즉시 `CallNotPermittedException` 을 받아 **fail fast** 한다 — 서킷이 열리면 재시도 자체가 차단된다. 반대로 CB 를 바깥에 두면 논리 호출 1건당 1회만 기록되어 3번 실패가 1건으로 희석되고, 서킷이 열려도 안쪽 Retry 는 계속 돌아 폭풍이 길어진다.
 
+```mermaid
+flowchart LR
+    APP["@Retry @CircuitBreaker @RateLimiter<br/>@TimeLimiter @Bulkhead 메서드"] --> R["Retry<br/>order LOWEST-5 (가장 바깥)"]
+    R --> CB["CircuitBreaker<br/>LOWEST-4"]
+    CB --> RL["RateLimiter<br/>LOWEST-3"]
+    RL --> TL["TimeLimiter<br/>LOWEST-2"]
+    TL --> BH["Bulkhead<br/>LOWEST-1 (가장 안쪽)"]
+    BH --> CALL["실제 원격 호출"]
+    CB -.->|"OPEN 이면 CallNotPermittedException<br/>→ Retry 가 받음 (ignore 권장)"| R
+    CALL -.->|"실패 1회 = CB 윈도 기록 1회"| CB
+```
+
 핵심은 **"서킷브레이커는 다운스트림의 실제 부하를 봐야 한다"** 는 것이다. 재시도 3번은 다운스트림 입장에서 요청 3개이고, 그걸 1건으로 세면 서킷은 실제보다 3배 둔감해진다. 단, 기본 순서에는 반드시 따라오는 설정이 있다 — **Retry 가 `CallNotPermittedException` 을 재시도하지 않게** `ignore-exceptions` 에 넣어야 한다. 자세한 조합 설계는 [12번 문서](./12-timelimiter-and-composition.md)에서 다룬다.
+
+
+## 🔢 숫자로 따라가기
+
+### 예제 1 — `maxAttempts=3`, 매 시도가 read timeout 2초로 실패할 때
+
+대기 간격은 `intervalBiFunction.apply(numOfAttempts, ...)` 로 계산되고, 지수 백오프는 `attempt-1` 번 곱한다(`skip(attempt - 1L)`). 그래서 **1번째 대기 = 초기값**, 2번째 대기 = 초기값 × 배수다.
+
+| 단계 | `numOfAttempts` | 고정 500ms (`ofDefaults()`) | 지수 `ofExponentialBackoff(500, 2.0)` | 지수 + 지터 `ofExponentialRandomBackoff(500, 2.0, 0.5)` |
+|---|---|---|---|---|
+| 1회차 실행 | 0 | 0.0 → 2.0s 실패 | 0.0 → 2.0s 실패 | 0.0 → 2.0s 실패 |
+| 1번째 대기 | 1 | 500ms (~2.5s) | interval(1) = **500ms** (~2.5s) | randomize(500) = **250~750ms** |
+| 2회차 실행 | 1 | 2.5 → 4.5s 실패 | 2.5 → 4.5s 실패 | 2.25~2.75 → 4.25~4.75s |
+| 2번째 대기 | 2 | 500ms (~5.0s) | interval(2) = (long)(500×2) = **1,000ms** (~5.5s) | randomize(1000) = **500~1,500ms** |
+| 3회차 실행 | 2 → 3 | 5.0 → 7.0s 실패 | 5.5 → 7.5s 실패 | 시작 4.75~6.25s |
+| 종료 | 3 (`3 >= 3`) | **7.0s** 에 마지막 예외 throw | **7.5s** | **6.75 ~ 8.25s** |
+
+- 대기는 **2번**뿐이다(마지막 실패 후에는 대기 없이 throw). 총 대기: 고정 1.0s, 지수 1.5s, 지터 0.75~2.25s.
+- 지터 범위는 `randomize()` 의 `min + Math.random() × (max - min + 1)` 을 `(long)` 으로 자른 값이라 500ms 기준 250~750ms 다(`IntervalFunction` 239~245행).
+- 호출자가 체감하는 시간은 **대기보다 시도 × timeout 이 지배한다**(6초). Retry 의 최악 소요는 `maxAttempts × timeout + Σ대기` 로 검산하라.
+
+`maxAttempts=5` 로 늘리면 지수 백오프 대기는 500 → 1,000 → 2,000 → 4,000ms(총 7.5s)이고, 최악 소요는 5 × 2s + 7.5s = **17.5초**다. 상위 API 의 타임아웃이 10초라면 4·5회차는 **아무도 결과를 기다리지 않는 호출**이 된다.
+
+### 예제 2 — 기다리는 동안 스레드와 Bulkhead 는?
+
+Spring AOP 기본 순서에서 Bulkhead 는 Retry 보다 **안쪽**이다. 그래서 Bulkhead 허가는 **시도마다 잡았다 놓고**, Retry 의 `Thread.sleep` 동안에는 놓여 있다. 반면 요청을 처리하는 **워커 스레드는 7.5초 내내** 붙잡혀 있다.
+
+```mermaid
+sequenceDiagram
+    participant W as 워커 스레드
+    participant R as Retry
+    participant B as Bulkhead (maxConcurrentCalls 25)
+    participant D as 원장 서버
+    W->>R: 요청 처리 시작 (t=0)
+    R->>B: 1회차 acquirePermission (사용 중 1/25)
+    B->>D: 호출
+    D-->>B: 2.0s read timeout
+    B-->>R: onComplete → 허가 반납 (0/25)
+    R->>R: Thread.sleep(500) — 워커 스레드 블로킹, Bulkhead 허가 없음
+    R->>B: 2회차 acquirePermission (1/25)
+    B->>D: 호출
+    D-->>B: 2.0s read timeout
+    B-->>R: 허가 반납
+    R->>R: Thread.sleep(1000) — 워커 스레드 블로킹
+    R->>B: 3회차 acquirePermission
+    B->>D: 호출
+    D-->>B: 2.0s read timeout
+    B-->>R: 허가 반납
+    R-->>W: t=7.5s 마지막 예외 throw
+```
+
+| 지표 | 계산 (100 RPS, 원장 장애 중, 지수 백오프) |
+|---|---|
+| 요청 1건의 워커 스레드 점유 | 7.5s (시도 6s + 대기 1.5s) |
+| 필요한 동시 워커 수 (Little's law) | 100 × 7.5 = **750개** — Spring Boot 기본 Tomcat 최대 200개를 약 2초 만에 소진 |
+| Bulkhead 허가 동시 사용량 | 100 × 6s(시도 시간만) = 600 → 25개 상한에 걸려 대부분 `BulkheadFullException` |
+| Retry 가 없을 때 워커 점유 | 100 × 2s = 200개 — 이미 한계 |
+
+Bulkhead 는 **원장으로 나가는 동시 호출**을 25개로 막아 주지만 **대기 중인 워커 스레드**는 막지 못한다. 동기 Retry 의 비용은 스레드 풀이 낸다 — 3.4절에서 비동기(`decorateCompletionStage`)를 권한 이유다. 그리고 `BulkheadFullException` 도 기본 Retry 설정에서는 재시도 대상이므로, `retryExceptions` 를 명시하지 않으면 거절된 요청이 다시 sleep 하며 스레드를 붙잡는다.
 
 ---
 
@@ -381,6 +474,72 @@ public class PaymentService {
 
 ---
 
+## 🔥 시나리오
+
+### 시나리오 A — 멱등하지 않은 포인트 지급에 기본 Retry 를 걸었다
+
+> 포인트 지급 API 가 외부 원장 서버에 `POST /points/grant {userId, amount: 1000}` 을 보낸다. 정상 응답 100ms, read timeout 2s. 누군가 "타임아웃 나면 다시 하면 되지" 하고 `@Retry(name = "ledger")` 를 붙였다 — 설정은 기본값(`maxAttempts=3`, 500ms, **모든 예외 재시도**).
+
+| 시각 | 클라이언트 (포인트 지급 API) | 원장 서버 | 고객 잔액 |
+|---|---|---|---|
+| 0.000s | 1회차 요청 전송 | 요청 수신. DB 락 대기로 처리 지연 | 0P |
+| 2.000s | `SocketTimeoutException` (read timeout) → Retry: 재시도 대상, 500ms 대기 | 아직 처리 중 | 0P |
+| 2.300s | (대기 중) | 1회차 **커밋 완료** → 응답 보내지만 클라이언트는 이미 끊음 | **1,000P** |
+| 2.500s | 2회차 요청 전송 (같은 내용, 다른 요청) | 새 요청으로 인식 | 1,000P |
+| 2.600s | 2회차 성공 응답 수신 → 호출자에게 "지급 완료 1건" | 2회차 커밋 | **2,000P** |
+
+고객은 1,000P 를 받아야 했는데 2,000P 를 받았다. 원장 지연이 3회 연속이었다면 **3,000P 가 지급되고 클라이언트는 실패를 응답**하며, 사용자가 다시 누르면 4,000P 가 된다. Retry 는 "요청이 서버에서 처리됐는지"를 모른다 — read timeout 은 **"응답을 못 받았다"이지 "처리가 안 됐다"가 아니다.**
+
+막는 법은 둘 중 하나다.
+
+1. **멱등 키** — 4.2절처럼 재시도 루프 밖에서 만든 키를 같이 보내고, 원장 서버가 같은 키를 한 번만 처리한다(근본 해법).
+2. **"서버에 안 닿은 게 확실한" 예외만 재시도** — `retryExceptions(ConnectException.class)` 처럼 연결 거부만 재시도한다. 주의: `SocketTimeoutException` 은 connect timeout 과 read timeout 양쪽에서 던져질 수 있어 이 목적의 화이트리스트에 넣으면 안 된다.
+
+### 시나리오 B — 재시도 폭풍 계산
+
+> 주문 API(300 RPS) → 포인트 지급 API → 원장 서버. 원장 서버가 재시작 중이라 연결 즉시 `ConnectException` 이 난다(시도당 5ms). 원장 서버는 정상 시 초당 500건까지 처리할 수 있다.
+
+| 구성 | 원장 서버가 받는 시도 수 | 설명 |
+|---|---|---|
+| 재시도 없음 | 300/s | 요청 1건 = 시도 1건 |
+| 포인트 지급 API 에 `maxAttempts=3` | **900/s** | 요청 1건 = 시도 3건 (500ms 간격으로 1.0s 안에 소진) |
+| + 주문 API 도 포인트 지급 API 에 `maxAttempts=3` | **2,700/s** | 3 × 3 = 9배. 계층마다 곱해진다 |
+| + 고정 500ms, 지터 없음 | 순간 피크 집중 | 같은 순간 실패한 요청들이 0.5s, 1.0s 에 **같은 밀리초에** 다시 도착 |
+
+원장 서버가 재시작을 마친 순간 받을 수 있는 건 초당 500건인데 2,700건이 몰린다 → 다시 넘어진다 → 재시도가 또 몰린다. 장애가 **스스로 연장**된다.
+
+```mermaid
+flowchart LR
+    U["사용자 요청 300/s"] --> O["주문 API<br/>Retry x3"]
+    O -->|"최대 900/s"| P["포인트 지급 API<br/>Retry x3"]
+    P -->|"최대 2,700/s"| L["원장 서버<br/>처리 한도 500/s"]
+    P -.->|"CircuitBreaker 가 Retry 안쪽에서 OPEN"| CUT["원장 서버로 나가는 시도 차단<br/>HALF_OPEN 시험 호출만 통과"]
+```
+
+완화 순서:
+
+1. **재시도는 한 계층에서만.** 보통 원격 호출에 가장 가까운 계층(포인트 지급 API) 하나에 둔다.
+2. **CircuitBreaker 를 Retry 안쪽에**(Spring 기본 order). OPEN 이 되면 남은 시도는 원장에 닿기 전에 `CallNotPermittedException` 으로 끝난다 — 원장이 받는 건 HALF_OPEN 시험 호출 몇 건뿐이다.
+3. **Retry 의 `ignoreExceptions` 에 `CallNotPermittedException`.** 안 넣으면 원장에는 안 가지만 여전히 500ms + 1,000ms 를 자며 워커 스레드를 붙잡는다.
+4. **지터 + 상한**(`ofExponentialRandomBackoff(init, m, f, max)`)으로 남은 재시도의 도착 시점을 흩는다.
+
+---
+
+## ❓ 헷갈리는 포인트
+
+- **Q. `maxAttempts=3` 이면 재시도가 3번인가?**
+  아니다. **총 3번 실행, 재시도 2번, 대기 2번**이다. `throwOrSleepAfterException()` 이 `numOfAttempts.incrementAndGet() >= maxAttempts` 면 대기 없이 throw 한다(`RetryImpl` 231~240행).
+- **Q. 지수 백오프 `ofExponentialBackoff(500, 2.0)` 의 첫 대기는 1,000ms 인가?**
+  아니다. 500ms 다. `LongStream.iterate(initial, f).skip(attempt - 1)` 이라 attempt 1 에서는 곱하지 않는다.
+- **Q. 재시도 대기 중에도 Bulkhead 허가를 잡고 있나?**
+  기본 aspect 순서(Retry 바깥, Bulkhead 안쪽)에서는 **아니다** — `Bulkhead.decorateSupplier` 가 시도마다 `finally { onComplete() }` 로 반납한다. 하지만 호출 스레드는 `Thread.sleep` 으로 계속 잡혀 있다.
+- **Q. 3번 다 실패하면 CircuitBreaker 에는 몇 건으로 기록되나?**
+  기본 순서에서는 **3건**이다. CircuitBreaker 가 Retry 안쪽이라 시도마다 `onError()` 가 불린다. 순서를 뒤집으면 1건이 된다(3.6절).
+- **Q. `ignoreExceptions` 에 넣은 예외가 2회차에 나면?**
+  그 자리에서 대기 없이 바로 던져진다. `onRuntimeError()` 가 predicate 거짓이면 `failedWithoutRetryCounter` 를 올리고 `RetryOnIgnoredErrorEvent` 후 throw 한다 — 몇 회차인지와 상관없다.
+
+---
+
 ## 5. 정리
 
 | 메서드 | 호출 시점 | 동기 / 비동기 |
@@ -409,6 +568,18 @@ public class PaymentService {
 
 ---
 
+## 🧾 한 장 요약
+
+- `maxAttempts` 는 **총 실행 횟수**다. 3 = 실행 3번, 대기 2번.
+- 루프는 데코레이터의 `while (true)`, 종료 판단은 호출마다 새로 만드는 `ContextImpl` 이 한다.
+- 기본값은 **모든 예외를 재시도**한다 → `retryExceptions`/`ignoreExceptions` 를 반드시 설정한다.
+- 지수 백오프 첫 대기 = 초기값. 지터(`randomizationFactor`)로 시점을 흩고, 상한 있는 오버로드를 쓴다.
+- 동기 Retry 의 대기는 `Thread.sleep` — **워커 스레드가 비용을 낸다.** 최악 소요 = `maxAttempts × timeout + Σ대기`.
+- 멱등하지 않은 쓰기는 멱등 키 없이 재시도하지 않는다. read timeout 은 "처리 안 됨"이 아니다.
+- 재시도는 계층마다 곱해진다. 한 계층에만 두고, CircuitBreaker 를 안쪽에, `CallNotPermittedException` 은 ignore.
+
+---
+
 ## 관련 문서
 - 선행: [CircuitBreakerConfig 전 항목 — 숫자를 어떻게 정하나](./07-circuitbreaker-config.md)
 - 후행: [RateLimiter ① AtomicRateLimiter 내부](./09-ratelimiter-atomic.md)
@@ -416,3 +587,5 @@ public class PaymentService {
 
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

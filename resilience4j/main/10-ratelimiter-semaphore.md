@@ -4,10 +4,15 @@
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
+  - [🖼 그림으로 보기 — 스케줄러가 채우고, 호출자는 줄을 선다](#-그림으로-보기--스케줄러가-채우고-호출자는-줄을-선다)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [3.8 🔢 숫자로 따라가기 — 같은 요청, 다른 구현](#38--숫자로-따라가기--같은-요청-다른-구현)
 - [4. 실전 예제](#4-실전-예제)
+  - [4-4. 🔥 시나리오 — 외부 스크래핑 서버 호출 잡](#4-4--시나리오--외부-스크래핑-서버-호출-잡이-스레드를-쌓아-간-일주일)
 - [5. 정리](#5-정리)
+- [6. ❓ 헷갈리는 포인트](#6--헷갈리는-포인트)
+- [7. 🧾 한 장 요약](#7--한-장-요약)
 
 ---
 
@@ -35,6 +40,44 @@ private final ScheduledFuture<?> scheduledFuture;
 - `scheduledFuture` — 그 스케줄 작업의 핸들. `shutdown()`에서 취소
 
 `Semaphore`를 `fair=true`로 만든 점이 중요합니다. 대기 스레드가 FIFO로 깨어나므로 기아(starvation)가 없습니다. 대신 매 획득마다 큐를 거치므로 비공정(unfair) 세마포어보다 처리량이 낮습니다.
+
+### 🖼 그림으로 보기 — 스케줄러가 채우고, 호출자는 줄을 선다
+
+[RateLimiter ①](./09-ratelimiter-atomic.md)과 같은 설정으로 봅니다 — `limitForPeriod=2`, `limitRefreshPeriod=1s`, `timeoutDuration=500ms`. 생성 시점이 0초이고, `scheduleAtFixedRate`의 첫 실행은 `initialDelay = limitRefreshPeriod`라 **t=1.0, 2.0, …**에 tick이 옵니다.
+
+```mermaid
+sequenceDiagram
+    participant SCH as 스케줄러 스레드
+    participant SEM as Semaphore(2, fair)
+    participant C as 요청 C (t=0.6)
+    participant D as 요청 D (t=0.7)
+    participant E as 요청 E (t=0.9)
+
+    Note over SEM: t=0.0, 0.1 에 A, B 가 permit 2개를 가져가 0개
+    C->>SEM: tryAcquire(1, 500ms)
+    Note over C: permit 없음 → AQS 대기열 1번 (마감 1.1)
+    D->>SEM: tryAcquire(1, 500ms)
+    Note over D: 대기열 2번 (마감 1.2)
+    E->>SEM: tryAcquire(1, 500ms)
+    Note over E: 대기열 3번 (마감 1.4)
+    SCH->>SEM: t=1.0 refreshLimit() → release(2 - 0)
+    SEM-->>C: FIFO 1번 깨움 → true
+    SEM-->>D: FIFO 2번 깨움 → true
+    Note over E: 남은 permit 없음, 다음 tick 은 t=2.0<br/>t=1.4 에 타임아웃 → false
+```
+
+`AtomicRateLimiter`와 같은 장면인데 주어가 다릅니다. 저쪽은 **호출자가 도착하는 순간 스스로 계산해서** "0.4초 뒤에 가라"를 정했고, 여기서는 **스케줄러 스레드가 t=1.0에 permit을 풀어 줘야** 비로소 누가 통과할지 정해집니다.
+
+`refreshLimit()`가 tick마다 하는 판단은 이것뿐입니다.
+
+```mermaid
+flowchart TB
+    T["tick<br/>(limitRefreshPeriod 마다, 스케줄러 스레드)"] --> R["permissionsToRelease<br/>= limitForPeriod - availablePermits()"]
+    R --> Q{"차이의 부호"}
+    Q -->|"양수 · 쓴 만큼 비어 있음"| REL["semaphore.release(차이)<br/>대기열 앞에서부터 깨어남"]
+    Q -->|"음수 · 한도를 낮춘 직후"| ACQ["semaphore.tryAcquire(-차이)<br/>못 가져오면 다음 tick 에 재시도"]
+    Q -->|"0 · 하나도 안 씀"| NOP["아무것도 안 함<br/>(쌓아 두지 않음)"]
+```
 
 ### 기본은 어느 쪽인가
 
@@ -184,7 +227,7 @@ flowchart LR
         A2 --> A3["calculateNextState()<br/>시간 → 사이클 → 허용량"]
         A3 --> A4{"CAS 성공?"}
         A4 -->|no| A5["parkNanos(1)"] --> A2
-        A4 -->|yes| A6{"nanosToWait &gt; 0?"}
+        A4 -->|yes| A6{"nanosToWait > 0?"}
         A6 -->|no| A7["즉시 통과"]
         A6 -->|yes| A8["호출 스레드가<br/>스스로 parkNanos"]
         A8 --> A7
@@ -250,6 +293,50 @@ public class RateLimiterEventProcessor extends
 
 1. **성공 이벤트는 "호출이 성공했다"가 아니라 "허용량을 얻었다"입니다.** 비즈니스 호출이 그 뒤에 실패해도 이 이벤트는 이미 나갔습니다.
 2. **`EventPublisher`에 `onDrained(...)`가 없습니다.** `onSuccess`, `onFailure` 둘뿐입니다. 드레인은 `onEvent(...)` + `getEventType() == Type.DRAINED`로 잡으세요.
+
+### 3.8 🔢 숫자로 따라가기 — 같은 요청, 다른 구현
+
+[RateLimiter ①의 3.10](./09-ratelimiter-atomic.md#310--숫자로-따라가기--limitforperiod2-limitrefreshperiod1s)과 **같은 요청 9건**을 `SemaphoreBasedRateLimiter`에 흘립니다(`limitForPeriod=2`, `limitRefreshPeriod=1s`, 생성 시점 0초, tick은 1.0·2.0·…).
+
+**(A) `timeoutDuration=0`** — `tryAcquire(1, 0, NANOSECONDS)`는 permit이 없으면 바로 `false`입니다.
+
+| 요청 시각 | 획득 전 permit | 결과 | Atomic(①)과 비교 |
+|---|---|---|---|
+| 0.00 | 2 | ✅ 통과 → 1 | 같음 |
+| 0.10 | 1 | ✅ 통과 → 0 | 같음 |
+| 0.20 / 0.60 / 0.70 / 0.90 | 0 | ❌ 즉시 거절 | 같음 |
+| 1.05 | 2 (t=1.0 tick이 0 → 2로 채움) | ✅ 통과 → 1 | 같음 (①은 계산으로 2) |
+| 1.10 | 1 | ✅ 통과 → 0 | 같음 |
+| 1.60 | 0 | ❌ 즉시 거절 | 같음 |
+
+**(B) `timeoutDuration=500ms`** — permit이 없으면 AQS 대기열에 FIFO로 섭니다.
+
+| 요청 시각 | 마감 | 무슨 일이 일어나나 | 결과 | Atomic(①)과 비교 |
+|---|---|---|---|---|
+| 0.00 | — | permit 2 → 1 | ✅ 0.00 | 같음 |
+| 0.10 | — | permit 1 → 0 | ✅ 0.10 | 같음 |
+| 0.20 | 0.70 | 마감 전에 tick 없음 | ❌ 0.70 | 같음 |
+| 0.60 | 1.10 | t=1.0 tick `release(2)` → 대기열 1번 | ✅ 1.00 | 같음 (①은 0.60에 예약 확정) |
+| 0.70 | 1.20 | 대기열 2번 | ✅ 1.00 | 같음 (①은 0.70에 예약 확정) |
+| 0.90 | 1.40 | 대기열 3번, permit 소진 | ❌ 1.40 | 같음 (①은 0.90에 이미 거절 확정) |
+| 1.05 | 1.55 | 다음 tick 2.0 | ❌ 1.55 | 같음 |
+| 1.10 | 1.60 | 〃 | ❌ 1.60 | 같음 |
+| 1.60 | 2.10 | t=2.0 tick | ✅ 2.00 | 같음 |
+
+**결과는 완전히 같습니다.** 둘 다 "사이클당 2건, 버스트 상한 2"라는 같은 계약을 지키기 때문입니다. 차이는 **언제, 누가 결정하느냐**입니다 — ①은 요청이 도착한 순간 CAS 한 번으로, 여기서는 t=1.0에 스케줄러 스레드가 permit을 풀 때 정해집니다.
+
+**(C) 차이가 드러나는 경우 — tick이 늦게 오면**
+
+스케줄러를 다른 무거운 작업과 공유했더니 t=1.0 tick이 **0.25초 늦게(t=1.25)** 실행됐다고 해 봅니다. `AtomicRateLimiter`는 스케줄러가 없으니 영향이 없습니다.
+
+| 요청 시각 | 마감 | Semaphore (tick 1.25) | Atomic (스케줄러 없음) |
+|---|---|---|---|
+| 0.60 | 1.10 | ❌ 1.10 — tick 전에 마감 | ✅ 1.00 |
+| 0.70 | 1.20 | ❌ 1.20 — tick 전에 마감 | ✅ 1.00 |
+| 0.90 | 1.40 | ✅ 1.25 — 대기열에 남은 1번이 됨 | ❌ 1.40 |
+| 1.05 | 1.55 | ✅ 1.25 | ❌ 1.55 |
+
+통과 건수는 같아도 **누가 통과하는지가 바뀌고**, 먼저 와서 오래 기다린 요청이 거절됩니다. 정밀도가 "스케줄러 tick 해상도와 스케줄러의 한가함"에 묶여 있다는 3.6 비교표의 한 줄이 이런 뜻입니다. 스케줄러를 주입해 공유할 때는 그 스케줄러에 블로킹 작업을 올리지 마세요.
 
 ---
 
@@ -408,6 +495,56 @@ public class RecommendationResilienceConfig {
 
 Bulkhead 쪽 상세는 [Bulkhead — 두 가지 격리와 스레드풀의 함정](./11-bulkhead.md)에서 이어집니다.
 
+### 4-4. 🔥 시나리오 — 외부 스크래핑 서버 호출 잡이 스레드를 쌓아 간 일주일
+
+**상황.** 매일 새벽 외부 스크래핑 서버를 호출하는 배치 잡이 있습니다. 대상 사이트마다 "초당 2회"를 지키려고, **잡이 돌 때마다 사이트별로** 리미터를 새로 만들었습니다. "FIFO로 공정하게"라는 이유로 `SemaphoreBasedRateLimiter`를 골랐습니다.
+
+```java
+// ❌ 잡 실행마다 사이트 300개 × new
+for (Site site : sites) {
+    RateLimiter limiter = new SemaphoreBasedRateLimiter("site-" + site.id(),
+        RateLimiterConfig.custom()
+            .limitForPeriod(2)            // limitRefreshPeriod 는 안 적음 → 기본 500ns
+            .timeoutDuration(Duration.ofSeconds(1))
+            .build());
+    scrape(site, limiter);
+}                                         // shutdown() 호출 없음
+```
+
+**시간 순서.**
+
+| 시각 | 무슨 일 | 소스 근거 |
+|---|---|---|
+| 1일차 02:00 | 리미터 300개 생성 → 스케줄러를 주입하지 않았으므로 `configureScheduler()`가 인스턴스마다 단일 스레드 스케줄러를 만듦. `SchedulerForSemaphoreBasedRateLimiterImpl-site-N-thread-0` **데몬 스레드 300개** | `ExecutorServiceFactory.newSingleThreadScheduledExecutor()` |
+| 02:00 | 각 스케줄러가 `scheduleAtFixedRate(refreshLimit, 500ns, 500ns)`로 사실상 쉬지 않고 돎 → CPU 사용률 급등. permit이 거의 즉시 다시 채워져 **"초당 2회" 제한이 사실상 사라짐** → 스크래핑 서버에서 우리 IP를 차단 | `limitRefreshPeriod` 기본값 `Duration.ofNanos(500)` |
+| 02:40 | 잡 종료. `shutdown()`을 부르지 않았으므로 스케줄 작업이 리미터를 계속 참조 → 리미터도, 스레드도 남음. tick도 계속 돎 | Javadoc · issue #1683 |
+| 2일차 02:00 | 또 300개 → 스레드 600개. 스레드 덤프에 `SchedulerForSemaphoreBasedRateLimiterImpl-…`가 줄줄이 | |
+| 7일차 | 스레드 2,100개, CPU 상시 높음. 재배포하면 "해결"되는 장애가 반복 | |
+
+**`shutdown()`만 추가하면 끝일까?** 소스를 보면 아닙니다. `shutdown()`은 `scheduledFuture.cancel(true)`만 합니다. 리미터가 **스스로 만든 스케줄러(Executor) 자체는 종료하지 않습니다.** tick은 멈추고 리미터는 GC될 수 있게 되지만, `ScheduledThreadPoolExecutor`의 코어 스레드는 유휴 상태로 남습니다. 잡이 돌 때마다 놀고 있는 스레드가 300개씩 쌓이는 건 그대로입니다.
+
+**고친 방향.**
+
+```java
+// ✅ 1안: FIFO가 꼭 필요하지 않다면 — AtomicRateLimiter + 레지스트리 재사용
+RateLimiterConfig perSite = RateLimiterConfig.custom()
+    .limitForPeriod(2)
+    .limitRefreshPeriod(Duration.ofSeconds(1))   // 반드시 함께 지정
+    .timeoutDuration(Duration.ofSeconds(1))
+    .build();
+RateLimiter limiter = rateLimiterRegistry.rateLimiter("site-" + site.id(), perSite);
+// 스레드 0개, 라이프사이클 관리 불필요
+
+// ✅ 2안: FIFO가 요구사항이라면 — 스케줄러 하나를 주입해 공유하고, 끝나면 shutdown()
+SemaphoreBasedRateLimiter fifo = new SemaphoreBasedRateLimiter(
+    "site-" + site.id(), perSite, sharedScheduler);   // 스레드는 sharedScheduler 의 것만
+try {
+    scrape(site, fifo);
+} finally {
+    fifo.shutdown();                                  // 스케줄 작업 취소 → GC 가능
+}
+```
+
 ---
 
 ## 5. 정리
@@ -431,9 +568,34 @@ Bulkhead 쪽 상세는 [Bulkhead — 두 가지 격리와 스레드풀의 함정
 
 ---
 
+## 6. ❓ 헷갈리는 포인트
+
+- **Q. 두 구현은 같은 요청에 다른 결과를 내나요?** — 스케줄러가 제때 돌면 같습니다([3.8 (A)(B)](#38--숫자로-따라가기--같은-요청-다른-구현)). 둘 다 "사이클당 `limitForPeriod`, 남은 몫은 쌓지 않음"이라는 같은 계약을 지킵니다. 달라지는 건 결정 시점(도착 순간 vs tick 순간)과, tick이 늦을 때의 결과([3.8 (C)](#38--숫자로-따라가기--같은-요청-다른-구현))입니다.
+- **Q. FIFO니까 Semaphore 쪽이 "더 정확한" 리미터인가요?** — 레이트 정확도는 같고, 보장하는 게 **대기 순서**일 뿐입니다. 그 대가로 스케줄러 스레드, `shutdown()` 관리, 컨텍스트 스위치를 냅니다. FIFO가 요구사항이 아니면 쓸 이유가 없습니다.
+- **Q. `shutdown()`을 부르면 스레드도 정리되나요?** — 아닙니다. `scheduledFuture.cancel(true)`만 합니다. 스스로 만든 스케줄러는 종료되지 않으니, 인스턴스를 여러 개 만들 거라면 스케줄러를 주입해 공유하세요([4-4](#4-4--시나리오--외부-스크래핑-서버-호출-잡이-스레드를-쌓아-간-일주일)).
+- **Q. Reactor 연산자에 `SemaphoreBasedRateLimiter`를 넣으면?** — `CorePublisherRateLimiterOperator`가 `rateLimiter.reservePermission(permits)`를 부르므로 `UnsupportedOperationException`이 납니다. 구독 시점에 터집니다.
+- **Q. `timeoutDuration=0`이면 Semaphore도 즉시 거절인가요?** — 그렇습니다. `tryAcquire(permits, 0, NANOSECONDS)`는 permit이 없으면 기다리지 않고 `false`입니다. 이 경우 두 구현의 동작 차이는 사실상 없습니다.
+
+---
+
+## 7. 🧾 한 장 요약
+
+- `SemaphoreBasedRateLimiter` = `Semaphore(limitForPeriod, fair=true)` + `limitRefreshPeriod` 주기로 `refreshLimit()`을 도는 **스케줄러 스레드**.
+- `refreshLimit()`은 "목표치까지의 차이"만 채우거나 회수한다 → 남은 몫이 쌓이지 않는다(Atomic과 같은 계약).
+- 정상이라면 Atomic과 **같은 요청에 같은 결과**. 다른 건 결정 주체(스케줄러 tick)와 대기 순서(FIFO).
+- tick이 늦으면 결과가 바뀐다. 정밀도가 스케줄러 상태에 종속된다.
+- `reservePermission()` 미지원 → Reactor/코루틴 경로에서 사용 불가.
+- 인스턴스마다 스케줄러 스레드 + `shutdown()` 책임. `shutdown()`은 작업만 취소하고 스스로 만든 스케줄러는 남기므로, 여러 개 만들면 스케줄러를 주입해 공유한다.
+- 기본 `limitRefreshPeriod(500ns)`로 만들면 스케줄러가 폭주하고 제한도 사라진다.
+- 기본 구현은 Atomic이고, 둘 다 **인스턴스 로컬**이다.
+
+---
+
 ## 관련 문서
 - 선행: [RateLimiter ① AtomicRateLimiter — 락 없이 나노초로 센다](./09-ratelimiter-atomic.md)
 - 후행: [Bulkhead — 두 가지 격리와 스레드풀의 함정](./11-bulkhead.md)
 
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*

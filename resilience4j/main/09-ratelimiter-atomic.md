@@ -4,10 +4,16 @@
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
+  - [🖼 그림으로 보기 — 시간축 위의 사이클과 예약](#-그림으로-보기--시간축-위의-사이클과-예약)
 - [2. 왜 알아야 하는가 (Why)](#2-왜-알아야-하는가-why)
 - [3. 내부 구현 분석 (How)](#3-내부-구현-분석-how)
+  - [3.9 🖼 `acquirePermission()` 한 번의 전체 경로](#39--그림으로-보기--acquirepermission-한-번의-전체-경로)
+  - [3.10 🔢 숫자로 따라가기](#310--숫자로-따라가기--limitforperiod2-limitrefreshperiod1s)
 - [4. 실전 예제](#4-실전-예제)
+  - [4-6. 🔥 시나리오 — 기본 timeoutDuration(5s)가 웹 서버를 멈춘 날](#4-6--시나리오--기본-timeoutduration5s가-웹-서버를-멈춘-날)
 - [5. 정리](#5-정리)
+- [6. ❓ 헷갈리는 포인트](#6--헷갈리는-포인트)
+- [7. 🧾 한 장 요약](#7--한-장-요약)
 
 ---
 
@@ -56,6 +62,54 @@ private static class State {
 `timeoutDuration`이 0보다 크면 `AtomicRateLimiter`는 허용량을 **미리 당겨씁니다.** 지금 남은 게 0인데 다음 사이클까지 300ms 남았고 `timeoutDuration`이 1초라면, `activePermissions`를 `-1`로 만들고 호출자에게 "300ms 기다려"라고 알려줍니다. 호출자는 그 시간 동안 `parkNanos`로 자고, 깨면 그냥 진행합니다. 다시 확인하지 않습니다. 자리를 **이미 예약해 두었기** 때문입니다.
 
 이게 `AtomicRateLimiter`가 "대기 가능한(waiting) rate limiter"가 되는 방식이고, `SemaphoreBasedRateLimiter`가 `reservePermission()`에서 `UnsupportedOperationException`을 던지는 이유입니다.
+
+### 🖼 그림으로 보기 — 시간축 위의 사이클과 예약
+
+말로만 보면 헷갈리니 그림으로 고정해 둡니다. 이 절과 [3.10](#310--숫자로-따라가기--limitforperiod2-limitrefreshperiod1s)의 예시 설정은 모두 같습니다 — `limitForPeriod=2`, `limitRefreshPeriod=1s`, `timeoutDuration=500ms`. 리미터를 만든 순간을 0초로 둡니다.
+
+```text
+경과 시간(s)   0.0        0.5        1.0        1.5        2.0
+               |------ cycle 0 ------|------ cycle 1 ------|------ cycle 2 ...
+그 사이클 첫 계산  2                    min(남은 값 + 2, 2)    min(남은 값 + 2, 2)
+
+ · 경계는 "생성 시점 + 1초의 배수"다. 벽시계의 정각 초가 아니다
+ · 경계에서 누가 채워 주지 않는다. 경계를 넘은 뒤 처음 온 호출자가 계산으로 더한다
+ · 남은 값이 음수(예약)면 새 사이클 몫에서 그만큼 먼저 빠진다
+```
+
+`activePermissions` 숫자 하나가 요청마다 어떻게 변하는지 따라가 봅니다. 요청 시각은 [3.10](#310--숫자로-따라가기--limitforperiod2-limitrefreshperiod1s)의 표와 같습니다.
+
+```mermaid
+flowchart LR
+    S0["생성 직후<br/>cycle 0 · 2"] -->|"A t=0.0 통과"| S1["cycle 0 · 1"]
+    S1 -->|"B t=0.1 통과"| S2["cycle 0 · 0"]
+    S2 -->|"C t=0.6 예약<br/>0.4s 대기"| S3["cycle 0 · -1"]
+    S3 -->|"D t=0.7 예약<br/>0.3s 대기"| S4["cycle 0 · -2"]
+    S4 -->|"E t=0.9 거절<br/>대기 1.1s 필요"| S4
+    S4 -->|"F t=1.05 가 계산<br/>min(-2 + 2, 2) = 0"| S5["cycle 1 · 0<br/>F도 거절"]
+```
+
+- `-1`, `-2`는 "C와 D가 cycle 1의 몫을 이미 가져갔다"는 뜻입니다. 그래서 새 사이클이 시작된 직후인 t=1.05의 F가 거절됩니다. 새 사이클이라고 무조건 자리가 있는 게 아닙니다.
+- E는 거절됐기 때문에 숫자를 깎지 않습니다(`reservePermissions()`의 `canAcquireInTime=false` 분기).
+
+같은 장면을 스레드 입장에서 보면 이렇습니다.
+
+```mermaid
+sequenceDiagram
+    participant C as 요청 C (t=0.6)
+    participant D as 요청 D (t=0.7)
+    participant E as 요청 E (t=0.9)
+    participant RL as AtomicRateLimiter
+
+    C->>RL: acquirePermission()
+    RL-->>C: nanosToWait 0.4s, 0.5s 이하라 예약 (0 → -1)
+    D->>RL: acquirePermission()
+    RL-->>D: nanosToWait 0.3s, 예약 (-1 → -2)
+    E->>RL: acquirePermission()
+    RL-->>E: nanosToWait 1.1s, 0.5s 초과라 예약 안 함 (-2 유지)
+    Note over C,D: 각자 parkNanos 로 자다가 t=1.0 에 깨어나<br/>다시 확인하지 않고 바로 실행
+    Note over E: 거절이 확정됐는데도 0.5s park<br/>t=1.4 에 false → RequestNotPermitted
+```
 
 ---
 
@@ -122,7 +176,7 @@ flowchart TB
     C -->|"다르다 (사이클 넘어감)"| D["elapsedCycles x limitForPeriod 더하고<br/>min(..., limitForPeriod) 로 상한 절단"]
     D --> E
     E --> F["nanosToWaitForPermission()"]
-    F --> G{"timeoutInNanos<br/>&gt;= nanosToWait ?"}
+    F --> G{"timeoutInNanos<br/>≥ nanosToWait ?"}
     G -->|yes| H["permissions -= permits<br/>(음수 허용 = 예약)"]
     G -->|no| I["permissions 그대로<br/>(예약하지 않음)"]
     H --> J["new State(config, cycle, permissions, nanosToWait)"]
@@ -206,7 +260,7 @@ private boolean compareAndSet(final State current, final State next) {
 sequenceDiagram
     participant T1 as Thread A
     participant T2 as Thread B
-    participant S as AtomicReference&lt;State&gt;
+    participant S as AtomicReference(State)
 
     T1->>S: state.get() → S0
     T2->>S: state.get() → S0
@@ -300,6 +354,69 @@ rateLimiter.getEventPublisher()
         }
     });
 ```
+
+### 3.9 🖼 그림으로 보기 — `acquirePermission()` 한 번의 전체 경로
+
+3.1~3.5에 흩어진 분기를 한 장으로 모으면 이렇습니다. `acquirePermission()` → `updateStateWithBackOff()` → `waitForPermissionIfNecessary()` 순서 그대로입니다.
+
+```mermaid
+flowchart TB
+    S["acquirePermission(permits)"] --> U["updateStateWithBackOff()<br/>calculateNextState + CAS 루프<br/>(이 시점에 예약 여부까지 확정)"]
+    U --> Q1{"nanosToWait ≤ 0 ?"}
+    Q1 -->|yes| OK["즉시 true<br/>SUCCESSFUL_ACQUIRE"]
+    Q1 -->|no| Q2{"timeoutInNanos ≥ nanosToWait ?"}
+    Q2 -->|"yes · 이미 예약됨"| W1["waitForPermission(nanosToWait)<br/>parkNanos 루프"]
+    W1 --> Q3{"대기 중 인터럽트?"}
+    Q3 -->|no| OK2["true · 재확인 없이 진행"]
+    Q3 -->|yes| CAN["false + 인터럽트 플래그 복원<br/>→ AcquirePermissionCancelledException"]
+    Q2 -->|"no · 예약 안 됨"| W2["waitForPermission(timeoutInNanos)<br/>거절도 timeout 만큼 park"]
+    W2 --> REJ["false → RequestNotPermitted<br/>FAILED_ACQUIRE"]
+```
+
+핵심은 **결정이 맨 위 CAS 한 번에서 끝난다**는 점입니다. 아래쪽 분기는 이미 정해진 결과에 맞춰 "얼마나 잘지"만 고릅니다. 세마포어처럼 자다가 깨서 다시 경쟁하는 단계가 없습니다.
+
+### 3.10 🔢 숫자로 따라가기 — `limitForPeriod=2`, `limitRefreshPeriod=1s`
+
+같은 요청 9건을 `timeoutDuration`만 바꿔서 흘려 봅니다. 리미터 생성 시각이 0초이고, 요청 처리 시간은 0으로 칩니다. "시작 값"은 사이클 반영(`min(남은 값 + 경과 사이클 × 2, 2)`)까지 끝낸 뒤의 `activePermissions`입니다.
+
+**(A) `timeoutDuration=0` — 예약 없음**
+
+| 요청 시각 | cycle | 시작 값 | `nanosToWait` | 결과 | 끝 값 |
+|---|---|---|---|---|---|
+| 0.00 | 0 | 2 | 0 | ✅ 통과 | 1 |
+| 0.10 | 0 | 1 | 0 | ✅ 통과 | 0 |
+| 0.20 | 0 | 0 | 0.80s | ❌ 즉시 거절 | 0 |
+| 0.60 | 0 | 0 | 0.40s | ❌ 즉시 거절 | 0 |
+| 0.70 | 0 | 0 | 0.30s | ❌ 즉시 거절 | 0 |
+| 0.90 | 0 | 0 | 0.10s | ❌ 즉시 거절 | 0 |
+| 1.05 | 1 | min(0+2, 2) = 2 | 0 | ✅ 통과 | 1 |
+| 1.10 | 1 | 1 | 0 | ✅ 통과 | 0 |
+| 1.60 | 1 | 0 | 0.40s | ❌ 즉시 거절 | 0 |
+
+통과 4건, 거절 5건. 거절된 스레드가 잡혀 있던 시간은 **0초**입니다. 값이 한 번도 음수로 내려가지 않습니다.
+
+**(B) `timeoutDuration=500ms` — 0.5초 안에 자리가 나면 예약**
+
+| 요청 시각 | cycle | 시작 값 | `nanosToWait` | 계산 | 결과 | 끝 값 |
+|---|---|---|---|---|---|---|
+| 0.00 | 0 | 2 | 0 | | ✅ 즉시 실행 | 1 |
+| 0.10 | 0 | 1 | 0 | | ✅ 즉시 실행 | 0 |
+| 0.20 | 0 | 0 | 0.80s | 다음 경계까지 0.8s > 0.5s | ❌ 0.5s park 후 t=0.70에 거절 | 0 |
+| 0.60 | 0 | 0 | 0.40s | 다음 경계 몫 2로 충분 | ⏳ 예약 → t=1.00 실행 | -1 |
+| 0.70 | 0 | -1 | 0.30s | 다음 경계 몫 -1+2=1, 충분 | ⏳ 예약 → t=1.00 실행 | -2 |
+| 0.90 | 0 | -2 | 1.10s | 다음 경계 몫 -2+2=0 → `divCeil`로 1사이클 더 | ❌ 0.5s park 후 t=1.40에 거절 | -2 |
+| 1.05 | 1 | min(-2+2, 2) = 0 | 0.95s | 다음 경계까지 0.95s | ❌ t=1.55에 거절 | 0 |
+| 1.10 | 1 | 0 | 0.90s | | ❌ t=1.60에 거절 | 0 |
+| 1.60 | 1 | 0 | 0.40s | | ⏳ 예약 → t=2.00 실행 | -1 |
+
+통과 5건, 거절 4건. 표에서 읽어야 할 것 네 가지입니다.
+
+1. **실제 실행 시각은 사이클당 정확히 2건**입니다(0.00·0.10 / 1.00·1.00 / 2.00·…). 대기를 허용해도 레이트는 지켜집니다.
+2. **먼저 온 0.20이 거절되고 나중에 온 0.60이 통과합니다.** 판단 기준이 "도착 순서"가 아니라 "기다려야 할 시간 ≤ `timeoutDuration`"이기 때문입니다. FIFO가 아닙니다.
+3. **t=1.05·1.10은 새 사이클인데도 거절됩니다.** 0.60·0.70이 cycle 1의 몫을 미리 가져갔기 때문입니다.
+4. **거절 4건이 각각 0.5초씩, 예약 3건이 0.3~0.4초씩 스레드를 잡았습니다.** 합하면 3.1 스레드·초입니다. (A)에서는 0이었습니다. `timeoutDuration`은 "처리량을 조금 더 얻는 대신 스레드를 잡아 두는 비용"입니다.
+
+> 참고: 0.60처럼 `availablePermissions + permissionsPerCycle - permits`가 0 이상이면 `divCeil`의 첫 인자가 0 이하가 됩니다. Javadoc의 "x > 0" 전제와 달리 실제로는 이 경우도 들어오는데, `(x + y - 1) / y`가 0을 돌려주므로 "추가 사이클 0"으로 올바르게 계산됩니다(`AtomicRateLimiter.nanosToWaitForPermission()` / `divCeil()`).
 
 ---
 
@@ -451,6 +568,37 @@ RateLimiterConfig config = RateLimiterConfig.custom()
 
 `drainPermissionsOnResult`는 `RateLimiter.drainIfNeeded(...)`에서 평가되고, `onError/onSuccess/onResult`를 통해 호출됩니다. 즉 **`decorate*`로 감싼 호출에서만 동작합니다.** `acquirePermission()`을 직접 부르고 비즈니스 로직을 따로 실행하면 결과를 알려주지 않으므로 드레인이 일어나지 않습니다. 내 추정보다 상대 서버의 판정이 정확하다는 걸 받아들이는 장치입니다.
 
+### 4-6. 🔥 시나리오 — 기본 `timeoutDuration(5s)`가 웹 서버를 멈춘 날
+
+**상황.** 포인트 지급 API가 외부 원장 서버를 호출합니다. 원장 서버 계약 쿼터에 맞춰 인스턴스당 `limitForPeriod(10)` + `limitRefreshPeriod(1s)`를 걸었고, `timeoutDuration`은 **적지 않았습니다**(= 기본 5초). Tomcat 최대 스레드는 200개입니다. 평소 유입은 인스턴스당 초당 5건이라 한 번도 거절이 없었습니다.
+
+**시간 순서.**
+
+| 시각 | 무슨 일 | 스레드 상황 |
+|---|---|---|
+| 10:00:00 | 출석 이벤트 오픈. 인스턴스당 유입이 초당 **60건**으로 뜀 | 매 사이클 10건만 즉시 통과 |
+| 10:00:00~01 | 나머지 50건은 `nanosToWait`를 계산 → 5초 안에 자리가 나는 요청은 **예약**(음수 permission), 그 뒤 요청은 거절 확정 | 예약된 요청은 최대 5초 park, **거절 확정 요청도 5초 park**(3.5의 마지막 분기) |
+| 10:00:01~05 | 예약이 앞으로 5사이클치(≈ 50건)까지 쌓여 `availablePermissions`가 -40~-50 근처에 머묾. 새로 오는 요청은 대부분 `nanosToWait > 5s` → 거절인데도 5초씩 대기 | 예약 대기 ≈ 50개 + 거절 대기 50건/s × 경과 초 |
+| 10:00:03 무렵 | 50 + 50 × 3 = **200** → Tomcat 스레드 소진 | 원장과 상관없는 잔액 조회·헬스체크까지 응답 불가 |
+| 10:00:05 이후 | 정상 상태에서 대기 스레드 수 ≈ 50(예약) + 250(거절 대기) = 300 > 200 | 리미터가 서비스를 지키는 게 아니라 **멈추게 함** |
+
+**지표로 보면.** `getNumberOfWaitingThreads()`가 수백으로 치솟고, `availablePermissions`가 음수에 붙어 있습니다(4-4 읽는 법 그대로). 원장 서버 쪽 호출량은 정확히 초당 10건 — **쿼터는 완벽하게 지켜졌는데 우리 서버가 죽었습니다.**
+
+**고친 설정.**
+
+```java
+RateLimiterConfig.custom()
+    .limitForPeriod(10)
+    .limitRefreshPeriod(Duration.ofSeconds(1))
+    .timeoutDuration(Duration.ofMillis(100))   // 다음 경계가 0.1초 안일 때만 예약
+    .writableStackTraceEnabled(false)
+    .build();
+```
+
+- 거절 확정 요청이 잡히는 시간이 5초 → 0.1초. 거절 대기 스레드 ≈ 50건/s × 0.1s = **5개**.
+- 예약은 "사이클이 끝나기 0.1초 전에 온 요청"만 생깁니다. 예약 대기 스레드도 한 자릿수~십여 개.
+- 거절된 지급 요청은 `RequestNotPermitted`를 잡아 "지급 접수됨"으로 응답하고 큐에 적재해 비동기로 처리합니다. 쿼터를 늘릴 수 없다면 **줄을 세울 곳은 웹 스레드가 아니라 큐**입니다.
+
 ---
 
 ## 5. 정리
@@ -473,9 +621,35 @@ RateLimiterConfig config = RateLimiterConfig.custom()
 
 ---
 
+## 6. ❓ 헷갈리는 포인트
+
+- **Q. `timeoutDuration=0`이면 어떻게 되나요?** — 남은 허용량이 있으면 통과, 없으면 **즉시** 거절입니다. `reservePermissions()`의 `canAcquireInTime`(`0 >= nanosToWait`)이 `nanosToWait > 0`인 순간 `false`라 예약이 생기지 않고, `waitForPermission(0)`은 바로 빠져나옵니다. `activePermissions`가 음수로 내려가지 않습니다([3.10 (A)](#310--숫자로-따라가기--limitforperiod2-limitrefreshperiod1s)).
+- **Q. "1초에 10개"면 100ms마다 1개씩 나가나요?** — 아닙니다. 사이클 경계에서 10개가 **한꺼번에** 열리고, 버스트 상한이 10입니다. 고르게 펴고 싶으면 `limitForPeriod(1)` + `limitRefreshPeriod(100ms)`처럼 주기를 쪼개야 합니다(4-1).
+- **Q. 한참 안 쓰면 허용량이 쌓여서 나중에 몰아 쓸 수 있나요?** — 없습니다. `min(nextPermissions + accumulatedPermissions, permissionsPerCycle)`로 `limitForPeriod`에서 잘립니다.
+- **Q. 사이클 경계는 매 정각 초인가요?** — 아닙니다. `currentNanoTime() = nanoTime() - nanoTimeStart`라 **리미터를 만든 시점 기준**입니다. 서버마다, 인스턴스마다 경계가 다릅니다.
+- **Q. 거절이면 바로 예외가 나오나요?** — `timeoutDuration > 0`이면 아닙니다. 거절이 계산 시점에 확정돼도 `timeoutDuration`만큼 park한 뒤 `RequestNotPermitted`가 납니다. 반대로 `reservePermission()`은 park하지 않고 `-1`을 즉시 돌려줍니다.
+- **Q. 예약한 자리를 취소할 수 있나요?** — `RateLimiter` 인터페이스에 예약을 되돌리는 메서드는 없습니다. `reservePermission()`이 양수를 돌려준 순간 자리는 이미 깎였으므로, 그 뒤에 호출을 포기하면 그 몫은 그냥 버려집니다.
+
+---
+
+## 7. 🧾 한 장 요약
+
+- `AtomicRateLimiter`는 토큰을 채우지 않는다. **`(nanoTime - 생성시각) / limitRefreshPeriod` = 사이클 번호**를 계산하고, 사이클이 넘어갔으면 그때 한꺼번에 더한다(상한 `limitForPeriod`).
+- 상태는 불변 `State` 하나, 갱신은 `AtomicReference` CAS 루프 + `parkNanos(1)` back-off. 허용 여부는 **CAS가 성공하는 그 한 번에 확정**된다.
+- `timeoutDuration > 0`이면 미래 몫을 당겨쓰는 **예약**이 생기고 `activePermissions`가 음수가 된다. 예약된 호출자는 `nanosToWait`만큼 자고 재확인 없이 실행한다.
+- 판단 기준은 도착 순서가 아니라 "기다릴 시간 ≤ `timeoutDuration`"이다. **FIFO가 아니다.**
+- 거절이 확정된 호출자도 `timeoutDuration`만큼 스레드를 잡는다. **웹 스레드 경로에 기본값 5초를 두면 리미터가 서버를 멈춘다.**
+- `timeoutDuration=0`은 예약 없음 · 즉시 거절. 논블로킹 경로는 `reservePermission()`(0 / 대기 나노초 / -1)으로 park 없이 쓴다.
+- 기본 `limitRefreshPeriod`는 500ns다. `limitForPeriod`와 **항상 같이** 설정한다.
+- 인스턴스 로컬이다. 서버 N대면 실제 한도는 N배.
+
+---
+
 ## 관련 문서
 - 선행: [Retry 내부 구현](./08-retry-internals.md)
 - 후행: [RateLimiter ② Semaphore 방식과 둘의 선택 기준](./10-ratelimiter-semaphore.md)
 
 ---
 *Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+
+*마지막 업데이트: 2026년 10월*
