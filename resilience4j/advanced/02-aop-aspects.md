@@ -33,7 +33,7 @@ public @interface CircuitBreaker {
 | `@Bulkhead` | 필수 | O | O | `Type type() default Type.SEMAPHORE` (`SEMAPHORE`/`THREADPOOL`) |
 | `@TimeLimiter` | 필수 | O | O | — |
 
-> **`@RateLimiter(permits = N)` 는 Spring Boot 3/4(`resilience4j-spring6`)에서 읽히지 않습니다.** `permits` 는 #2121(2024-04, v2.3.0)에서 추가됐는데, 그때 값을 읽도록 고친 건 Spring 5용 `resilience4j-spring` 의 `RateLimiterAspect` 뿐이었습니다. `spring6` 애스펙트는 v2.4.0에서도 `rateLimiter.executeCheckedSupplier(proceedingJoinPoint::proceed)` 로 호출당 1개만 씁니다. 이후 #2474(v2.4.0 다음, Spring 5/Boot 2 모듈 정리)로 그 모듈이 지워져 master(커밋 7e3ab525 = v2.4.0-46)에서는 레포 전체 `.permits()` 호출이 0건입니다. 2026-10 기준 업스트림에 관련 이슈·PR은 없습니다. 호출당 N개를 쓰려면 `RateLimiter.decorateCheckedSupplier(rateLimiter, permits, supplier)` 를 코드로 직접 써야 하고, Boot 3 프로젝트 리뷰에서 `permits = 5` 를 보면 지적할 지점입니다.
+> **`@RateLimiter(permits = N)` 는 v2.4.0(커밋 7e3ab525)에서 아무도 읽지 않습니다.** 레포 전체에서 `.permits()` 호출이 0건입니다(`grep -rn "\.permits()"`). 호출당 N개 퍼밋을 쓰려면 `RateLimiter.decorateCheckedSupplier(rateLimiter, permits, supplier)` 를 코드로 직접 써야 합니다. 리뷰에서 `permits = 5` 를 보면 지적할 지점입니다.
 
 `configuration` 은 **인스턴스 이름과 설정 키를 분리** 합니다. `@CircuitBreaker(name = "#{#tenantId}", configuration = "externalApi")` 로 테넌트별 인스턴스 + 설정 하나 공유가 됩니다.
 
@@ -461,7 +461,7 @@ public class ResultCircuitBreakerAspectExt implements CircuitBreakerAspectExt {
 | 흐름 | 애너테이션 추출 → `SpelResolver` 이름 해석 → `registry.getConfiguration(configKey)` → 반환 타입 분기 → `FallbackExecutor.execute()` |
 | 설정 키 못 찾으면 | 예외 없이 `getDefaultConfig()` 폴백. 이름 오타가 조용히 묻힌다 |
 | 반환 타입 분기 | `*AspectExt` 루프(첫 매칭) → `CompletionStage` → 블로킹. **`RetryAspect` 만 `CompletionStage` 가 먼저**. `@TimeLimiter` + 동기 메서드는 `IllegalReturnTypeException` |
-| `@RateLimiter(permits)` | Boot 3/4(`spring6`) 에서 **읽히지 않는다** (Spring 5 모듈만 읽었고 그 모듈은 v2.4.0 이후 삭제) |
+| `@RateLimiter(permits)` | v2.4.0 에서 **읽히지 않는다** (`.permits()` 호출 0건) |
 | 기본 order (바깥→안쪽) | Retry `2147483642` → CircuitBreaker `2147483643` → RateLimiter `2147483644` → TimeLimiter `2147483645` → Bulkhead `2147483646`. Timer 는 `2147483647` = `@Transactional` 기본값과 동일 → 비결정 |
 | order 변경 | `resilience4j.<component>.<x>-aspect-order`. 기본 순서는 "재시도 N회 = 서킷 실패 N회" = 빨리 포기 |
 | self-invocation | `this.method()` 는 프록시를 거치지 않아 **애너테이션이 완전히 무시**. 로그·예외 없음 |
