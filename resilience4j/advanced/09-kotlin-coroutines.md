@@ -117,7 +117,7 @@ suspend fun <T> CircuitBreaker.executeSuspendFunctionAndRecordCancellationError(
 | `Bulkhead.executeSuspendFunction()` | `releasePermission()` (아니면 `onComplete()`) | 검사 O |
 | `TimeLimiter.executeSuspendFunction()` | 타임아웃은 `onError`, 그 외 취소는 미기록 | 검사 O |
 | `Retry.executeSuspendFunction()` | `retryContext.onError(e)` 로 **기록** | `catch (e: Exception)` — 검사 없음 |
-| `RateLimiter.executeSuspendFunction()` | `onError(e)` 로 **기록** | `catch (e: Throwable)` — 검사 없음 |
+| `RateLimiter.executeSuspendFunction()` | `onError(e)` 호출 — 기록이 아니라 `drainPermissionsOnResult` 평가뿐 | `catch (e: Throwable)` — 검사 없음 |
 | `Timer.decorateSuspendFunction()` | `context.onFailure(e)` 로 **기록** | 검사 없음 |
 
 영향도는 다릅니다. `Retry` 는 상태 전이가 없어 취소가 `retryContext.onError(e)` 로 들어가는 정도입니다. `RateLimiter` 의 `onError(e)` 는 무언가를 기록하지 않고 `drainPermissionsOnResult` 술어만 평가합니다(#2170). 기본값이 `any -> false` 라 기본 설정이면 취소가 섞여도 영향이 없지만, 이 술어를 "모든 예외에 drain" 처럼 넓게 잡았다면 취소 때문에 남은 허가가 전부 비워질 수 있습니다. `Timer` 는 취소가 "실패" 로 집계되어 **대시보드 에러율이 부풀려집니다** — 알럿 임계값을 잡을 때 알고 있어야 합니다.

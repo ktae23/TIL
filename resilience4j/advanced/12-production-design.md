@@ -260,7 +260,7 @@ WebClient paymentClient() {
 
 ### 4.2 HealthIndicator는 끄는 게 기본이다
 
-서킷이 OPEN이면 health가 떨어지고, 쿠버네티스가 이 파드를 빼버린다. 그런데 서킷이 열린 원인은 **하류**이므로 **모든 파드가 동시에 빠진다.** 하류 장애 하나가 우리 서비스 전면 장애로 증폭된다.
+`allow-health-indicator-to-fail: true` 로 켜고 readiness에 넣으면, 서킷이 OPEN일 때 health가 DOWN이 되어 쿠버네티스가 이 파드를 빼버린다. 그런데 서킷이 열린 원인은 **하류**이므로 **모든 파드가 동시에 빠진다.** 하류 장애 하나가 우리 서비스 전면 장애로 증폭된다.
 
 이건 실제로 issue #607 ("Spring Boot health status switch to DOWN when circuit breaker is opened")에서 보고된 문제이고, PR #722(2019-11) 이후 기본값은 이 사고가 나지 않는 쪽으로 바뀌었다. 소스에서 확인한 기본값 셋이 이걸 뒷받침한다 — `management.health.circuitbreakers.enabled` 는 `matchIfMissing` 없이 걸려 있어 **기본 OFF**이고, 인스턴스별 `register-health-indicator` 도 기본 `false` 이며, `allow-health-indicator-to-fail` 이 기본 `false` 라서 OPEN일 때 반환하는 것도 `DOWN` 이 아니라 커스텀 상태 `CIRCUIT_OPEN` 이다. 라이브러리 저자도 같은 판단을 한 것이다. 즉 위 사고는 이 기본값들을 직접 바꿨을 때 일어난다.
 
@@ -371,4 +371,4 @@ Toxiproxy로 지연·끊김을 주입하고 위 지표가 실제로 그렇게 �
 - 함께 보기: [12. TimeLimiter와 조합 순서](../main/12-timelimiter-and-composition.md) · [06. Micrometer 지표](./06-micrometer-metrics.md) · [05. Actuator와 HealthIndicator](./05-actuator-and-health.md)
 
 ---
-*Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+*Resilience4j master 7e3ab525(2026-09-23, v2.4.0 이후) 기준 · v2.4.0 과 다른 부분은 본문에 표시*
