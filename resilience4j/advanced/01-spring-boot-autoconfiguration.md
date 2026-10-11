@@ -224,8 +224,8 @@ flowchart TD
     B --> C["CircuitBreakerConfigurationProperties (spring6)<br/>+ aspect order"]
     C --> D["CommonCircuitBreakerConfigurationProperties<br/>(framework-common) configs/instances 맵"]
 
-    E["CircuitBreakerAutoConfiguration<br/>@ConditionalOnClass(CircuitBreaker)"] -->|@Import| F["CircuitBreakerConfigurationOnMissingBean"]
-    F -->|extends| G["AbstractCircuitBreakerConfigurationOnMissingBean<br/>@ConditionalOnMissingBean"]
+    E["CircuitBreakerAutoConfiguration<br/>@ConditionalOnClass(CircuitBreaker)"] -->|"@Import"| F["CircuitBreakerConfigurationOnMissingBean"]
+    F -->|"extends"| G["AbstractCircuitBreakerConfigurationOnMissingBean<br/>@ConditionalOnMissingBean"]
     G -->|"new (빈 아님)"| H["CircuitBreakerConfiguration (spring6)"]
 
     I["List&lt;CircuitBreakerConfigCustomizer&gt;"] --> J["CompositeCustomizer<br/>이름 → 커스터마이저"]
@@ -240,7 +240,7 @@ flowchart TD
     O --> P["initCircuitBreakerRegistry()<br/>instances + customizer 이름 eager 생성"]
     P --> Q["CircuitBreaker 'payment'"]
 
-    R["AspectJOnClasspathCondition"] -.->|통과| S["CircuitBreakerAspect"]
+    R["AspectJOnClasspathCondition"] -.->|"통과"| S["CircuitBreakerAspect"]
     N --> S
 ```
 
