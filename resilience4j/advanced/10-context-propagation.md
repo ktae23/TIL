@@ -1,6 +1,6 @@
 # MDC·컨텍스트 전파 — 스레드가 바뀌면 사라지는 것들
 
-`ThreadPoolBulkhead`·`TimeLimiter`·`Retry` 는 호출 스레드가 아닌 풀 스레드에서 돕니다. 그 순간 `ThreadLocal` 에 있던 traceId·인증 정보·트랜잭션이 전부 사라지고, `ContextPropagator` 가 그 틈을 메우는 유일한 장치입니다.
+`ThreadPoolBulkhead` 는 작업 자체를, `TimeLimiter`·`Retry` 애스펙트는 타임아웃 신호와 비동기 재시도를 호출 스레드가 아닌 풀 스레드에서 실행합니다. 스레드가 바뀌는 그 순간 `ThreadLocal` 에 있던 traceId·인증 정보·트랜잭션이 전부 사라지고, `ContextPropagator` 가 그 틈을 메우는 유일한 장치입니다.
 
 ## 목차
 - [1. 핵심 개념 (What)](#1-핵심-개념-what)
@@ -13,12 +13,12 @@
 
 ## 1. 핵심 개념 (What)
 
-Resilience4j 에서 **스레드가 바뀌는 지점**은 정확히 세 군데입니다.
+Resilience4j 를 Spring 애스펙트·설정으로 쓸 때 **스레드가 바뀌는 대표 지점**은 세 군데입니다 (core API 에 직접 넘기는 스케줄러나 Reactor/RxJava 연산자의 스케줄러는 별도).
 
 | 지점 | 실행 스레드 | 전파 메커니즘 |
 |---|---|---|
 | `ThreadPoolBulkhead.submit()` | `bulkhead-<name>-N` (`FixedThreadPoolBulkhead` 의 `ThreadPoolExecutor`) | `ThreadPoolBulkheadConfig.contextPropagator(...)` |
-| `TimeLimiter`·`Retry` 애스펙트의 스케줄러 | `ContextAwareScheduledThreadPool-N` 또는 익명 풀 | `ContextAwareScheduledThreadPoolExecutor` 빈 등록 |
+| `TimeLimiter`·`Retry` 애스펙트의 스케줄러 (타임아웃 신호 / `CompletionStage` 재시도) | `ContextAwareScheduledThreadPool-N` 또는 익명 풀 | `ContextAwareScheduledThreadPoolExecutor` 빈 등록 |
 | `Hedge` 의 secondary 실행 | `ContextAwareScheduledThreadPool-N` | `HedgeConfig.withContextPropagators(...)` |
 
 `io.github.resilience4j.core.ContextPropagator<T>` 는 **세 단계**를 요구합니다.
@@ -31,7 +31,7 @@ public interface  ContextPropagator<T> {
 }
 ```
 
-세 단계로 쪼갠 이유가 전부입니다. `retrieve` 와 `copy`/`clear` 가 **서로 다른 스레드에서 실행**되므로 하나의 메서드로는 표현할 수 없습니다. 그리고 `clear` 는 선택이 아닙니다 — 빼면 **다른 요청의 컨텍스트가 섞입니다.**
+세 단계로 쪼갠 이유가 전부입니다. `retrieve` 와 `copy`/`clear` 가 **서로 다른 스레드에서 실행**되므로 하나의 메서드로는 표현할 수 없습니다. 그리고 `clear` 는 선택이 아닙니다 — `copy()` 가 심기 전에 비우지 않는 구현이라면, `clear` 를 빼는 순간 **다른 요청의 컨텍스트가 섞입니다.**
 
 ---
 
@@ -103,11 +103,11 @@ sequenceDiagram
     Note over P: MDC = {} ✅
 
     rect rgb(255, 235, 235)
-    Note over P: ❸ 를 빼먹으면 — 스레드 재사용 시<br/>요청 B 가 traceId: A 와 userA 권한을 들고 실행된다
+    Note over P: ❸ 를 빼먹고 copy() 도 비우지 않으면 — 스레드 재사용 시<br/>요청 B 가 traceId: A 와 userA 권한을 들고 실행된다
     end
 ```
 
-❸이 `finally` 에 있다는 게 설계의 핵심입니다. 다만 **`clear()` 구현을 비워 두면 라이브러리가 아무리 `finally` 로 불러줘도 소용이 없습니다** — `clear()` 를 빈 구현으로 두는 게 가장 흔한 버그입니다.
+❸이 `finally` 에 있다는 게 설계의 핵심입니다. 다만 **`clear()` 구현을 비워 두면 라이브러리가 아무리 `finally` 로 불러줘도 소용이 없습니다.** 특히 `copy()` 가 값이 없을 때 아무것도 하지 않는(`ifPresent` 로만 심는) 구현과 겹치면, 다음 작업이 이전 작업의 값을 그대로 봅니다. 전파기를 거치지 않는 작업이 같은 스레드를 쓸 때도 잔여물이 그대로 보입니다.
 
 ### 3.3 `ThreadPoolBulkhead` 가 전파를 끼우는 위치
 
@@ -171,7 +171,7 @@ private void setMDCContext(Map<String, String> contextMap) {
 - 그 맵을 람다가 캡처하고 풀 스레드에서 심습니다. `setMDCContext` 가 **먼저 `MDC.clear()` 를 하고** `setContextMap` 을 하는 게 포인트 — 이전 작업의 잔여물을 먼저 치웁니다. 그리고 `finally { MDC.clear(); }` 로 3.1의 `clear()` 역할을 MDC 에 대해서만 **라이브러리가 대신** 해 줍니다.
 - 이 전부를 `ContextPropagator.decorateCallable(contextPropagators, ...)` 로 한 번 더 감쌉니다. 즉 **MDC 는 내장 처리 + 사용자 전파기는 추가 처리**로 두 겹이고, 여기서는 MDC 전파기를 따로 등록할 필요가 없습니다.
 
-**함정: `schedule`·`scheduleAtFixedRate`·`scheduleWithFixedDelay` 만 오버라이드되어 있습니다.** `execute()`·`submit()` 은 부모 구현을 그대로 쓰므로 **아무 전파도 일어나지 않습니다.** 이 풀을 일반 `ExecutorService` 로 넘겨 `submit()` 을 호출하면 전파가 조용히 사라집니다. 같은 이유로 `HedgeImpl` 도 `configuredHedgeExecutor.schedule(...)` 로 띄우는 **헤지 발사 타이머**는 전파 경로를 타지만, secondary 실행 자체는 `CompletableFuture.supplyAsync(..., configuredHedgeExecutor)` 즉 `execute()` 경로라서 `HedgeConfig.withContextPropagators(...)` 가 적용되지 않습니다.
+**오버라이드는 `schedule`·`scheduleAtFixedRate`·`scheduleWithFixedDelay` 만 되어 있지만, `execute()`·`submit()` 도 전파됩니다.** JDK 의 `ScheduledThreadPoolExecutor` 는 `execute()`·`submit()` 을 내부적으로 `schedule(task, 0, NANOSECONDS)` 로 위임하므로, 가상 디스패치로 오버라이드된 `schedule()` 을 거치기 때문입니다. 그래서 이 풀을 일반 `ExecutorService` 로 넘겨 `submit()` 을 호출해도 전파가 유지됩니다. `HedgeImpl` 도 마찬가지입니다. `configuredHedgeExecutor.schedule(...)` 로 띄우는 **헤지 발사 타이머**가 전파 경로를 타고, 그 타이머 스레드 안에서 `thenCompose` 가 동기적으로 `CompletableFuture.supplyAsync(..., configuredHedgeExecutor)` 를 호출합니다. 이 `execute()` 역시 `schedule()` 로 위임되고 `retrieve()` 는 이미 컨텍스트가 심어진 타이머 스레드에서 실행되므로, secondary 실행까지 `HedgeConfig.withContextPropagators(...)` 가 적용됩니다.
 
 ### 3.5 Spring Boot 자동 설정 — 연결 고리
 
@@ -190,9 +190,11 @@ this.timeLimiterExecutorService = contextAwareScheduledThreadPoolExecutor != nul
     Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors());
 ```
 
-폴백은 평범한 `ScheduledThreadPoolExecutor` 라 **전파가 전혀 없습니다.** `@TimeLimiter` 를 붙여 놓고 traceId 가 끊긴다면 99% 이 이유입니다. `RetryAspect` 도 같은 구조입니다. 전파가 필요하면 `resilience4j.scheduled.executor.core-pool-size` 를 **반드시** 지정해야 합니다.
+폴백은 평범한 `ScheduledThreadPoolExecutor` 라 **전파가 전혀 없습니다.** 다만 이 스케줄러가 실행하는 범위를 정확히 알아야 합니다. `TimeLimiter.executeCompletionStage` 는 메서드 본문(`supplier.get()`)을 호출 스레드에서 실행하고, 스케줄러에는 타임아웃 시 `completeExceptionally` 하는 작업만 올립니다. 그래서 `@TimeLimiter` 의 스케줄러 경로에서 traceId 가 끊기는 건 타임아웃 이후의 후속 콜백·폴백이고, 메서드 본문의 traceId 끊김은 대개 메서드가 직접 쓰는 executor(`@Async`, `supplyAsync`) 쪽 문제입니다. `RetryAspect` 도 같은 구조이며, `CompletionStage` 를 반환하는 메서드의 재시도만 스케줄러에서 실행됩니다(동기 메서드의 재시도는 호출 스레드). 이 경로들에 전파가 필요하면 `resilience4j.scheduled.executor.core-pool-size` 를 **반드시** 지정해야 합니다.
 
-### 3.6 Java 21 가상 스레드 (`ThreadType`)
+### 3.6 Java 21 가상 스레드 (`ThreadType`) — v2.4.0 이후 기능
+
+> **버전 주의:** 이 절의 `ThreadType`·`ExecutorServiceFactory`·`resilience4j.thread.*` 설정·`ThreadMetrics`, 그리고 아래 `ContextPropagator` JavaDoc 경고는 PR #2335("Feature #2224 : Apply virtual thread", 2026-04 머지)로 들어와 **v2.4.0 릴리스에는 없습니다.** v2.4.0 의 `NamingThreadFactory`·`FixedThreadPoolBulkhead` 는 가상 스레드 분기 없이 항상 플랫폼 스레드(`BulkheadNamingThreadFactory`)를 씁니다. v2.4.0 이후 릴리스부터 쓸 수 있습니다.
 
 `ExecutorServiceFactory.getThreadType()` 의 결정 순서는 ① 시스템 프로퍼티 `resilience4j.thread.type`(`virtual`|`platform`) ② 환경 변수 `RESILIENCE4J_THREAD_TYPE` ③ 기본값 `platform` 입니다. `Resilience4jThreadAutoConfiguration` 은 `@AutoConfiguration(before = {CircuitBreaker·RateLimiter·Bulkhead·Retry·TimeLimiter AutoConfiguration})` 로 선언되고 **생성자에서** 시스템 프로퍼티를 세팅합니다.
 
@@ -209,7 +211,7 @@ public Resilience4jThreadAutoConfiguration(ThreadTypeProperties properties) {
 
 `virtual` 로 켜면 스레드 생성 방식도 바뀝니다. `NamingThreadFactory.newThread()` 는 VIRTUAL 이면 `Thread.ofVirtual().name(name, 0).unstarted(runnable)`, 아니면 `new Thread(group, runnable, name, 0)` 을 만들고 플랫폼 스레드에만 `daemon=false`·`NORM_PRIORITY` 를 강제합니다. `FixedThreadPoolBulkhead` 생성자도 같은 분기를 해서 VIRTUAL 이면 `Thread.ofVirtual().name("bulkhead-<name>-v-", 0).factory()`, 아니면 `BulkheadNamingThreadFactory(name)`(→ `NamingThreadFactory("bulkhead-<name>")`)를 씁니다. 그래서 **스레드 이름만 봐도 어느 모드인지 알 수 있습니다** — `bulkhead-payment-1` 은 플랫폼, `bulkhead-payment-v-0` 은 가상입니다. 참고로 `NamingThreadFactory` 는 `daemon=false` 로 강제하는데 `ExecutorServiceFactory.newPlatformThreadFactory()` 는 `.daemon(true)` 로 만듭니다 — 셧다운 동작이 경로에 따라 다르니 종료 지연을 디버깅할 때 기억해 두세요.
 
-**가상 스레드와 `ContextPropagator` 의 궁합은 좋지 않습니다.** `ContextPropagator` JavaDoc 이 직접 경고합니다 — 가상 스레드 수만큼 `ThreadLocal` 복사본이 생겨 **메모리가 늘고**, `ThreadLocal` 접근 중에는 가상 스레드가 **캐리어 스레드에 핀(pinning)되어** 동시성 이득이 줄어듭니다. JDK 21+ 에서는 `ThreadLocal` 대신 Scoped Values(JEP 429)를 고려하라고도 적혀 있습니다. 가상 스레드 + 대량 `ContextPropagator` 조합은 부하 테스트로 검증한 뒤 쓰세요.
+**가상 스레드와 `ContextPropagator` 의 궁합은 좋지 않습니다.** `ContextPropagator` JavaDoc(PR #2335 에서 추가)이 직접 경고합니다 — 가상 스레드 수만큼 `ThreadLocal` 복사본이 생겨 **메모리가 늘고**, JDK 21+ 에서는 `ThreadLocal` 대신 Scoped Values(JEP 429)를 고려하라고 적혀 있습니다. 단, JavaDoc 은 `ThreadLocal` 접근이 가상 스레드를 캐리어 스레드에 **핀(pinning)** 시킨다고 적지만, JDK 기준(JEP 444)으로 pinning 의 원인은 `synchronized` 블록·네이티브 프레임 안에서의 블로킹이지 `ThreadLocal` 접근이 아닙니다. 실제 부담은 복사본 메모리입니다. 또 JEP 429 는 JDK 20 incubator 이고, Scoped Values 는 JDK 21 에서 preview(JEP 446)를 거쳐 JDK 25(JEP 506)에서 정식 기능이 됐습니다. 가상 스레드 + 대량 `ContextPropagator` 조합은 부하 테스트로 검증한 뒤 쓰세요.
 
 ---
 
@@ -278,7 +280,7 @@ public class SecurityContextPropagator implements ContextPropagator<SecurityCont
 }
 ```
 
-### 4.3 등록 — `application.yml` + 자바 설정
+### 4.3 등록 — `application.yml` 또는 자바 설정
 
 ```yaml
 resilience4j:
@@ -292,7 +294,7 @@ resilience4j:
         # MDC 는 ContextAwareScheduledThreadPoolExecutor 가 내장 처리 — 여기 넣지 않는다
 
   thread:
-    type: platform          # virtual 로 바꾸기 전 3.6 의 핀(pinning) 주의사항을 읽을 것
+    type: platform          # resilience4j.thread.* 는 v2.4.0 이후(PR #2335) 기능 — 3.6 참조
     metrics: { enabled: true }   # resilience4j.thread.virtual_thread_enabled 게이지로 모드 확인
 
   thread-pool-bulkhead:
@@ -302,12 +304,13 @@ resilience4j:
         core-thread-pool-size: 8
         queue-capacity: 20
         # ThreadPoolBulkhead 는 MDC 를 자동 전파하지 않는다 — 직접 등록해야 한다 (3.3 참조)
-        context-propagator:
+        # 키는 복수형 context-propagators. 단수형 context-propagator 는 2.0.1 에서 제거됐고, 쓰면 오류 없이 무시된다
+        context-propagators:
           - com.example.resilience.propagation.MdcContextPropagator
           - com.example.resilience.propagation.SecurityContextPropagator
 ```
 
-`yml` 로 지정하면 `ClassUtils.instantiateClassDefConstructor` 가 **기본 생성자**로 만들기 때문에 Spring 빈을 주입받을 수 없습니다. 의존성이 필요하면 코드로 등록하세요.
+`yml` 로 지정하면 `ClassUtils.instantiateClassDefConstructor` 가 **기본 생성자**로 만들기 때문에 Spring 빈을 주입받을 수 없습니다. 의존성이 필요하면 코드로 등록하세요. 단, 레지스트리 빈을 직접 정의하면 자동 설정의 `threadPoolBulkheadRegistry`(`@ConditionalOnMissingBean`)가 만들어지지 않아 위 yml 의 `thread-pool-bulkhead.instances` 설정(크기·전파기 포함)이 **적용되지 않습니다.** 두 방식은 함께 쓰는 게 아니라 고르는 것입니다 — 빈 주입이 필요한 전파기는 yml 대신 이 방식 하나로만 구성하세요.
 
 ```java
 @Bean
@@ -348,37 +351,39 @@ public ThreadPoolBulkheadRegistry threadPoolBulkheadRegistry(
 
 ### 4.5 스레드 오염 버그를 잡는 테스트
 
-`clear()` 를 빈 구현으로 두는 실수는 **단일 요청 테스트로는 절대 안 잡힙니다.** 같은 풀 스레드를 두 번 쓰게 강제해야 보입니다.
+`clear()` 를 빈 구현으로 두는 실수는 **단일 요청 테스트로는 절대 안 잡힙니다.** 같은 풀 스레드를 두 번 쓰게 강제해야 보이고, 두 번째 작업은 **전파기를 거치지 않아야** 합니다. 4.1처럼 `copy()` 가 먼저 `MDC.clear()` 하는 구현에서는, 두 번째 작업도 같은 전파기를 거치면 `clear()` 가 비어 있어도 `copy()` 가 잔여물을 지워 버려 테스트가 그냥 통과합니다.
 
 ```java
 class ThreadLocalLeakTest {
 
-    /** 스레드 1개 풀로 순차 실행해, 두 번째 작업이 첫 번째의 컨텍스트를 보는지 확인한다. */
+    /**
+     * 스레드 1개 풀에서 A 는 전파기를 거쳐, B 는 전파기 없이 실행한다.
+     * B 까지 전파기를 거치면 copy() 의 MDC.clear() 가 잔여물을 지워 clear() 버그가 가려진다.
+     */
     @Test
-    void 두번째_작업은_첫번째_작업의_MDC를_보지_못한다() throws Exception {
-        ThreadPoolBulkhead bulkhead = ThreadPoolBulkhead.of("leakTest",
-            ThreadPoolBulkheadConfig.custom()
-                .coreThreadPoolSize(1)
-                .maxThreadPoolSize(1)       // ← 반드시 1. 스레드 재사용을 강제한다
-                .queueCapacity(10)
-                .contextPropagator(new MdcContextPropagator())
-                .build());
+    void 전파기를_거친_작업이_끝나면_풀_스레드의_MDC가_비어_있다() throws Exception {
+        ExecutorService single = Executors.newSingleThreadExecutor();   // ← 반드시 1개. 스레드 재사용을 강제한다
+        try {
+            MDC.put("traceId", "A");                                     // 요청 A
+            Supplier<String> taskA = ContextPropagator.decorateSupplier(
+                new MdcContextPropagator(), () -> MDC.get("traceId"));   // retrieve 는 여기(호출 스레드)서 실행
+            MDC.clear();
 
-        MDC.put("traceId", "A");                                            // 요청 A
-        String seenByA = bulkhead.submit(() -> MDC.get("traceId")).get();
-        MDC.clear();
+            String seenByA  = single.submit(taskA::get).get();
+            String leftover = single.submit(() -> MDC.get("traceId")).get();   // 요청 B — 전파기 없이 같은 스레드에서 조회
 
-        String seenByB = bulkhead.submit(() -> MDC.get("traceId")).get();   // 요청 B — MDC 비움
-
-        assertThat(seenByA).isEqualTo("A");
-        assertThat(seenByB)
-            .as("clear() 가 비어 있으면 B 가 A 의 traceId 를 본다 — 스레드 오염")
-            .isNull();
+            assertThat(seenByA).isEqualTo("A");
+            assertThat(leftover)
+                .as("clear() 가 비어 있으면 A 의 traceId 가 풀 스레드에 남는다 — 스레드 오염")
+                .isNull();
+        } finally {
+            single.shutdownNow();
+        }
     }
 }
 ```
 
-`maxThreadPoolSize(1)` 이 이 테스트의 전부입니다. 기본값(`Runtime.getRuntime().availableProcessors()`)으로 두면 매번 새 스레드가 뜰 수 있어 오염이 드러나지 않습니다. 같은 구조로 `SecurityContextPropagator` 테스트도 반드시 함께 두세요 — `UsernamePasswordAuthenticationToken` 을 세팅해 A 를 실행하고, `clearContext()` 후 B 를 실행해 `getAuthentication()` 이 `null` 임을 단정합니다. 인증 누수는 인가 사고이므로 이쪽이 더 중요합니다.
+**스레드 1개 풀**과 **전파기 없이 조회하는 B**, 이 두 가지가 이 테스트의 전부입니다. 스레드가 여러 개면 A·B 가 서로 다른 스레드에 배정될 수 있어 오염이 드러나지 않습니다(`ThreadPoolBulkhead` 기본값 `maxThreadPoolSize` 는 `Runtime.getRuntime().availableProcessors()`). `clear()` 를 `context -> {}` 로 바꿔 돌려 보면 `leftover` 가 `"A"` 가 되어 실패하는 것을 확인할 수 있습니다. 같은 구조로 `SecurityContextPropagator` 테스트도 반드시 함께 두세요 — `UsernamePasswordAuthenticationToken` 을 세팅해 A 를 전파기로 실행하고, B 를 전파기 없이 실행해 `getAuthentication()` 이 `null` 임을 단정합니다. 인증 누수는 인가 사고이므로 이쪽이 더 중요합니다.
 
 ---
 
@@ -386,18 +391,20 @@ class ThreadLocalLeakTest {
 
 | 주제 | 핵심 사실 | 할 일 |
 |---|---|---|
-| 3단계 분리 이유 | `retrieve` 는 **호출 스레드**, `copy`/`clear` 는 **풀 스레드**. `clear()` 는 `decorateSupplier` 의 `finally` 에서 호출됨 | 세 메서드 모두 가볍게. `clear()` 를 **절대 비워 두지 말 것**(빈 구현 = 스레드 오염) |
+| 3단계 분리 이유 | `retrieve` 는 **호출 스레드**, `copy`/`clear` 는 **풀 스레드**. `clear()` 는 `decorateSupplier` 의 `finally` 에서 호출됨 | 세 메서드 모두 가볍게. `clear()` 를 **절대 비워 두지 말 것**(빈 `clear()` + 비우지 않는 `copy()` = 스레드 오염) |
 | 스레드 오염의 급 | MDC 누수는 로그 오염, `SecurityContext` 누수는 **인가 사고** | `clearContext()` 반드시 호출 |
 | `ThreadPoolBulkhead` | MDC **자동 전파 없음** | `contextPropagator(...)` 로 MDC 전파기 직접 등록 |
 | `ContextAwareScheduledThreadPoolExecutor` | MDC **내장 처리** + 사용자 전파기 추가 적용 | 여기엔 MDC 전파기 중복 등록 불필요 |
-| 오버라이드 범위 | `schedule` 계열만. `execute()`·`submit()` 은 **전파 없음** | 이 풀을 일반 `ExecutorService` 로 쓰지 말 것 |
-| 자동 설정 조건 / 폴백 | `core-pool-size` 없으면 빈 미생성 → 애스펙트가 전파 없는 평범한 풀로 폴백. `yml` 로 지정한 전파기는 `ClassUtils.instantiateClassDefConstructor` 로 생성 | traceId 끊김의 1순위 원인 — **반드시** 지정. 전파기에 **public 기본 생성자** 필수(빈 주입 불가) |
+| 오버라이드 범위 | `schedule` 계열만 오버라이드하지만 JDK 가 `execute()`·`submit()` 을 `schedule(task, 0, NANOSECONDS)` 로 위임 → **둘 다 전파됨** | 일반 `ExecutorService` 로 넘겨도 전파 유지 |
+| 자동 설정 조건 / 폴백 | `core-pool-size` 없으면 빈 미생성 → 애스펙트가 전파 없는 평범한 풀로 폴백. `yml` 로 지정한 전파기는 `ClassUtils.instantiateClassDefConstructor` 로 생성 | 애스펙트 스케줄러 경로(타임아웃 이후 콜백·폴백, `CompletionStage` 재시도)의 traceId 끊김 원인 — **반드시** 지정. 전파기에 **public 기본 생성자** 필수(빈 주입 불가) |
+| yml 키 | 복수형 `context-propagators`. 단수형 `context-propagator` 는 2.0.1 에서 제거, 쓰면 오류 없이 무시 | 키 철자 확인 |
+| 레지스트리 직접 정의 | `threadPoolBulkheadRegistry` 는 `@ConditionalOnMissingBean` → 직접 정의하면 yml `instances` 미적용 | yml 과 자바 설정 중 하나만 |
 | 중복 등록 | 주석과 달리 `build()` 가 `addAll` 두 번(둘 다 등록). `HashMap` 키 기준 중복 제거라 같은 클래스 다른 인스턴스는 둘 다 실행 | Class/인스턴스 중 한 방식만, 싱글턴 빈 하나로 |
 | 트랜잭션 | `ContextPropagator` 로 전파하면 **안 됨** (커넥션은 스레드에 묶임) | 트랜잭션 경계를 풀 바깥으로 다시 그릴 것 |
-| `ThreadType` | 시스템 프로퍼티 → 환경 변수 → `platform`. 스레드 이름으로 식별 가능 | `resilience4j.thread.virtual_thread_enabled` 게이지로 확인 |
-| 가상 스레드 + ThreadLocal | JavaDoc 경고: 메모리 증가 + 캐리어 스레드 **핀(pinning)** | 부하 테스트로 검증 후 전환 |
-| `Hedge` | 타이머는 `schedule()` 경로지만 secondary 실행은 `execute()` 경로 | `withContextPropagators` 가 secondary 에 미적용 |
-| 테스트 | 오염은 **스레드 재사용 시에만** 드러남 | `maxThreadPoolSize(1)` 로 순차 실행 테스트 작성 |
+| `ThreadType` (v2.4.0 이후, PR #2335) | 시스템 프로퍼티 → 환경 변수 → `platform`. 스레드 이름으로 식별 가능 | `resilience4j.thread.virtual_thread_enabled` 게이지로 확인 |
+| 가상 스레드 + ThreadLocal | JavaDoc 경고: `ThreadLocal` 복사본 **메모리 증가** (JavaDoc 의 pinning 설명은 JDK 기준과 다름 — pinning 원인은 `synchronized`·네이티브 프레임) | 부하 테스트로 검증 후 전환 |
+| `Hedge` | 타이머는 `schedule()` 경로, secondary 실행은 `execute()` → `schedule()` 위임 경로 | `withContextPropagators` 가 secondary 까지 적용 |
+| 테스트 | 오염은 **스레드 재사용 + 전파기를 거치지 않는 다음 작업**에서만 드러남 | 스레드 1개 풀에서 A 는 전파기로, B 는 전파기 없이 실행 |
 
 한 줄로 요약하면, **전파는 `copy()` 가 아니라 `clear()` 가 어렵습니다.** 값을 옮기는 건 누구나 작성하고, 지우는 건 빼먹습니다. 그리고 빼먹은 대가는 "로그가 좀 이상하다" 가 아니라 "남의 권한으로 실행됐다" 입니다.
 
@@ -409,4 +416,4 @@ class ThreadLocalLeakTest {
 - 후행: [Hedge — 느린 꼬리 지연을 두 번째 요청으로 자른다](./11-hedge.md)
 
 ---
-*Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+*Resilience4j master 7e3ab525(2026-09-23, v2.4.0 이후) 기준 · v2.4.0 과 다른 부분은 본문에 표시*

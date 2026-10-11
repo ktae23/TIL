@@ -150,20 +150,25 @@ private void recordCall(String resultKind, @Nullable Throwable throwable,
 
 - **`start` 은 `ContextImpl` 생성자에서** `nanoTime()` 으로 찍힙니다. 즉 `createContext()` 호출 시점이 측정 시작입니다.
 - **성공/실패 분기는 `kind` 태그 하나**입니다. `KIND_SUCCESSFUL = "successful"`, `KIND_FAILED = "failed"`.
-- **`failure` 태그는 항상 붙습니다.** 성공이면 빈 문자열입니다. Micrometer 는 같은 이름의 미터에 태그 키 집합이 달라지면 예외를 던지므로, 키를 없애는 대신 빈 값을 넣어 일관성을 지킨 것입니다.
+- **`failure` 태그는 항상 붙습니다.** 성공이면 빈 문자열입니다. 단, 이건 **v2.4.0 이후 master 의 동작**입니다. v2.4.0 은 `if (throwable != null)` 일 때만 `failure` 태그를 붙여서 성공·실패 미터의 태그 키 집합이 달랐고, Prometheus 레지스트리는 같은 이름에 키 집합이 다른 미터를 받지 않아 한쪽 지표가 빠졌습니다(이슈 #2299, 2025-04). #2510(2026-09-23)이 빈 값을 넣는 방식으로 고쳤습니다. v2.4.0 을 Prometheus 와 쓴다면 이 누락을 염두에 두세요.
 - **`.register(registry)` 가 매 호출마다 불립니다.** Micrometer 의 `register` 는 동일 id 면 기존 미터를 반환하므로 중복 생성은 아니지만, 태그 조립과 맵 조회 비용이 호출당 발생합니다. `onFailureTagResolver` 가 무거우면(예: 스택 추적 파싱) 그 비용도 호출 경로에 올라갑니다.
 - **이벤트는 `hasConsumers()` 일 때만** 만들어집니다. 구독자가 없으면 `TimerOnSuccessEvent` 객체 자체를 할당하지 않습니다. `ZonedDateTime.now()` 를 쓰는 `AbstractTimerEvent` 생성자를 피하는 효과가 큽니다.
 - `publishEvent()` 는 `RuntimeException` 을 잡아 `LOGGER.warn` 으로 넘깁니다. **이벤트 소비자가 터져도 측정과 비즈니스 호출은 안 죽습니다.**
 
 `MeterRegistry` 가 null 이면 `TimerImpl` 생성자가 경고를 찍고 `LoggingMeterRegistry` 로 대체합니다. `AbstractTimerConfigurationOnMissingBean.timerRegistry(...)` 가 `@Autowired(required = false) MeterRegistry` 로 받으므로 Micrometer 없이도 기동은 되고, 대신 지표가 로그로 나갑니다. 조용한 함정이니 기동 로그를 확인하세요.
 
-### `Observations` 의 현재 위치 — 아직 연결되지 않았다
+### `Observations` 의 현재 위치 — 외부에서 호출할 수 없는 브리지
 
 `Observations` 는 Micrometer **Observation API** 로의 브리지 유틸리티입니다 (`ofObservationRegistry(name, registry)` → `Observation.createNotStarted(...)`, `decorateSupplier(observation, supplier)` → `observation.observe(supplier)` 등).
 
-여기서 정확히 말해야 할 사실이 있습니다. **v2.4.0 의 프로덕션 코드 어디에서도 `Observations` 를 호출하지 않습니다.** 레포 전체에서 이 클래스를 참조하는 파일은 자기 자신과 `ObservationsTest` 뿐이고, 모든 메서드가 package-private(`static`, 수정자 없음)입니다. `TimerImpl` 은 `MeterRegistry` 에 직접 기록하며 `Observation` 을 쓰지 않습니다.
+여기서 정확히 말해야 할 사실이 있습니다. **v2.4.0 의 프로덕션 코드 어디에서도 `Observations` 를 호출하지 않습니다.** 레포 전체에서 이 클래스를 참조하는 파일은 자기 자신과 `ObservationsTest` 뿐입니다. 클래스는 `public final` 인데 **모든 메서드가 package-private**(`static`, 수정자 없음)라서, resilience4j 밖의 코드는 이 메서드를 호출할 수 없습니다. `TimerImpl` 은 `MeterRegistry` 에 직접 기록하며 `Observation` 을 쓰지 않습니다.
 
-의미는 이렇습니다. Observation API 는 하나의 "관측" 안에 메트릭과 **트레이스 스팬**을 함께 담아 Micrometer Tracing → OpenTelemetry/Zipkin 으로 흘려보내는 상위 추상입니다. `Observations` 는 Timer 를 그 위에 올리기 위해 **준비된 발판**이고, 아직 배선되지 않았습니다. 따라서 "Resilience4j Timer 를 쓰면 분산 트레이싱에 스팬이 생긴다"는 기대는 v2.4.0 에서 성립하지 않습니다. 트레이싱 스팬이 필요하면 지금은 `ObservationRegistry` 를 직접 쓰거나 `@Observed` 를 써야 합니다.
+이 클래스가 어디서 왔는지 보면 상황이 분명해집니다. `Observations` 는 #1698(2022-11, Micrometer 1.10 Observation 도입 시점)로 들어왔고, 작성자는 Micrometer Tracing 개발자입니다. 이슈 #1628 논의를 보면 **Spring Cloud CircuitBreaker 가 쓰도록 만든 범용 Observation 데코레이터**였습니다. Timer 데코레이터(#1989, 2023-07)보다 먼저 들어왔으니 Timer 를 위한 발판도 아닙니다. 그런데 메서드에 `public` 이 빠져 있어 외부에서 쓸 수 없었고, 실제로 Spring Cloud 는 spring-cloud-commons 의 `ObservedCircuitBreaker` 로 같은 기능을 따로 구현했습니다. 이후 이 파일은 한 번도 수정되지 않았습니다.
+
+의미는 이렇습니다. Observation API 는 하나의 "관측" 안에 메트릭과 **트레이스 스팬**을 함께 담아 Micrometer Tracing → OpenTelemetry/Zipkin 으로 흘려보내는 상위 추상입니다. resilience4j 어노테이션이나 Timer 만으로는 스팬이 생기지 않습니다. 스팬이 필요하면 두 길이 있습니다.
+
+- Spring Cloud CircuitBreaker 경로(`CircuitBreakerFactory.create(...).run(...)`)로 쓰면 `ObservationRegistry` 빈이 있을 때 `ObservedCircuitBreaker` 로 감싸져 스팬이 생깁니다.
+- 그 외에는 `ObservationRegistry` 를 직접 쓰거나 `@Observed` 를 붙여야 합니다.
 
 ### `@Timer` 애너테이션과 이름 해석
 
@@ -374,7 +379,7 @@ curl -s http://127.0.0.1:9090/internal/timerevents/catalogLookup | jq '.timerEve
 | `failure` 태그 | 성공 시에도 빈 문자열로 **항상** 붙는다 (태그 키 집합 일관성) |
 | 이벤트 비용 | `eventProcessor.hasConsumers()` 일 때만 이벤트 객체 생성 |
 | MeterRegistry 없으면 | `LoggingMeterRegistry` 로 대체 + 경고 로그. 지표가 로그로 나간다 |
-| `Observations` | Observation API 브리지 유틸이지만 **v2.4.0 프로덕션 코드에서 미사용** (자체 테스트만 참조). 트레이싱 스팬 기대 불가 |
+| `Observations` | #1698(2022-11)로 Spring Cloud CircuitBreaker 용으로 들어온 Observation 브리지. 메서드가 package-private 라 **외부 호출 불가**, 프로덕션 코드 미사용. resilience4j 만으로는 스팬 없음 (Spring Cloud CB 경로는 `ObservedCircuitBreaker` 로 스팬 생성) |
 | 애스펙트 order | `LOWEST_PRECEDENCE` = **가장 안쪽**. 재시도/대기 시간 제외, 메서드 본문만 측정 |
 | `@Timed` 와 비교 | 설정 외부화·데코레이터 체인 결합이 필요하면 Timer, 단순 측정은 `@Timed`, 스팬이 필요하면 Observation |
 | 중복 측정 | `@Timer` + `@Timed` 동시 사용 금지. `circuitbreaker.calls` 와의 중복도 목적이 분명할 때만 |
@@ -390,4 +395,4 @@ curl -s http://127.0.0.1:9090/internal/timerevents/catalogLookup | jq '.timerEve
 - 참고: [AOP 애스펙트](./02-aop-aspects.md) · [CircuitBreaker 설정](../main/07-circuitbreaker-config.md) · [Kotlin 코루틴](./09-kotlin-coroutines.md)
 
 ---
-*Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+*Resilience4j master 7e3ab525(2026-09-23, v2.4.0 이후) 기준 · v2.4.0 과 다른 부분은 본문에 표시*

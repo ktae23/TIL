@@ -23,7 +23,7 @@
 | 간헐적 네트워크 오류로 실패한다 | **Retry** | 멱등성이 없을 때. 하류가 이미 과부하일 때 |
 | 외부 API 쿼터를 넘긴다 / 우리가 너무 빨리 보낸다 | **RateLimiter** | 분산 환경에서 전역 쿼터를 지켜야 할 때 (로컬 전용) |
 | 한 느린 의존성이 전체 스레드를 잠식한다 | **Bulkhead** | 호출이 이미 짧고 동시성이 낮을 때 (오버헤드만) |
-| 응답이 안 와서 스레드가 매달려 있다 | **TimeLimiter** | 동기 블로킹 호출 (`CompletionStage` 전용) |
+| 응답이 안 와서 스레드가 매달려 있다 | **TimeLimiter** | 동기 메서드에 `@TimeLimiter` (애너테이션은 `CompletionStage`·리액티브 반환 타입만 지원) |
 | p99만 유독 느리다 | **Hedge** | 멱등성이 없을 때. 하류 여유 용량이 없을 때 |
 | 임계값을 정할 근거가 없다 | **Timer** | — (측정은 항상 먼저) |
 
@@ -44,7 +44,7 @@
 | `minimumNumberOfCalls` | **100** | 호출 100건이 쌓이기 전엔 서킷이 **절대 열리지 않는다** |
 | `slidingWindowSize` | **100** (COUNT_BASED) | 초당 500 req 서비스에서는 0.2초치만 보고 판단 |
 | `failureRateThreshold` | **50%** | 평시 에러율이 5%인 서비스엔 너무 느슨 |
-| `slowCallRateThreshold` | **100%** | 전체 호출이 느려야 발동 — 실질적으로 꺼진 상태 |
+| `slowCallRateThreshold` | **100%** | 전체 호출이 느려야 발동 — `slowCallDurationThreshold=60s` 와 합치면 사실상 꺼진 상태 |
 | `slowCallDurationThreshold` | **60초** | 60초나 기다려야 "느리다"고 판정 |
 | `waitDurationInOpenState` | **60초** | 하류가 5초 만에 복구돼도 55초를 더 막는다 |
 | `maxAttempts` (Retry) | **3** | 재시도 3회가 아니라 **총 시도 3회**(최초 1 + 재시도 2) |
@@ -55,7 +55,7 @@
 
 특히 아래 두 조합이 "서킷을 걸었는데 안 열린다"는 신고의 대부분이다.
 
-- `minimumNumberOfCalls=100` + 저트래픽 → 평생 CLOSED
+- `minimumNumberOfCalls=100` + 저트래픽 → 100건이 쌓일 때까지 판정 자체가 없고, 쌓인 뒤에도 윈도에 오래된 호출이 섞여 반응이 늦다. 기본 `COUNT_BASED` 윈도는 시간이 지나도 호출이 빠지지 않으므로 언젠가는 판정을 시작한다 (`TIME_BASED` 윈도라면 윈도 안 호출이 100에 못 미쳐 영영 안 열릴 수 있다)
 - `slowCallRateThreshold=100%` + `slowCallDurationThreshold=60s` → 느린 호출 감지 사실상 비활성
 
 ---
@@ -104,7 +104,7 @@ private int retryAspectOrder = Ordered.LOWEST_PRECEDENCE - 5;
 
 | 배치 | 서킷이 세는 호출 수 | 결과 |
 |---|---|---|
-| Retry가 CircuitBreaker **바깥** (기본값) | 재시도 3회 → **3건** | 서킷이 3배 빨리 열린다 |
+| Retry가 CircuitBreaker **바깥** (기본값) | 총 시도 3회 → **3건** | 서킷이 3배 빨리 열린다 |
 | Retry가 CircuitBreaker **안쪽** | 재시도 전체 → **1건** | 서킷이 늦게 열린다. 재시도가 장애를 증폭 |
 
 기본값(바깥)이 일반적으로 맞다. 하류가 죽었으면 재시도도 무의미하므로 빨리 차단하는 게 낫다.
@@ -120,10 +120,10 @@ private int retryAspectOrder = Ordered.LOWEST_PRECEDENCE - 5;
 `maxAttempts=3`, `waitDuration=500ms`, `TimeLimiter=1s` 를 그대로 쓰면:
 
 ```
-3 × 1000ms + (500 + 750)ms = 4,250ms
+3 × 1000ms + (500 + 500)ms = 4,000ms
 ```
 
-`IntervalFunction.DEFAULT_MULTIPLIER` 가 1.5이므로 백오프는 500 → 750ms다. 게이트웨이 타임아웃이 3초면 **클라이언트가 먼저 끊고 나간다.** 우리 서버는 이미 포기한 요청을 계속 재시도한다.
+Retry 기본 대기는 고정 간격이다(`RetryConfig.DEFAULT_INTERVAL_FUNCTION = numOfAttempts -> DEFAULT_WAIT_DURATION`). `enable-exponential-backoff: true` 를 켜야 `IntervalFunction.DEFAULT_MULTIPLIER`(1.5)가 적용돼 500 → 750ms 가 되고, 그때는 4,250ms 다. 어느 쪽이든 게이트웨이 타임아웃이 3초면 **클라이언트가 먼저 끊고 나간다.** 우리 서버는 이미 포기한 요청을 계속 재시도한다.
 
 | 계층 | 예산 | 근거 |
 |---|---|---|
@@ -135,7 +135,7 @@ private int retryAspectOrder = Ordered.LOWEST_PRECEDENCE - 5;
 | `maxAttempts` | 2 | 3회는 예산 초과 |
 | 백오프 | 300ms 고정 + jitter | 지수 백오프는 예산 계산이 어려움 |
 
-**HTTP 클라이언트 자체 타임아웃이 1차 방어선이다.** `cancelRunningFuture=true` 는 `Future.cancel(true)` 로 인터럽트를 보낼 뿐이고, 소켓 read에 블로킹된 스레드는 깨어나지 않는다. 게다가 소스를 보면 이 플래그는 `TimeLimiterImpl.decorateFutureSupplier()` 에서만 쓰인다 — `TimeLimiterAspect` 는 반환 타입이 `CompletionStage` 가 아니면 `IllegalReturnTypeException` 을 던지므로 항상 `decorateCompletionStage()` 경로를 타고, **Spring `@TimeLimiter` 에서 `cancel-running-future` 는 무효다.**
+**HTTP 클라이언트 자체 타임아웃이 1차 방어선이다.** `cancelRunningFuture=true` 는 `Future.cancel(true)` 로 인터럽트를 보낼 뿐이고, 소켓 read에 블로킹된 스레드는 깨어나지 않는다. 게다가 소스를 보면 이 플래그는 `TimeLimiterImpl.decorateFutureSupplier()` 에서만 쓰인다 — `TimeLimiterAspect` 는 Reactor·RxJava 반환 타입을 AspectExt로 넘기고, 나머지는 `CompletionStage` 가 아니면 `IllegalReturnTypeException` 을 던진 뒤 `executeCompletionStage()` 로 보낸다. 어느 경로도 `decorateFutureSupplier()` 를 타지 않으므로 **Spring `@TimeLimiter` 에서 `cancel-running-future` 는 무효다.**
 
 ### 3.5 임계값 산정 — 추측하지 말고 역산한다
 
@@ -262,7 +262,7 @@ WebClient paymentClient() {
 
 서킷이 OPEN이면 health가 떨어지고, 쿠버네티스가 이 파드를 빼버린다. 그런데 서킷이 열린 원인은 **하류**이므로 **모든 파드가 동시에 빠진다.** 하류 장애 하나가 우리 서비스 전면 장애로 증폭된다.
 
-소스에서 확인한 사실 둘이 이걸 뒷받침한다 — `management.health.circuitbreakers.enabled` 는 `matchIfMissing` 없이 걸려 있어 **기본 OFF**이고, OPEN일 때 반환하는 것도 `DOWN` 이 아니라 커스텀 상태 `CIRCUIT_OPEN` 이다. 라이브러리 저자도 같은 판단을 한 것이다.
+이건 실제로 issue #607 ("Spring Boot health status switch to DOWN when circuit breaker is opened")에서 보고된 문제이고, PR #722(2019-11) 이후 기본값은 이 사고가 나지 않는 쪽으로 바뀌었다. 소스에서 확인한 기본값 셋이 이걸 뒷받침한다 — `management.health.circuitbreakers.enabled` 는 `matchIfMissing` 없이 걸려 있어 **기본 OFF**이고, 인스턴스별 `register-health-indicator` 도 기본 `false` 이며, `allow-health-indicator-to-fail` 이 기본 `false` 라서 OPEN일 때 반환하는 것도 `DOWN` 이 아니라 커스텀 상태 `CIRCUIT_OPEN` 이다. 라이브러리 저자도 같은 판단을 한 것이다. 즉 위 사고는 이 기본값들을 직접 바꿨을 때 일어난다.
 
 ```yaml
 management:
@@ -317,7 +317,7 @@ management:
 |---|---|---|
 | 하류 지연 증가 (200ms → 2s) | TimeLimiter 타임아웃 → slow call 비율 상승 → 서킷 OPEN | `slow_call_rate`, `state` 전이 |
 | 하류 완전 장애 | Retry 1회 후 서킷 OPEN → 폴백 | `failure_rate`, `not_permitted_calls` |
-| 부분 실패 (10% 오류) | 임계값 미달로 CLOSED 유지, Retry가 흡수 | `retry.calls{kind=successful_with_retry}` |
+| 부분 실패 (5% 오류) | 임계값(10%) 미달로 CLOSED 유지, Retry가 흡수. 10% 오류면 `>=` 비교라 임계값에 걸려 OPEN된다 | `retry.calls{kind=successful_with_retry}` |
 | 복구 직후 thundering herd | HALF_OPEN 의 `permitted` 수로 유입 제한 | `state=half_open` 체류 시간 |
 
 Toxiproxy로 지연·끊김을 주입하고 위 지표가 실제로 그렇게 움직이는지 확인한다. **설정을 넣었다고 작동하는 게 아니다.**
@@ -356,7 +356,7 @@ Toxiproxy로 지연·끊김을 주입하고 위 지표가 실제로 그렇게 �
 | 어디에 거나 | 호출하는 쪽. 서킷은 하류가 아니라 나를 보호한다 |
 | 순서는 | 기본값(Retry 바깥 ~ Timer 안쪽)이 대개 맞다. `Decorators` 는 역순으로 작성 |
 | 숫자는 어떻게 정하나 | 지표에서 역산한다. p99·평시 에러율·TPS·리틀의 법칙 |
-| 기본값 써도 되나 | 안 된다. `minimumNumberOfCalls=100` 과 `slowCallRateThreshold=100%` 가 서킷을 사실상 비활성화한다 |
+| 기본값 써도 되나 | 안 된다. `slowCallRateThreshold=100%` + `slowCallDurationThreshold=60s` 는 느린 호출 감지를 사실상 끄고, `minimumNumberOfCalls=100` 은 저트래픽에서 판정을 크게 늦춘다 |
 | 가장 효과 큰 한 가지 | HTTP 클라이언트 타임아웃. 1차 방어선이다 |
 | 가장 위험한 실수 | 멱등성 없는 호출에 Retry, 그리고 HealthIndicator를 readiness에 넣기 |
 | 도입 순서 | 측정 → 타임아웃 → 서킷 → 격리 |

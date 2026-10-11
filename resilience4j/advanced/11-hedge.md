@@ -15,21 +15,23 @@
 
 ### 1.1 먼저 — 이 모듈의 성숙도
 
-다른 문서를 읽기 전에 이것부터 알아야 합니다. `resilience4j-hedge` 는 **사실상 미완성·미공개 모듈**입니다. 소스에서 확인한 근거입니다.
+다른 문서를 읽기 전에 이것부터 알아야 합니다. `resilience4j-hedge` 는 2.0.0 부터 Maven Central 에 배포되지만, 문서화·BOM·집합 모듈·프레임워크 통합·지표 통합이 전부 빠진 **변두리 모듈**입니다. 소스에서 확인한 근거입니다.
 
 | 확인 항목 | 결과 |
 |---|---|
-| 레포 전체에서 `hedge` 를 언급하는 파일(모듈 자신 제외) | **`settings.gradle` 단 하나** |
+| 레포 전체에서 `hedge` 를 언급하는 파일(모듈 자신 제외) | **`settings.gradle` 단 하나** — 배포는 루트 `build.gradle` 의 `configure(project.coreProjects)` 가 `-bom` 을 뺀 모든 subproject 에 `maven-publish` 를 일괄 적용해서 이뤄지므로, 언급이 없다고 미배포는 아님 |
+| Maven Central 배포 | **있음** (2.0.0 ~ 2.4.0 전 버전) |
+| `resilience4j-bom` 포함 | **없음** (`constraints` 목록에 hedge 부재) — 버전을 직접 지정해야 함 |
 | `README.adoc` / `RELEASENOTES.adoc` 언급 | **없음** |
 | `resilience4j-all` 집합 모듈 포함 | **없음** (bulkhead·cache·circuitbreaker·micrometer·ratelimiter·retry·timelimiter 만) |
 | `@Hedge` 애너테이션 / Spring 자동 설정·애스펙트 | **없음** (`resilience4j-annotations` 에는 6개뿐 — CircuitBreaker·RateLimiter·Retry·Timer·TimeLimiter·Bulkhead) |
 | Micrometer `TaggedHedgeMetrics` | **없음** (`micrometer/tagged` 에 Hedge 용 클래스 부재) |
-| 모듈 의존성 | `api(project(":resilience4j-core"))` 하나뿐 |
-| 저작권 | `Copyright 2021: Matthew Sandoz` — 4년 넘게 정체 |
+| 모듈 의존성 | `api(project(":resilience4j-core"))` 하나뿐 (v2.4.0 은 Groovy 문법 `api project(':resilience4j-core')`) |
+| 변경 이력 | 2021-12 #1557 도입 → v2.4.0 시점 main 코드의 마지막 기능 변경은 2022-10 #1784. 다만 2026년 들어 버그 수정(#2478)과 수명주기·기본값 개선 PR(#2452, #2487)이 다시 올라오고 있음 |
 
-`build.gradle` 이나 JavaDoc 에 `@Experimental`·incubating 같은 **명시적 표시는 없습니다.** 하지만 문서화·배포 집합·프레임워크 통합·지표 통합이 **전부 빠져 있다**는 사실 자체가 더 강한 신호이고, 3.6에서 버그 수준의 날카로운 모서리 세 개를 소스로 확인합니다.
+`build.gradle` 이나 JavaDoc 에 `@Experimental`·incubating 같은 **명시적 표시는 없습니다.** 하지만 문서화·BOM·집합 모듈·프레임워크 통합·지표 통합이 **전부 빠져 있다**는 사실 자체가 더 강한 신호이고, 3.6에서 버그 수준의 날카로운 모서리 네 개를 소스로 확인합니다.
 
-> **프로덕션 도입 판단 기준**: ⑴ Maven Central 에 이 artifact 가 실제로 올라가 있는지 직접 확인할 것 ⑵ 지표·설정 통합을 **전부 직접 작성**할 각오가 있는지 ⑶ 꼬리 지연 때문에 실제로 돈이나 사용자를 잃고 있는지 숫자로 증명됐는지. 셋 중 하나라도 아니면 **쓰지 마세요.** 대안은 많습니다 — 하류 자체를 빠르게 하거나, 캐시를 두거나, TimeLimiter + 폴백으로 끊는 쪽이 거의 항상 먼저입니다.
+> **프로덕션 도입 판단 기준**: ⑴ BOM 에 없으므로 `resilience4j-hedge` 버전을 직접 지정하고 다른 모듈과 맞출 각오가 있는지 ⑵ 지표·설정 통합을 **전부 직접 작성**할 각오가 있는지 ⑶ 꼬리 지연 때문에 실제로 돈이나 사용자를 잃고 있는지 숫자로 증명됐는지. 셋 중 하나라도 아니면 **쓰지 마세요.** 대안은 많습니다 — 하류 자체를 빠르게 하거나, 캐시를 두거나, TimeLimiter + 폴백으로 끊는 쪽이 거의 항상 먼저입니다.
 
 ### 1.2 아이디어
 
@@ -84,7 +86,7 @@ public interface Hedge {
 }
 ```
 
-**동기 API 가 없습니다** — 두 호출을 동시에 띄우는 것이 본질이므로 블로킹 모델로는 표현할 수 없습니다. `Hedge.java` 의 클래스 주석이 적용 범위를 직접 못 박아 뒀습니다.
+**동기 API 는 없고** 비동기 반환형만 제공합니다. 동기로 쓰려면 호출자가 직접 `join()` 해야 합니다. `Hedge.java` 의 클래스 주석이 적용 범위를 직접 못 박아 뒀습니다.
 
 > Good candidates for Hedged calls include side-effect-free calls, calls which may have a long response time tail. Do not hedge non-idempotent inserts or other similar calls.
 
@@ -145,6 +147,8 @@ public Duration get() {
 | `concurrentHedges` | `10` | `withMaxConcurrency(int)` | 헤지 실행 풀의 `corePoolSize` |
 | `contextPropagators` | 빈 배열 | `withContextPropagators(...)` | 컨텍스트 전파 |
 
+> `HedgeConfig.from(base)` 로 복사하면 일부 항목이 빠집니다 — v2.4.0 은 `durationSupplierType`, master 도 `contextPropagators` (3.6-④).
+
 ### 3.4 실행 흐름 — `HedgeImpl.decorateCaller()`
 
 이 모듈의 전부가 이 메서드입니다.
@@ -195,7 +199,7 @@ return decorateCaller(() -> callableFuture(callable, primaryExecutor),
 return decorateCaller(supplier, supplier);
 ```
 
-`submit()` 은 primary 를 호출자가 준 실행기에, secondary 를 `configuredHedgeExecutor` 에 보냅니다. 반면 `decorateCompletionStage()` 는 **primary 와 secondary 에 같은 supplier** 를 쓰고 `configuredHedgeExecutor` 는 **타이머에만** 쓰입니다. 즉 `concurrentHedges`(`withMaxConcurrency`)로 헤지 동시 실행 수를 제한하려는 의도는 `decorateCompletionStage` 경로에서 **작동하지 않습니다.**
+`submit()` 은 primary 를 호출자가 준 실행기에, secondary 를 `configuredHedgeExecutor` 에 보냅니다. 반면 `decorateCompletionStage()` 는 **primary 와 secondary 에 같은 supplier** 를 쓰고, `configuredHedgeExecutor` 는 타이머와 **secondary supplier 의 동기 호출 부분**만 맡습니다 — `thenCompose(t -> hedgedSupplier.get())` 는 래치를 연 스레드, 즉 이 풀의 스레드에서 실행되기 때문입니다. supplier 가 곧바로 비동기 future 를 돌려주면 실제 하류 호출은 풀 밖에서 돌기 때문에, `concurrentHedges`(`withMaxConcurrency`)는 이 경로에서 동시 헤지 수를 **제한하지 못합니다.** 반대로 supplier 가 future 를 돌려주기 전에 블로킹 작업을 하면 그 동안 이 풀의 스레드를 점유합니다.
 
 ### 3.5 타임라인
 
@@ -235,11 +239,11 @@ sequenceDiagram
 - **하류 부하는 실제로 두 배가 되고, 비멱등 연산은 두 번 실행됩니다.** 패자를 취소해도 하류의 일은 끝까지 수행됩니다.
 - 커넥션 풀 점유도 두 배입니다. 풀 크기를 늘리지 않으면 헤지가 **스스로 병목**을 만듭니다. 하류에 전파되는 실제 취소를 원하면 HTTP 클라이언트 레벨에서 끊어야 합니다(Reactor `Mono.timeout`, 코루틴 취소 등).
 
-### 3.6 날카로운 모서리 세 개
+### 3.6 날카로운 모서리 네 개
 
 **① `Hedge.ofDefaults()` 는 첫 호출에서 `NullPointerException`.**
 
-`HedgeConfig.Builder` 의 기본값은 `hedgeDurationSupplierType = PRECONFIGURED` 인데 `cutoff` 는 초기화되지 않아 **`null`** 입니다. `HedgeConfigTest` 가 기대하는 `toString()` 문자열이 `...windowSize=100, cutoff=null}` 로 이를 증명합니다. 그래서 `Hedge.ofDefaults()` 는 객체 생성은 성공하지만 첫 호출에서 `durationSupplier.get().toNanos()` 가 `null.toNanos()` 가 되어 터집니다. **기본 설정이 사용 불가**라는 뜻이고, 그 자체로 모듈의 성숙도를 말해 줍니다. 반드시 `preconfiguredDuration(...)` 또는 `averagePlus*Duration(...)` 을 명시하세요.
+`HedgeConfig.Builder` 의 기본값은 `hedgeDurationSupplierType = PRECONFIGURED` 인데 `cutoff` 는 초기화되지 않아 **`null`** 입니다. `HedgeConfigTest` 가 기대하는 `toString()` 문자열이 `...windowSize=100, cutoff=null}` 로 이를 증명합니다(v2.4.0 에서는 #2458 이전 포맷이라 `HedgeConfig{false,0,true,100,null}` 이고, 마지막 값이 cutoff). 그래서 `Hedge.ofDefaults()` 는 객체 생성은 성공하지만 첫 호출에서 `durationSupplier.get().toNanos()` 가 `null.toNanos()` 가 되어 터집니다. **기본 설정이 사용 불가**라는 뜻이고, 그 자체로 모듈의 성숙도를 말해 줍니다. 이는 열린 이슈 #2457 로 보고돼 있고(수정 PR #2487 미머지), 설정 없이 `registry.hedge(name)` 으로 만든 인스턴스도 `InMemoryHedgeRegistry` 의 기본 설정(`HedgeConfig.ofDefaults()`)을 쓰므로 똑같이 터집니다. 게다가 NPE 는 `primarySupplier.get()` 으로 primary 를 이미 발사한 **뒤에** 나므로, 호출자는 예외를 받지만 하류에는 요청이 도달합니다. 반드시 `preconfiguredDuration(...)` 또는 `averagePlus*Duration(...)` 을 명시하세요.
 
 **② `AVERAGE_PLUS` 는 콜드 스타트에 모든 요청을 헤지합니다.**
 
@@ -257,7 +261,11 @@ this.configuredHedgeExecutor = ContextAwareScheduledThreadPoolExecutor
     .build();
 ```
 
-그런데 `Hedge` 인터페이스에도 `HedgeImpl` 에도 **`shutdown()`·`close()` 가 없습니다.** `Hedge` 를 동적으로 만들면(테넌트별·요청별) 스레드풀이 쌓이니 반드시 **레지스트리로 이름당 하나씩만** 만들어 재사용하세요. 그리고 기본 `concurrentHedges = 10` 은 이 풀의 `corePoolSize` 이고 `submit()` 경로에서는 풀이 **타이머와 secondary 실행을 함께** 처리합니다. 10개 스레드가 secondary 로 꽉 차면 **타이머가 큐에서 대기**해 임계 시간이 늦게 발사됩니다. 헤지 비율이 높은 경로는 `withMaxConcurrency` 를 올리세요.
+그런데 `Hedge` 인터페이스에도 `HedgeImpl` 에도, `InMemoryHedgeRegistry` 에도 **`shutdown()`·`close()` 가 없습니다.** 이 풀의 스레드는 `NamingThreadFactory` 가 비데몬(`setDaemon(false)`)으로 만들기 때문에, 누수되면 그냥 쌓이는 데서 끝나지 않고 JVM 의 자연 종료도 막습니다. 이 문제는 이슈 #2451 로 보고됐고, `Hedge` 에 `AutoCloseable` 을 붙이는 PR #2452 가 열려 있습니다(미머지). 그러니 `Hedge` 를 동적으로 만들지 말고(테넌트별·요청별 금지) **이름당 하나씩만** 만들어 애플리케이션 수명 동안 재사용하세요 — 레지스트리는 개수를 제한할 뿐 정리해 주지는 않습니다. 그리고 기본 `concurrentHedges = 10` 은 이 풀의 `corePoolSize` 이고 `submit()` 경로에서는 풀이 **타이머와 secondary 실행을 함께** 처리합니다. 10개 스레드가 secondary 로 꽉 차면 **타이머가 큐에서 대기**해 임계 시간이 늦게 발사됩니다. 헤지 비율이 높은 경로는 `withMaxConcurrency` 를 올리세요.
+
+**④ `HedgeConfig.from(base)` 는 설정 일부를 복사하지 않습니다.**
+
+`Builder(HedgeConfig baseConfig)` 복사 생성자는 v2.4.0 에서 `durationSupplierType` 을 복사하지 않습니다. 그래서 `HedgeConfig.from(averagePlusConfig).build()` 가 조용히 `PRECONFIGURED` + `cutoff=null` 이 되어 ①의 NPE 로 이어집니다(이슈 #2457 후반부, master 에서만 #2478 로 수정). `contextPropagators` 는 master 에서도 복사되지 않으며, 수정 PR #2539 가 열려 있습니다. 설정을 복사해서 쓰지 말고 `HedgeConfig.custom()` 으로 처음부터 만드세요.
 
 ### 3.7 이벤트와 지표 — 득실을 어떻게 재는가
 
@@ -301,7 +309,7 @@ public Hedge itemDetailHedge() {
         .withContextPropagators(new MdcContextPropagator())
         .build();
 
-    // 반드시 레지스트리로 이름당 하나만. shutdown() 이 없어 인스턴스마다 풀이 누수된다 (3.6-③)
+    // 싱글턴 빈이라 인스턴스가 하나로 유지된다. shutdown() 이 없으니 동적 생성은 금지 (3.6-③)
     return HedgeRegistry.builder().build().hedge("itemDetail", config);
 }
 ```
@@ -319,7 +327,7 @@ public class ItemDetailService {
         this.webClient = webClient;
         this.hedgeFired = Counter.builder("hedge.secondary.fired").tag("name", hedge.getName())
             .description("secondary 가 실제로 하류에 발사된 횟수 (승패 무관)").register(registry);
-        registerGauges(hedge, registry);   // Micrometer 통합이 없어 직접 연결한다
+        registerMeters(hedge, registry);   // Micrometer 통합이 없어 직접 연결한다
     }
 
     public CompletableFuture<ItemDetail> find(String itemId) {
@@ -341,7 +349,7 @@ public class ItemDetailService {
 }
 ```
 
-`registerGauges()` 는 `hedge.getMetrics()` 의 네 카운터(`getPrimarySuccessCount` 등)와 `getCurrentHedgeDelay().toMillis()`, `getSecondaryPoolActiveCount()` 를 각각 `Gauge.builder(...).tags("name", hedge.getName()).register(registry)` 로 묶는 단순 반복문입니다. 카운터가 단조 증가하므로 `Gauge` 로 노출하고 PromQL 에서 `increase()` 로 미분하는 게 맞습니다. 그리고 `hedge.getEventPublisher().onSecondarySuccess(...)` 로 "헤지가 구해 준 호출" 을 로그로도 남겨 두면 사후 분석이 쉬워집니다.
+`registerMeters()` 는 `hedge.getMetrics()` 의 네 카운터(`getPrimarySuccessCount` 등)를 `FunctionCounter.builder(name, metrics, m -> m.getSecondarySuccessCount())` 처럼 각각 등록하고, `getCurrentHedgeDelay().toMillis()` 와 `getSecondaryPoolActiveCount()` 만 `Gauge.builder(...)` 로 묶는 단순 반복문입니다(모두 `.tags("name", hedge.getName())`). 단조 증가 값은 `FunctionCounter` 로 노출해야 Prometheus 에서 counter 타입(`_total` 접미사)이 되어 `increase()` 가 의미 있게 동작합니다. 그리고 `hedge.getEventPublisher().onSecondarySuccess(...)` 로 "헤지가 구해 준 호출" 을 로그로도 남겨 두면 사후 분석이 쉬워집니다.
 
 ### 4.2 사고 시나리오 — 멱등성 없는 API 에 적용했을 때
 
@@ -368,7 +376,7 @@ T+4일+18분 CS 유입. 롤백 배포. 중복 발급 42,000건. 이미 사용된
 > - [ ] 하류에 **최소 2배의 여유 용량**과 2배 동시 호출을 감당할 커넥션 풀이 있는가? (헤지 비율이 100% 까지 갈 수 있다고 가정)
 > - [ ] **헤지 비율 상한**이 구현돼 있는가? (예: `RateLimiter` 로 secondary 발사 제한) 승률 급상승 시 **즉시 끌 스위치**가 있는가?
 > - [ ] 꼬리 지연이 **실제 손실로 이어진다는 숫자**가 있는가? 없으면 최적화할 이유가 없다
-> - [ ] `preconfiguredDuration` 을 명시했는가? (`ofDefaults()` 는 NPE, 3.6-①)
+> - [ ] `preconfiguredDuration` 을 명시했는가? (`ofDefaults()` 는 NPE, 3.6-①. `HedgeConfig.from()` 복사본도 믿지 말 것, 3.6-④)
 > - [ ] **부하 상승 구간에서** 득실을 측정했는가? 평시 측정은 의미 없다
 
 ### 4.3 득실을 PromQL 로 판정
@@ -378,8 +386,8 @@ T+4일+18분 CS 유입. 롤백 배포. 중복 발급 42,000건. 이미 사용된
 ```promql
 # ❶ secondary 승률 — 3.7 의 해석표로 판정한다. 1~5% 가 이상 구간
 #    분모(전체 호출)는 기록 규칙 hedge:calls:increase5m 으로 미리 묶어 두면 쿼리가 짧아진다
-(increase(hedge_secondary_success{name="itemDetail"}[5m])
- + increase(hedge_secondary_failure{name="itemDetail"}[5m]))
+(increase(hedge_secondary_success_total{name="itemDetail"}[5m])
+ + increase(hedge_secondary_failure_total{name="itemDetail"}[5m]))
 / clamp_min(hedge:calls:increase5m{name="itemDetail"}, 1)
 
 # ❷ 실제 하류 부하 증가율 — 직접 센 카운터를 쓴다 (3.7). 0.05 = 하류 호출 5% 증가
@@ -403,16 +411,16 @@ hedge_pool_active{name="itemDetail"} / 32 > 0.8
 
 | 주제 | 핵심 사실 | 실무 결론 |
 |---|---|---|
-| 모듈 성숙도 | 레포 전체에서 `settings.gradle` 만 언급. README·릴리스노트·`resilience4j-all`·애너테이션·Spring·Micrometer **전부 없음** | 주변 통합을 **전부 직접** 작성할 각오 필요 |
+| 모듈 성숙도 | Maven Central 에는 2.0.0 부터 배포. 그러나 레포 전체에서 `settings.gradle` 만 언급하고 README·릴리스노트·BOM·`resilience4j-all`·애너테이션·Spring·Micrometer **전부 없음** | 버전 직접 지정, 주변 통합을 **전부 직접** 작성할 각오 필요 |
 | Retry 와의 차이 | Retry 는 **실패 후 순차**, Hedge 는 **느릴 때 동시** | 대체 관계가 아니라 겨냥 대상이 다름 |
-| API | `submit(Callable, ExecutorService)` / `decorateCompletionStage(Supplier)` — **동기 API 없음** | 비동기 스택에서만 사용 가능 |
+| API | `submit(Callable, ExecutorService)` / `decorateCompletionStage(Supplier)` — **동기 API 없음** | 비동기 반환형만 제공. 동기로 쓰려면 직접 `join()` |
 | 임계 시간 | `PRECONFIGURED`(고정) vs `AVERAGE_PLUS`(평균 적응). percentage 모드는 이름과 달리 **곱셈**(`average × factor / 100`) | 프로덕션은 **고정값 권장**. `averagePlusPercentageDuration(150)` = 평균의 1.5배 |
 | 평균 계산 | `FixedSizeSlidingWindowMetrics`(건수 기반만), **밀리초 정수 나눗셈**, `PRIMARY_*` 만 반영 | 저트래픽 서비스는 평균이 낡는다 |
 | 발사·판정 | `timedCompletable` 래치 + `thenCompose`(임계 시간 전에 끝나면 secondary **미생성**), `HedgeResult.fromPrimary` + `anyOf` 로 승자 판정 | 평시 부하 증가는 0. `handle` 로 실패도 경쟁에 참가시킴 |
 | **패자 취소** | `cancel(false)` 는 `CompletableFuture` 단계만 취소 — **하류 호출은 계속 실행**. 승자 예외는 `(RuntimeException)` 무검사 캐스팅 | 부하는 진짜 2배, 비멱등 연산은 진짜 두 번 실행. `Error` 완료 시 `ClassCastException` |
-| `ofDefaults()` | `cutoff == null` → 첫 호출에서 **NPE** | `preconfiguredDuration` 또는 `averagePlus*` 를 **반드시** 명시 |
+| `ofDefaults()` | `cutoff == null` → 첫 호출에서 **NPE**(primary 발사 후). 열린 이슈 #2457, `registry.hedge(name)` 도 동일. v2.4.0 은 `HedgeConfig.from()` 도 같은 상태로 되돌림 | `HedgeConfig.custom()` 으로 `preconfiguredDuration` 또는 `averagePlus*` 를 **반드시** 명시 |
 | `AVERAGE_PLUS` 콜드 스타트 | 빈 창 → 평균 `ZERO` → 임계 0 → **전량 헤지** | amount 모드로 하한 확보, 또는 고정값 사용 |
-| 스레드풀 | 인스턴스마다 생성, `shutdown()`/`close()` **없음**. 기본 `concurrentHedges=10` 풀이 타이머와 secondary 실행을 **공유** | 레지스트리로 이름당 하나만. 포화 시 `withMaxConcurrency` 상향 |
+| 스레드풀 | 인스턴스마다 비데몬 풀 생성, `shutdown()`/`close()` **없음**(이슈 #2451, PR #2452 미머지). 기본 `concurrentHedges=10` 풀이 타이머와 secondary 실행을 **공유** | 이름당 하나만 만들어 재사용. 포화 시 `withMaxConcurrency` 상향 |
 | 이벤트 4종 / 판정 | **승자에 대해서만** 발행되므로 "몇 번 쐈는가" 는 알 수 없음. 득 판정은 승률 1~5% + p99 유의미 감소 | 발사 카운터 직접 심기. 승률 15% 초과는 **피드백 루프** 신호 → 즉시 중단 |
 | 가장 큰 위험 | 과부하 시 **양의 피드백 루프** — 헤지가 장애를 가속 | 평시가 아니라 **부하 상승 구간**에서 검증 |
 
@@ -426,4 +434,4 @@ hedge_pool_active{name="itemDetail"} / 32 > 0.8
 - 후행: [운영 설계 — 어떤 컴포넌트를 어디에 걸까](./12-production-design.md)
 
 ---
-*Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+*Resilience4j master 7e3ab525(2026-09-23, v2.4.0 이후) 기준 · v2.4.0 과 다른 부분은 본문에 표시*

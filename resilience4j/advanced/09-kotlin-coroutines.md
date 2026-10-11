@@ -21,7 +21,7 @@
 | Flow 연산자 | `fun <T> Flow<T>.x(instance: X): Flow<T>` | `flow.circuitBreaker(circuitBreaker)` |
 | 설정 DSL | `inline fun XConfig(config: XConfig.Builder.() -> Unit): XConfig` | `CircuitBreakerConfig { failureRateThreshold(50f) }` |
 
-`build.gradle` 에서 먼저 확인할 두 가지. 하나, 컴포넌트 모듈이 전부 `compileOnly(project(":resilience4j-circuitbreaker"))` 형태라 **이 모듈만 의존성에 넣으면 아무것도 동작하지 않습니다** — 쓸 컴포넌트를 런타임 의존성으로 직접 추가해야 합니다. 둘, `compileKotlin { jvmTarget = JVM_21 }` 이므로 JDK 21 이상을 요구합니다. 그리고 `ThreadPoolBulkhead` 용 suspend 확장 함수는 **없습니다**(설정 DSL 만 존재) — 코루틴에서 작업을 다른 스레드풀로 넘기는 건 이미 `Dispatchers` 의 일이니까요.
+`build.gradle` 에서 먼저 확인할 두 가지. 하나, 컴포넌트 모듈이 전부 `compileOnly(project(":resilience4j-circuitbreaker"))` 형태라 **이 모듈만 의존성에 넣으면 아무것도 동작하지 않습니다** — 쓸 컴포넌트를 런타임 의존성으로 직접 추가해야 합니다. 둘, JVM 타깃은 **버전에 따라 다릅니다.** v2.4.0 은 `jvmTarget = JVM_17` 이라 JDK 17 이면 됩니다. 다만 태그 이후 #2446(2026-04-11)으로 master 가 다시 `JVM_21` 로 올라갔으므로(이 문서가 기준으로 삼은 7e3ab525 도 `JVM_21`), 다음 릴리스부터는 JDK 21 이 필요할 가능성이 큽니다. `resilience4j-kotlin` 의 main 소스 자체는 v2.4.0 과 7e3ab525 가 동일하고, 다른 건 이 `build.gradle` 의 jvmTarget 뿐입니다. 그리고 `ThreadPoolBulkhead` 용 suspend 확장 함수는 **없습니다**(설정·레지스트리 DSL 만 존재). 작업을 다른 스레드풀로 넘기는 일은 코루틴에서는 `Dispatchers` 가 맡는다고 보면 됩니다.
 
 ---
 
@@ -33,7 +33,7 @@ Java 데코레이터를 코루틴에서 그대로 쓰면 두 가지가 깨집니
 
 > 롤링 배포로 인스턴스가 셧다운되며 in-flight 요청이 대량 취소 → 전부 `CircuitBreaker.onError()` → 실패율 급등 → **정상인 하류를 향해 서킷 OPEN** → 배포가 끝난 뒤에도 `waitDurationInOpenState` 동안 전면 차단.
 
-원인 분석이 유난히 어려운 종류의 사고입니다. 하류 지표는 전부 정상이기 때문입니다. `resilience4j-kotlin` 이 `Cancellation.kt` 라는 파일을 따로 두는 이유가 정확히 이것입니다.
+원인 분석이 유난히 어려운 종류의 사고입니다. 하류 지표는 전부 정상이기 때문입니다. `resilience4j-kotlin` 도 처음부터 이걸 막았던 건 아닙니다. 모듈 초기(#441, 2019-05)에는 `catch (exception: Exception) { onError(...) }` 로 취소도 실패로 기록했고, #658(2019-10, Flow 지원 PR)에서 `Cancellation.kt` 를 추가하며 이 문제를 막았습니다.
 
 ---
 
@@ -50,7 +50,7 @@ Java 데코레이터를 코루틴에서 그대로 쓰면 두 가지가 깨집니
 | `TimeLimiter` | `executeSuspendFunction` / `decorateSuspendFunction` | `Flow<T>.timeLimiter(tl)` | O (타임아웃만 예외) |
 | `Timer` | `executeSuspendFunction` / `decorateSuspendFunction` | `Flow<T>.timer(timer)` | **X** |
 
-모든 파일이 `executeFunction(block: () -> T)` / `decorateFunction` 이라는 **비(非)suspend** 짝도 함께 제공합니다. 이건 Java API 를 Kotlin 람다로만 감싼 것(`executeCallable(block)`)이라 코루틴 의미가 없습니다. 이름이 비슷해 실수하기 쉬우니 리뷰에서 구분해 보세요. 문법 포인트로, `block: suspend () -> T` 는 **suspend 람다를 받는 고차 함수**입니다. 람다 자체가 `suspend` 로 선언돼야 그 안에서 `delay()`·`awaitBody()` 를 부를 수 있습니다.
+`Timer` 를 뺀 파일들이 `executeFunction(block: () -> T)` / `decorateFunction` 이라는 **비(非)suspend** 짝도 제공합니다. CircuitBreaker·Retry·RateLimiter·Bulkhead 판은 Java 의 `executeCallable`/`decorateCallable` 을 감쌌을 뿐이고, TimeLimiter 판(#2407)은 `executeFutureSupplier { CompletableFuture.supplyAsync(block) }` 로 블록을 공용 ForkJoinPool 에 넘깁니다. 어느 쪽이든 코루틴 의미는 없습니다. 이름이 비슷해 실수하기 쉬우니 리뷰에서 구분해 보세요. 문법 포인트로, `block: suspend () -> T` 는 **suspend 람다를 받는 고차 함수**입니다. 람다 자체가 `suspend` 로 선언돼야 그 안에서 `delay()`·`awaitBody()` 를 부를 수 있습니다.
 
 ### 3.2 취소 판별의 전부 — `Cancellation.kt`
 
@@ -107,7 +107,7 @@ suspend fun <T> CircuitBreaker.executeSuspendFunctionAndRecordCancellationError(
 - `acquirePermission()` — 서킷이 OPEN 이면 여기서 `CallNotPermittedException`. 블록은 실행되지 않습니다.
 - `releasePermission()` vs `onError()` — **이 한 줄 차이가 전부입니다.** 전자는 점유한 허가만 반납하고 **슬라이딩 윈도에 아무 기록도 남기지 않습니다**(호출 횟수에도 미포함). 후자는 실패로 기록합니다.
 - 마지막 `throw exception` — 취소든 실패든 예외는 **항상** 전파합니다. 취소를 "무시" 하는 게 아니라 **집계에서만 제외**합니다. 이 구분을 혼동하면 안 됩니다. (`@Suppress("UsePropertyAccessSyntax")` 는 매번 값이 바뀌는 `getCurrentTimestamp()` 를 프로퍼티로 바꾸라는 경고를 끈 것입니다. 발췌는 `durationInNanos` 지역 변수만 인라인했고 로직은 소스 그대로입니다.)
-- `...AndRecordCancellationError` 는 술어를 `{ _, _ -> false }` 로 줘 "아무것도 무시하지 말라" 고 지시합니다. 소스의 `CoroutineCircuitBreakerTest.testCancellation()` 이 두 변형을 각각 `expectedNumberOfFailedCalls = 0` / `1` 로 검증합니다.
+- `...AndRecordCancellationError` 는 술어를 `{ _, _ -> false }` 로 줘 "아무것도 무시하지 말라" 고 지시합니다. 소스의 `CoroutineCircuitBreakerTest` 에서 두 `@Test`(`executeSuspendFunction should ignore a CancellationException` / `executeSuspendFunctionAndRecordCancellationError should record a CancellationException`)가 `private` 헬퍼 `testCancellation()` 을 각각 `expectedNumberOfFailedCalls = 0` / `1` 로 호출해 검증합니다.
 
 ### 3.4 컴포넌트별 취소 처리는 **일관되지 않다**
 
@@ -120,7 +120,9 @@ suspend fun <T> CircuitBreaker.executeSuspendFunctionAndRecordCancellationError(
 | `RateLimiter.executeSuspendFunction()` | `onError(e)` 로 **기록** | `catch (e: Throwable)` — 검사 없음 |
 | `Timer.decorateSuspendFunction()` | `context.onFailure(e)` 로 **기록** | 검사 없음 |
 
-영향도는 다릅니다. `RateLimiter`·`Retry` 는 상태 전이가 없어 지표가 더러워지는 정도입니다. `Timer` 는 취소가 "실패" 로 집계되어 **대시보드 에러율이 부풀려집니다** — 알럿 임계값을 잡을 때 알고 있어야 합니다. `CircuitBreaker` 만 상태 전이가 있어 치명적이고, 그래서 거기만 꼼꼼히 막아둔 겁니다.
+영향도는 다릅니다. `Retry` 는 상태 전이가 없어 취소가 `retryContext.onError(e)` 로 들어가는 정도입니다. `RateLimiter` 의 `onError(e)` 는 무언가를 기록하지 않고 `drainPermissionsOnResult` 술어만 평가합니다(#2170). 기본값이 `any -> false` 라 기본 설정이면 취소가 섞여도 영향이 없지만, 이 술어를 "모든 예외에 drain" 처럼 넓게 잡았다면 취소 때문에 남은 허가가 전부 비워질 수 있습니다. `Timer` 는 취소가 "실패" 로 집계되어 **대시보드 에러율이 부풀려집니다** — 알럿 임계값을 잡을 때 알고 있어야 합니다.
+
+이 비대칭은 설계 의도라기보다 **도입 시점의 차이**로 보는 게 맞습니다. 취소 구분은 #658(2019-10, Flow 지원 PR)에서 `Cancellation.kt` 와 함께 CircuitBreaker·Bulkhead(와 Flow 연산자)에 한꺼번에 들어갔습니다. 이후 추가된 `Timer`(#2009, 2023)나 기존 Retry·RateLimiter 에는 적용되지 않았습니다. 다만 상태 전이가 있는 `CircuitBreaker` 에서 피해가 가장 크다는 점은 변하지 않습니다.
 
 ### 3.5 데코레이터 통과 흐름과 취소 신호 경로
 
@@ -167,7 +169,7 @@ suspend fun <T> TimeLimiter.executeSuspendFunction(block: suspend () -> T): T =
 ```
 
 - 타임아웃 값만 `TimeLimiterConfig` 에서 읽고, 실제 시간 제한은 코루틴 메커니즘이 합니다. `TimeoutCancellationException` → `createdTimeoutExceptionWithName(name, t)` 로 **변환**하는 게 결정적입니다. 변환하지 않으면 바깥 `CircuitBreaker` 의 `isCancellation` 이 `true` 를 받아 타임아웃을 **실패로 세지 않습니다.**
-- 변환 결과 타입을 확인하세요. `TimeLimiter.java` 는 `import java.util.concurrent.*` 를 쓰므로 이 `TimeoutException` 은 `java.util.concurrent.TimeoutException` = `java.lang.Exception` 의 하위 타입이고 `CancellationException` 과 **무관**합니다. 그래서 바깥 서킷이 정상적으로 실패로 기록합니다. (`TimeLimiter.kt` 의 KDoc 은 "`java.util.concurrent.CancellationException` 에서 파생된다" 고 적지만 실제 상속 관계는 그렇지 않습니다. 동작은 의도대로지만 주석이 낡았습니다.)
+- 변환 결과 타입을 확인하세요. `TimeLimiter.java` 는 `import java.util.concurrent.*` 를 쓰므로 이 `TimeoutException` 은 `java.util.concurrent.TimeoutException` = `java.lang.Exception` 의 하위 타입이고 `CancellationException` 과 **무관**합니다. 그래서 바깥 서킷이 정상적으로 실패로 기록합니다. (`TimeLimiter.kt` 의 KDoc 은 "`java.util.concurrent.CancellationException` 에서 파생된다" 고 적지만 실제 상속 관계는 그렇지 않습니다. 동작은 의도대로지만, 이 주석은 변환 로직과 같은 커밋(#1168)에서 처음 쓰일 때부터 실제 타입과 맞지 않았습니다.)
 - KDoc 이 명시한 제약: **`cancelRunningFuture` 설정은 무시**되고, 블록은 **취소 가능한 중단 지점에서만** 멈춥니다. 블록 안에서 CPU 를 태우거나 블로킹 I/O 를 하면 타임아웃이 지나도 안 멈춥니다.
 
 **어느 쪽을 쓰나?** 순수한 시간 제한만 필요하면 `withTimeout` 이 자연스럽습니다. `TimeLimiter` 를 쓸 이유는 ① 타임아웃 값의 중앙 관리·런타임 변경 ② 이벤트·Micrometer 지표 ③ **바깥 `CircuitBreaker` 가 타임아웃을 실패로 집계**해야 할 때인데, ③이 압도적으로 큽니다. 서킷 안쪽에서 날 `withTimeout` 을 쓰면 `TimeoutCancellationException` 이 올라가고 `isCancellation` 이 `true` 를 반환해 **타임아웃이 서킷에 전혀 집계되지 않습니다.** 하류가 전부 느려 타임아웃만 나는 상황에서 서킷이 영원히 CLOSED 로 남습니다.
@@ -375,7 +377,7 @@ class CancellationAccountingTest {
 }
 ```
 
-첫 테스트는 소스의 `CoroutineCircuitBreakerTest.testCancellation()` 구조를 `runTest` 로 옮긴 것입니다(소스는 `runBlocking` 사용). 같은 틀에서 두 개를 더 두세요 — `executeSuspendFunctionAndRecordCancellationError` 로 바꿔 `numberOfFailedCalls == 1` 을 확인하는 대조 테스트, 그리고 블록을 `tl.executeSuspendFunction { delay(10_000) }` 로 바꿔 예외가 `java.util.concurrent.TimeoutException` 이고 `numberOfFailedCalls == 1` 임을 확인하는 변환 테스트. 두 번째 테스트가 가장 값어치 있습니다 — **안티패턴이 왜 안티패턴인지를 테스트로 고정**해 두면, 나중에 누가 `TimeLimiter` 를 `withTimeout` 으로 "단순화" 하려 할 때 근거가 됩니다.
+첫 테스트는 소스의 `CoroutineCircuitBreakerTest` 헬퍼 `testCancellation()` 구조를 `runTest` 로 옮긴 것입니다(소스는 `runBlocking` 사용). 같은 틀에서 두 개를 더 두세요 — `executeSuspendFunctionAndRecordCancellationError` 로 바꿔 `numberOfFailedCalls == 1` 을 확인하는 대조 테스트, 그리고 블록을 `tl.executeSuspendFunction { delay(10_000) }` 로 바꿔 예외가 `java.util.concurrent.TimeoutException` 이고 `numberOfFailedCalls == 1` 임을 확인하는 변환 테스트. 두 번째 테스트가 가장 값어치 있습니다 — **안티패턴이 왜 안티패턴인지를 테스트로 고정**해 두면, 나중에 누가 `TimeLimiter` 를 `withTimeout` 으로 "단순화" 하려 할 때 근거가 됩니다.
 
 ---
 
@@ -383,16 +385,16 @@ class CancellationAccountingTest {
 
 | 주제 | 핵심 사실 | 할 일 |
 |---|---|---|
-| 모듈 의존성 | 컴포넌트가 전부 `compileOnly`, `jvmTarget = JVM_21` | 쓸 컴포넌트를 런타임 의존성에 직접 추가 |
+| 모듈 의존성 | 컴포넌트가 전부 `compileOnly`. `jvmTarget` 은 v2.4.0 `JVM_17` → master(#2446) `JVM_21` | 쓸 컴포넌트를 런타임 의존성에 직접 추가. 버전별 JDK 요구 확인 |
 | 취소 판별 / 기록 | `isCancellation` = `job.isCancelled` **또는** `e is CancellationException`. `releasePermission()` 은 **윈도 미기록**, `onError()` 는 실패 기록 (예외는 둘 다 전파) | 취소 많은 경로에 서킷 걸 때 확인 |
-| 취소 처리 비대칭 | CB·Bulkhead·TimeLimiter 는 구분 O / Retry·RateLimiter·Timer 는 **X** | Timer 에러율에 취소가 섞이는 걸 전제로 알럿 설정 |
+| 취소 처리 비대칭 | CB·Bulkhead·TimeLimiter 는 구분 O / Retry·RateLimiter·Timer 는 **X** (설계 의도보다 도입 시점 차이) | Timer 에러율에 취소가 섞이는 걸 전제로 알럿 설정 |
 | `TimeLimiter` vs `withTimeout` | 전자는 후자의 래퍼 + 타임아웃을 `j.u.c.TimeoutException` 으로 **변환** | 서킷 안쪽 시간 제한은 `TimeLimiter`. 날 `withTimeout` 금지 |
 | `recordExceptions` | 변환된 타입이 기록 대상이어야 함 | `java.util.concurrent.TimeoutException` 포함 |
 | Flow 기록 시점 | `circuitBreaker`/`bulkhead` 는 `onCompletion` 에서 **1회**. `rateLimiter` 는 **스트림당 허가 1개**, `retry` 는 업스트림 **처음부터 재수집** | 장수명 Flow 금지. 값당 제한은 `onEach`. 소비자 멱등성 확인 |
 | 설정 DSL | `inline fun` + 수신 객체 지정 람다 + `apply` | **메서드 호출** 문법, 프로퍼티 대입 아님 |
-| `suspend` + 애너테이션 | Kotlin AspectExt **없음** → `defaultHandling()` → 첫 중단 시점에 **성공 오기록** | 리뷰에서 무조건 지적. `runCatching` 은 `CancellationException` 까지 삼키니 `if (e is CancellationException) throw e` 필수 |
+| `suspend` + 애너테이션 | Kotlin AspectExt **없음** → `defaultHandling()` → 본문 실행 전(Spring 6.1+) 또는 첫 중단 시점에 **성공 오기록** | 리뷰에서 무조건 지적. `runCatching` 은 `CancellationException` 까지 삼키니 `if (e is CancellationException) throw e` 필수 |
 
-가장 짧게 요약하면 이렇습니다. **취소는 장애가 아니고, 타임아웃은 장애다.** `resilience4j-kotlin` 의 거의 모든 설계 결정이 이 한 문장에서 나왔고, `Cancellation.kt` 7줄과 `TimeLimiter.kt` 의 예외 변환 한 줄이 그 구현체입니다.
+가장 짧게 요약하면 이렇습니다. **취소는 장애가 아니고, 타임아웃은 장애다.** `resilience4j-kotlin` 의 설계는 이 한 문장으로 수렴해 왔고(#658 취소 제외 → #1168 타임아웃 변환 → #1633 선택적 기록), `Cancellation.kt` 7줄과 `TimeLimiter.kt` 의 예외 변환 한 줄이 그 구현체입니다.
 
 ---
 
@@ -402,4 +404,4 @@ class CancellationAccountingTest {
 - 후행: [MDC·컨텍스트 전파 — 스레드가 바뀌면 사라지는 것들](./10-context-propagation.md)
 
 ---
-*Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+*Resilience4j master 7e3ab525(2026-09-23, v2.4.0 이후) 기준 · v2.4.0 과 다른 부분은 본문에 표시*

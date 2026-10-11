@@ -18,7 +18,7 @@
 | 컴포넌트 | 구현 방식 | 전용 Subscriber |
 |---|---|---|
 | CircuitBreaker | `MonoOperator`/`FluxOperator` 직접 구현 | `CircuitBreakerSubscriber` |
-| Bulkhead | 동일 + **비동기 permission 대기** | `BulkheadSubscriber`, `PermissionAwaitingSubscription` |
+| Bulkhead | 동일 + **비동기 permission 대기**(master 전용, v2.4.0 은 동기 획득) | `BulkheadSubscriber`, `PermissionAwaitingSubscription`(master 전용) |
 | RateLimiter | 동일 + 구독 지연 | `RateLimiterSubscriber` (`CorePublisherRateLimiterOperator` 공용) |
 | Timer | 동일 | `TimerSubscriber` |
 | **Retry** / **TimeLimiter** | 기존 Reactor 오퍼레이터 조합 (`doOnNext`+`retryWhen` / `timeout`) | 없음 |
@@ -56,11 +56,11 @@ if (publisher instanceof Mono) {
 
 `CircuitBreakerSubscriber` 는 Flux 일 때(`singleProducer = false`) **`hookOnComplete()` 에서만** 성공을 기록합니다. 무한 스트림(SSE, Kafka consumer, `Flux.interval`)은 complete 하지 않습니다. 결과는:
 
-permission 은 구독 시 한 번 소비되고 **반납되지 않고**, 성공이 기록되지 않으므로 슬라이딩 윈도가 비어 있고, 에러가 날 때만 실패가 쌓여 **실패만 집계되는 서킷**이 됩니다. 서킷은 "짧은 요청/응답"을 전제로 설계된 장치입니다. 스트림 연결 자체에는 서킷이 아니라 재연결 백오프를 씁니다.
+CLOSED 상태의 `tryAcquirePermission()` 은 `isClosed.get()` 을 돌려줄 뿐이라 소비되는 permit 이 없지만, 성공은 complete(또는 원소 방출 후 cancel) 때만 기록되므로 연결이 오류로 끊길 때마다 실패만 쌓여 **실패만 집계되는 서킷**이 됩니다. HALF_OPEN 에서는 무한 스트림이 `permittedNumberOfCallsInHalfOpenState` 의 시험 호출 슬롯을 계속 점유해 상태 판정이 지연됩니다. 서킷은 "짧은 요청/응답"을 전제로 설계된 장치입니다. 스트림 연결 자체에는 서킷이 아니라 재연결 백오프를 씁니다.
 
 ### WebClient 에는 타임아웃이 세 겹 있다
 
-Reactor Netty `HttpClient.responseTimeout(...)`(소켓 레벨), TimeLimiter(논리적 호출 한계 + 지표·이벤트), Reactor `timeout()`(로컬 파이프라인). 1차 방어선은 **`responseTimeout`** 이어야 합니다 — 실제로 소켓을 닫고 커넥션 풀을 돌려주는 유일한 계층입니다. TimeLimiter 를 1차로 두면 Reactor 구독만 취소되고 Netty 커넥션 정리는 취소 전파에 의존합니다. 3절 끝에서 값 배치를 제시합니다.
+Reactor Netty `HttpClient.responseTimeout(...)`(소켓 레벨), TimeLimiter(논리적 호출 한계 + 지표·이벤트), Reactor `timeout()`(로컬 파이프라인). 1차 방어선은 **`responseTimeout`** 이어야 합니다 — 소켓 레벨에서 직접 타임아웃을 거는 계층으로, 취소 전파에 기대지 않고 커넥션을 정리합니다. TimeLimiter 를 1차로 두면 Reactor 구독만 취소되고 Netty 커넥션 정리는 취소 전파에 의존합니다. 3절 끝에서 값 배치를 제시합니다.
 
 ---
 
@@ -79,7 +79,7 @@ sequenceDiagram
     participant B as Bulkhead /<br/>CircuitBreaker
 
     D->>OP: subscribe(actual)
-    OP->>B: acquirePermissionAsync() / tryAcquirePermission()
+    OP->>B: acquirePermissionAsync()(Bulkhead, master) / tryAcquirePermission()
 
     alt 즉시 거절
         B-->>OP: BulkheadFullException / false
@@ -96,7 +96,7 @@ sequenceDiagram
         U->>S: onComplete()
         S->>B: (Flux) 여기서 성공 기록
         S->>D: onComplete()
-    else 대기 후 허용 (Bulkhead only)
+    else 대기 후 허용 (Bulkhead only, master 전용 — v2.4.0 은 구독 스레드 블로킹)
         B-->>OP: 미완료 CompletableFuture
         OP->>D: actual.onSubscribe(PA)
         PA->>PA: await() — permission.whenComplete
@@ -149,11 +149,11 @@ protected void hookOnError(Throwable e) {
 - **Mono** — 첫 `onNext` 에서 `onResult(duration, unit, value)`. `onResult` 를 쓰는 이유는 `recordResultPredicate` 가 **값 자체를 보고 실패로 판정**할 수 있게 하려는 것입니다. 이후 `onComplete` 는 `successSignaled` CAS 가 막습니다.
 - **Flux** — `hookOnNext` 에서 아무것도 기록하지 않고 `hookOnComplete` 에서 **스트림 전체를 성공 1건**으로 기록합니다. duration 은 구독~완료의 **전체 시간**이라, 원소 10만 개를 흘린 Flux 도 서킷에는 호출 1건입니다.
 - **취소** — `eventWasEmitted` 로 갈립니다. 값을 하나라도 내보냈으면 성공으로, 전혀 못 내보냈으면 permit **반납**(`releasePermission()` 은 지표에 성공/실패를 남기지 않습니다).
-- **에러는 즉시 기록**되고 CAS 보호가 없습니다. `onNext` 후 `onError` 면 Mono 는 성공 1건 + 실패 1건이 모두 기록됩니다.
+- **에러는 즉시 기록**되고 CAS 보호가 없습니다. Reactor 의 Mono 계약은 "onNext 후 onComplete, 또는 onError 단독"이지만, (계약을 어기는 source 가 `onNext` 뒤 `onError` 를 보내면) 성공 1건 + 실패 1건이 모두 기록됩니다 — 에러 경로에 CAS 가 없기 때문입니다.
 
 ### 취소 전파 — permit 누수를 막는 두 지점
 
-Bulkhead 는 v2.4.0 에서 **비동기 permission 획득**으로 바뀌었습니다(커밋 `7e3ab525`, Issue #1592). 대기 중 취소라는 새 경계가 생겼고, `PermissionAwaitingSubscription.await()` 가 그것을 처리합니다.
+Bulkhead 의 **비동기 permission 획득**은 v2.4.0 이후 master 에 merge 된 미릴리스 변경입니다(PR #2506, 커밋 `7e3ab525`, 2026-09-23, Issue #1592). v2.4.0 에서는 `MonoBulkhead` 가 `tryAcquirePermission()` 으로 동기 획득하므로, `maxWaitDuration` 을 주면 구독 스레드가 블로킹됩니다(Issue #1592 "Reactor Bulkhead operator blocks if max wait duration is set" 가 바로 이 문제). master 에서는 대기 중 취소라는 새 경계가 생겼고, `PermissionAwaitingSubscription.await()` 가 그것을 처리합니다. 아래 첫 번째 지점과 `acquirePermissionAsync()` 서술은 master 기준입니다.
 
 ```java
 void await() {
@@ -176,17 +176,17 @@ public void cancel() { super.cancel(); permission.cancel(false); }
 - `cancel()` 은 들어온 subscription 을 끊고 **대기 중인 permission future 도 취소**합니다. `SemaphoreBulkhead.acquirePermissionAsync()` 의 `whenComplete` 콜백이 `pendingPermissions` 큐에서 자기를 제거하고, `CancellationException` 이면 `BulkheadOnCallRejectedEvent` 를 **발행하지 않습니다** — 거절이 아니라 철회이므로.
 - permission 이 먼저 허용됐는데 그 사이 취소됐다면 `isCancelled()` 분기에서 `releasePermission()` 합니다. 주석이 이유를 말합니다 — upstream 을 구독하면 **subscribe-time 부작용**(HTTP 요청 발송)이 일어나는데 아무도 소비하지 않을 것이므로.
 
-두 번째 지점은 `BulkheadSubscriber.hookOnCancel()` — `completedSignaled.compareAndSet(false, true)` 안에서 `eventWasEmitted` 면 `onComplete()`, 아니면 `releasePermission()` 입니다. 이 CAS 가 `onComplete`/`onError`/`cancel` 중 **정확히 한 번만** permit 을 돌려주도록 보장합니다. 없으면 완료 직후 오는 취소에서 double release 가 나 permit 이 늘어납니다.
+두 번째 지점은 `BulkheadSubscriber.hookOnCancel()`(v2.4.0 과 master 동일) — `completedSignaled.compareAndSet(false, true)` 안에서 `eventWasEmitted` 면 `onComplete()`, 아니면 `releasePermission()` 입니다. Mono 는 첫 `onNext` 에서 이미 `bulkhead.onComplete()` 로 permit 을 반납합니다. `completedSignaled` CAS 는 그 뒤 오는 cancel/complete 가 permit 을 다시 반납하지 않도록 막습니다(PR #1571, Issue #1569 "bulkhead.onComplete() being called more than once"). terminal 신호와 cancel 사이의 상호배제는 `BaseSubscriber` 가 이미 보장합니다(`onComplete`/`onError` 가 subscription 을 cancelled 로 바꾸고, `cancel()` 은 `Operators.terminate` 성공 시에만 `hookOnCancel` 호출). `hookOnError` 는 CAS 없이 `!completedSignaled.get()` 만 확인합니다.
 
 ### `AcquirePermissionCancelledException` 은 여기 안 나온다
 
 이 예외를 Reactor 취소와 연결하는 설명을 종종 보는데, 소스는 다릅니다. 던지는 곳은 두 군데뿐이고 **둘 다 블로킹 경로**입니다 — `SemaphoreBulkhead.acquirePermission()`(`tryAcquirePermission()` 실패 후 `Thread.currentThread().isInterrupted()` 일 때)과 `RateLimiter.waitForPermission()`(대기 중 스레드 인터럽트, javadoc 명시). 메시지도 `"Thread was interrupted while waiting for a permission"` 입니다.
 
-**Reactor 구독 취소는 스레드 인터럽트가 아니므로** 이 예외가 나오지 않습니다. 반응형 취소는 `CancellationException` 으로 표현되고, `PermissionAwaitingSubscription.await()` 이 그것을 삼켜 downstream 에 `onError` 를 보내지 않습니다(이미 취소한 구독자에게 에러를 보내는 건 스펙 위반).
+**Reactor 구독 취소는 스레드 인터럽트가 아니므로** 이 예외가 나오지 않습니다. master 의 비동기 Bulkhead 경로에서 반응형 취소는 `CancellationException` 으로 표현되고, `PermissionAwaitingSubscription.await()` 이 그것을 삼켜 downstream 에 `onError` 를 보내지 않습니다(이미 취소한 구독자에게 에러를 보내는 건 스펙 위반).
 
 ### `PermissionAwaitingSubscription` 의 배압, 그리고 RateLimiter 의 다른 선택
 
-이름 때문에 rate limit + 배압을 함께 다루는 클래스처럼 보이지만 패키지가 `reactor.bulkhead.operator` 입니다. 하는 일은 **permission 을 아직 못 얻은 상태의 Subscription 자리를 메우는 것**입니다. `Operators.DeferredSubscription` 을 상속했으므로 대기 중 downstream 이 보낸 `request(n)` 이 **누적**되고 실제 subscription 이 `set(s)` 로 들어올 때 한꺼번에 전달됩니다 — 배압 신호를 잃지 않으면서 구독만 미루는 구조이고, `onSubscribe(Subscription s)` 가 `set(s)` 한 줄인 이유입니다.
+(master 전용 클래스 — v2.4.0 에는 없습니다.) 이름 때문에 rate limit + 배압을 함께 다루는 클래스처럼 보이지만 패키지가 `reactor.bulkhead.operator` 입니다. 하는 일은 **permission 을 아직 못 얻은 상태의 Subscription 자리를 메우는 것**입니다. `Operators.DeferredSubscription` 을 상속했으므로 대기 중 downstream 이 보낸 `request(n)` 이 **누적**되고 실제 subscription 이 `set(s)` 로 들어올 때 한꺼번에 전달됩니다 — 배압 신호를 잃지 않으면서 구독만 미루는 구조이고, `onSubscribe(Subscription s)` 가 `set(s)` 한 줄인 이유입니다.
 
 RateLimiter 쪽은 전혀 다른 방식입니다.
 
@@ -241,7 +241,7 @@ private Publisher<T> withTimeout(Flux<T> upstream) {
 
 | 계층 | 값 예시 | 역할 |
 |---|---|---|
-| `HttpClient.responseTimeout` | `2s` | **1차 방어선.** 소켓을 닫고 커넥션을 풀에 반납 |
+| `HttpClient.responseTimeout` | `2s` | **1차 방어선.** 소켓 레벨에서 직접 타임아웃 — 취소 전파에 기대지 않고 커넥션 정리 |
 | TimeLimiter `timeoutDuration` | `2500ms` | 논리적 상한 + 지표/이벤트. responseTimeout 보다 길게 |
 | CircuitBreaker `slowCallDurationThreshold` | `1s` | 느림 판정 — 타임아웃보다 **짧아야** 의미가 있다 |
 
@@ -308,11 +308,11 @@ resilience4j:
 
 `ratelimiter.timeoutDuration` 은 반응형이므로 짧게 둡니다(`Mono.delay` 로 미뤄질 뿐 블로킹이 아님). `timelimiter.timeoutDuration` 은 `responseTimeout`(2s) 보다 길게.
 
-`recordExceptions` 에 `TimeoutException` 을 넣어야 TimeLimiter 의 타임아웃이 서킷 실패로 집계됩니다. 빠뜨리면 느려지기만 하고 서킷이 열리지 않습니다.
+기본값(`recordExceptions` 미지정)은 모든 예외를 실패로 기록합니다. 위처럼 `recordExceptions` 를 명시적으로 나열할 때는 `TimeoutException` 을 포함해야 실패로 집계됩니다. 빠지면 그 타임아웃은 '느린 성공'으로 기록되어(`handleThrowable` 이 비기록 예외를 `onSuccess(duration)` 으로 처리) 실패율이 아니라 slow call rate 로만 반영됩니다.
 
 ### 취소 시 permit 반납을 검증하는 테스트
 
-레포의 `BulkheadOperatorQueueingTest` 패턴입니다. 대기 중 취소와 진행 중 취소를 각각 확인합니다.
+첫 번째는 master 의 `BulkheadOperatorQueueingTest` 패턴(v2.4.0 이후 — v2.4.0 에서는 `maxWaitDuration` 동안 구독 스레드가 블로킹되어 통과하지 않습니다), 두 번째는 CircuitBreaker 의 취소 동작을 확인하기 위해 새로 작성한 예시입니다. 레포에서 Bulkhead 의 진행 중 취소에 대응하는 테스트는 `shouldReleasePermissionWhenSubscriptionIsCancelledAfterQueuedGrant` 입니다.
 
 ```java
 @Test
@@ -356,10 +356,10 @@ void cancelBeforeFirstElementMustNotRecordCall() {
 // 하지 마세요
 return webClient.get().uri("/prices/stream").retrieve()
     .bodyToFlux(PriceTick.class)                                  // 종료되지 않는 SSE
-    .transformDeferred(CircuitBreakerOperator.of(circuitBreaker)); // ← permit 영구 점유
+    .transformDeferred(CircuitBreakerOperator.of(circuitBreaker)); // ← 성공이 기록되지 않음
 ```
 
-구독 시 permission 하나를 소비하는데 `hookOnComplete` 가 영원히 안 오므로 **성공이 기록되지 않습니다.** 연결이 끊겨 `onError` 가 올 때만 실패 1건이 쌓이고, 재연결마다 실패만 누적되어 **성공 0 / 실패 N** 으로 서킷이 열립니다. 열린 뒤에는 재연결 자체가 `CallNotPermittedException` 으로 막혀 스트림이 복구되지 않습니다 — 서킷이 복구를 방해하는 꼴입니다.
+`hookOnComplete` 가 영원히 안 오므로 성공은 원소를 낸 뒤 cancel 될 때(`hookOnCancel` 의 `eventWasEmitted` 분기)만 기록됩니다. 연결이 끊겨 `onError` 가 올 때마다 실패 1건이 쌓이고, 취소 없이 재연결만 반복되면 실패만 누적되어 **성공 0 / 실패 N** 으로 서킷이 열립니다. HALF_OPEN 에서는 스트림 하나가 시험 호출 슬롯을 계속 점유합니다. 열린 뒤에는 재연결 자체가 `CallNotPermittedException` 으로 막혀 스트림이 복구되지 않습니다 — 서킷이 복구를 방해하는 꼴입니다.
 
 올바른 형태는 서킷을 빼고 Reactor 재연결 전략을 쓰는 것입니다.
 
@@ -383,13 +383,14 @@ return webClient.get().uri("/prices/stream").retrieve()
 | `transform` vs `transformDeferred` | **항상 `transformDeferred`.** `RetryOperator.apply()` 가 `Retry.AsyncContext` 를 만들므로 `transform` 은 모든 구독이 재시도 예산을 공유 |
 | 지원 타입 | `Mono`, `Flux` 만. 그 외는 `IllegalPublisherException`. `AbstractSubscriber` 는 `hookOnSubscribe` 에서 **`this`** 를 넘겨 `cancel()` 을 가로채고, 배압은 `BaseSubscriber` 가 그대로 전달 |
 | 성공 기록 시점 | Mono = 첫 `onNext` 의 `onResult(duration, unit, value)`(`recordResultPredicate` 가 값을 본다) / Flux = **`hookOnComplete` 에서 1건**, duration 은 구독~완료 전체 |
-| 무한 스트림 | complete 가 없어 permit 영구 점유 + 실패만 집계 → 서킷 걸지 않는다 |
-| 취소 시 | CB·Bulkhead 모두 `eventWasEmitted` ? `onComplete()/onSuccess()` : `releasePermission()`. Bulkhead 는 `completedSignaled` CAS 로 정확히 1회 보장. 대기 중 취소는 `PermissionAwaitingSubscription.cancel()` → `permission.cancel(false)`, 허용이 먼저 왔으면 `isCancelled()` 분기에서 반납 |
+| 무한 스트림 | complete 가 없어 성공은 원소 방출 후 cancel 때만 기록, 오류 끊김마다 실패만 집계(HALF_OPEN 에선 시험 슬롯 점유) → 서킷 걸지 않는다 |
+| 취소 시 | CB·Bulkhead 모두 `eventWasEmitted` ? `onComplete()/onSuccess()` : `releasePermission()`. Bulkhead 의 `completedSignaled` CAS 는 Mono 가 첫 `onNext` 에서 이미 반납한 뒤의 cancel/complete 재반납을 막음(PR #1571, `hookOnError` 는 `get()` 만 확인). (master 전용) 대기 중 취소는 `PermissionAwaitingSubscription.cancel()` → `permission.cancel(false)`, 허용이 먼저 왔으면 `isCancelled()` 분기에서 반납 |
 | `AcquirePermissionCancelledException` | **블로킹 경로 전용** (`SemaphoreBulkhead.acquirePermission()`, `RateLimiter.waitForPermission()` 의 스레드 인터럽트). Reactor 취소에서는 나오지 않음 |
-| `PermissionAwaitingSubscription` | Bulkhead 전용. `Operators.DeferredSubscription` 상속으로 대기 중 `request(n)` 을 누적해 배압 유지 |
+| `PermissionAwaitingSubscription` | Bulkhead 전용, master 전용(PR #2506 — v2.4.0 은 동기 획득·`maxWaitDuration` 시 블로킹). `Operators.DeferredSubscription` 상속으로 대기 중 `request(n)` 을 누적해 배압 유지 |
 | RateLimiter 대기 | `reservePermission()` → `Mono.delay()` 로 구독 지연. 음수면 `RequestNotPermitted`. **대기 구간의 취소는 전달되지 않아 permit 이 소비됨** |
 | `RetryOperator` / `TimeLimiterOperator` vs 순수 Reactor | 설정 외부화 · 결과 기반 재시도(`RetryDueToResultException`) · 지표/이벤트 · `Error` 재시도 제외. `TimeLimiter` 는 **Flux 에는 쓰지 않는다** |
-| WebClient 역할 분담 | `responseTimeout`(2s) **1차** → TimeLimiter(2.5s) 논리 상한 → `slowCallDurationThreshold`(1s) 느림 판정 || 올바른 체인 순서 | 안쪽 TimeLimiter → RateLimiter → 바깥 CircuitBreaker. `recordExceptions` 에 `TimeoutException` 필수 |
+| WebClient 역할 분담 | `responseTimeout`(2s) **1차** → TimeLimiter(2.5s) 논리 상한 → `slowCallDurationThreshold`(1s) 느림 판정 |
+| 올바른 체인 순서 | 안쪽 TimeLimiter → RateLimiter → 바깥 CircuitBreaker. `recordExceptions` 를 명시적으로 나열한다면 `TimeoutException` 포함(기본값은 모든 예외 기록) |
 
 ---
 
@@ -399,4 +400,4 @@ return webClient.get().uri("/prices/stream").retrieve()
 - 참고: [TimeLimiter 와 조합](../main/12-timelimiter-and-composition.md) · [Bulkhead](../main/11-bulkhead.md) · [컨텍스트 전파](./10-context-propagation.md)
 
 ---
-*Resilience4j v2.4.0 기준 · 소스 커밋 7e3ab525*
+*Resilience4j master 7e3ab525(2026-09-23, v2.4.0 이후) 기준 · v2.4.0 과 다른 부분은 본문에 표시*
