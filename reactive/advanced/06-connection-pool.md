@@ -56,7 +56,7 @@ static final class PoolKey {
 | `pendingAcquireTimeout` | **45,000ms (45초)** | `reactor.netty.pool.acquireTimeout` | `ConnectionProvider.java:63-65`, `ReactorNetty.java:138` |
 | `maxIdleTime` | **없음(비활성)** — 필드가 `null` | `reactor.netty.pool.maxIdleTime` (기본 `-1`) | `ConnectionProvider.java:70-72`, `:536`, `:549-551` |
 | `maxLifeTime` | **없음(비활성)** — 필드가 `null` | `reactor.netty.pool.maxLifeTime` (기본 `-1`) | `ConnectionProvider.java:77-79`, `:537`, `:552-554` |
-| `leasingStrategy` | **`"fifo"`** (= LRU) | `reactor.netty.pool.leasingStrategy` | `ConnectionProvider.java:98`, `:84`, `:89`, `ReactorNetty.java:161` |
+| `leasingStrategy` | **`"fifo"`** (= LRU) | `reactor.netty.pool.leasingStrategy` | `ConnectionProvider.java:98-99`, `:84`, `:89`, `ReactorNetty.java:161` |
 | `evictInBackground` | **`Duration.ZERO`** (비활성) | — | `ConnectionProvider.java:529`, `:532` |
 | `disposeInactivePoolsInBackground` | **`Duration.ZERO`** (비활성) | — | `ConnectionProvider.java:396`, `:400` |
 | `disposeTimeout` | **`null`** (graceful shutdown 없음) | — | `ConnectionProvider.java:402` |
@@ -128,7 +128,7 @@ else {
 
 **`evictInBackground`.** `Duration.ZERO`면 비활성이고(`ConnectionProvider.java:529`), 이때 eviction 검사는 **커넥션을 꺼내는 순간에만** 일어난다. 즉 트래픽이 없으면 죽은 커넥션이 그대로 남아 있다가 다음 요청이 그걸 집는다. 값을 주면 reactor-pool이 주기적으로 풀을 훑어 eviction 대상을 제거한다.
 
-> v1.2.18에는 `evictInBackground(Duration)` **한 가지 오버로드만** 있다(`ConnectionProvider.java:762`). `Scheduler`를 함께 받는 오버로드는 1.3+에서 추가된 것이므로 여기서는 쓸 수 없다. 1.3 이후 차이는 [Boot 4 / Spring 7 마이그레이션](12-boot4-spring7-migration.md)을 참고한다.
+> v1.2.18에는 `evictInBackground(Duration)` **한 가지 오버로드만** 있다(`ConnectionProvider.java:762`). `Scheduler`를 함께 받는 오버로드는 1.3+에서 추가된 것이므로 여기서는 쓸 수 없다 — 즉 **v1.2.18에서는 이 점검이 도는 스케줄러를 고를 방법이 아예 없다.** 아래 `disposeInactivePoolsInBackground`가 쓰는 `Schedulers.parallel()`은 **커넥션 eviction이 아니라 풀 폐기용**이므로 혼동하지 않는다. 1.3 이후 차이는 [Boot 4 / Spring 7 마이그레이션](12-boot4-spring7-migration.md)을 참고한다.
 
 **`disposeInactivePoolsInBackground(disposeInterval, poolInactivity)`.** 풀 **자체**를 지우는 기능이다. `evictInBackground`가 커넥션을 지우는 것과 구분된다. "비어 있음"의 정의가 javadoc에 명시돼 있다 — active 커넥션도, idle 커넥션도, 대기 중 acquire도 없는 상태(`ConnectionProvider.java:440-451`). 이 유지보수 작업만은 스케줄러가 소스에 박혀 있다.
 
@@ -619,7 +619,7 @@ HTTP/2에서는 `Http2Pool`이 풀 계측을 지원하지 않으므로(`Http2Poo
 -Dreactor.netty.pool.leasingStrategy=lifo
 ```
 
-이 값들은 **클래스 로딩 시점에 한 번 읽힌다**(`ConnectionProvider.java:54-98`의 `static` 필드 초기화). 런타임에 `System.setProperty()`로 바꿔도 반영되지 않는다. `maxConnections`는 전역 공유 풀에 영향을 주지 않는다는 점도 기억해야 한다 — `TcpResources.create()`가 `500`을 명시로 넘기기 때문이다(`TcpResources.java:411`).
+이 값들은 **클래스 로딩 시점에 한 번 읽힌다**(`ConnectionProvider.java:54-99`의 `static` 필드 초기화). 런타임에 `System.setProperty()`로 바꿔도 반영되지 않는다. `maxConnections`는 전역 공유 풀에 영향을 주지 않는다는 점도 기억해야 한다 — `TcpResources.create()`가 `500`을 명시로 넘기기 때문이다(`TcpResources.java:411`).
 
 ---
 

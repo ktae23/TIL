@@ -316,7 +316,7 @@ public synchronized Throwable fillInStackTrace() {
 reactor-netty가 "이건 그냥 TCP 레벨에서 끊긴 것"이라고 판정하는 함수다. 구현이 **예외 메시지 문자열 매칭**이라는 점이 중요하다.
 
 ```java
-// reactor-netty-core/src/main/java/reactor/netty/channel/AbortedException.java:45-56
+// reactor-netty-core/src/main/java/reactor/netty/channel/AbortedException.java:46-56
 public static boolean isConnectionReset(Throwable err) {
     return (err instanceof AbortedException && CONNECTION_CLOSED_BEFORE_SEND.equals(err.getMessage())) ||
            (err instanceof IOException && (err.getMessage() == null ||
@@ -438,7 +438,7 @@ poolBuilder = poolBuilder.evictionPredicate(defaultEvictionPredicate.or((poolabl
 
 > v1.2.18에는 `evictInBackground(Duration)` 오버로드만 있다(`ConnectionProvider.java:762`). 스케줄러를 직접 지정하는 오버로드는 1.3+에서 추가됐다. [Boot 4 / Spring 7 마이그레이션](12-boot4-spring7-migration.md) 참고.
 
-풀 **자체**를 지우는 `disposeInactivePoolsInBackground`는 명시적으로 `Schedulers.parallel()`을 쓴다(`PooledConnectionProvider.java:409-412`). 이건 커넥션 eviction과 다른 기능이다.
+풀 **자체**를 지우는 `disposeInactivePoolsInBackground`는 명시적으로 `Schedulers.parallel()`을 쓴다 — `scheduleInactivePoolsDisposal()`(`PooledConnectionProvider.java:408-413`)이고, 이 파일에서 `Schedulers`를 쓰는 **유일한** 지점이다. **커넥션 eviction과 혼동하지 않는다**: 저 스케줄러는 풀 폐기용이고, 커넥션 eviction 쪽은 v1.2.18에서 스케줄러를 고를 API조차 없다.
 
 **실무 규칙**:
 
@@ -684,7 +684,7 @@ HttpClient strict = HttpClient.create(provider)
         .disableRetry(true);
 
 // 멱등 요청에만 적용할 재시도 스펙. AbortedException.isConnectionReset(Throwable) 은
-// public static 이므로 그대로 재사용할 수 있다 (AbortedException.java:45-56).
+// public static 이므로 그대로 재사용할 수 있다 (AbortedException.java:46-56).
 Retry idempotentConnectionResetRetry = Retry.backoff(2, Duration.ofMillis(50))
         .maxBackoff(Duration.ofMillis(500))
         .jitter(0.5d)
@@ -707,7 +707,7 @@ Retry idempotentConnectionResetRetry = Retry.backoff(2, Duration.ofMillis(50))
 - **`registerClose()`가 물리적 종료를 풀에 반영한다**(`DefaultPooledConnectionProvider.java:321-334`). `closeFuture` 리스너가 `channel.attr(OWNER)`를 보고, `DisposableAcquire`면(= 사용 중) `invalidate()`를 부른다. 반납 후 유휴 상태에서 닫힌 커넥션은 `OWNER`가 `emptyListener()`라서 **리스너가 아무것도 하지 않고**, 다음 acquire 때 eviction predicate(`:612-613`의 `!isActive() || !isPersistent()`)로 제거된다.
 - **`PrematureCloseException`의 메시지 4종이 서버 상황을 가리킨다**(`HttpClientOperations.java:360-388`). `BEFORE send operation`(실제로는 `AbortedException`) = 풀의 커넥션이 이미 죽었다 → `maxIdleTime` 문제. `BEFORE response, while sending request body` = 서버가 요청을 읽다 포기. `BEFORE response` = 요청은 받았는데 응답을 못 만들었다. `DURING response` = 응답 전송 중 끊김.
 - **`PrematureCloseException`은 스택트레이스가 없다.** `fillInStackTrace()`가 `this`를 반환한다(`PrematureCloseException.java:44-48`). `IOException` 계열이고, **메시지 문자열이 유일한 진단 정보**이므로 반드시 로그에 남긴다. `addOutboundErrorCause()`로 붙은 cause도 확인한다.
-- **`AbortedException.isConnectionReset()`은 문자열 패턴 매칭이다**(`AbortedException.java:45-56`). `AbortedException` + 정확한 상수 메시지, 또는 `IOException`/`SocketException`의 메시지가 **`null`** 이거나 `"Broken pipe"` / `"Connection reset by peer"`를 포함할 때 참이다. 플랫폼/로케일 의존적이고, **`PrematureCloseException`은 메시지가 있으므로 거짓**이다.
+- **`AbortedException.isConnectionReset()`은 문자열 패턴 매칭이다**(`AbortedException.java:46-56`). `AbortedException` + 정확한 상수 메시지, 또는 `IOException`/`SocketException`의 메시지가 **`null`** 이거나 `"Broken pipe"` / `"Connection reset by peer"`를 포함할 때 참이다. 플랫폼/로케일 의존적이고, **`PrematureCloseException`은 메시지가 있으므로 거짓**이다.
 - **`disableRetry` 기본값은 `false`** 라 connection-reset에 **1회 자동 재시도**가 켜져 있다(`HttpClientConfig.java:394`, `HttpClientConnect.java:515`). 재시도는 **헤더 미전송 시에만** 한다. `hasSentHeaders()`면 `markPersistent(false)` + `shouldRetry = false` + WARN 로그다(`HttpClientConnect.java:375-410`). 실제 재구독은 `test(Throwable)`에서 `shouldRetry = false`로 못 박고 같은 URI로 리다이렉트하는 방식이다(`:732-735`). 멱등성은 검사하지 않는다.
 - **그래도 서버 idle timeout이 풀 `maxIdleTime`보다 짧으면 반복 실패한다.** 재시도가 1회뿐이고 풀 안의 커넥션이 전부 같은 이유로 죽어 있어서, 두 번째 시도도 죽은 커넥션을 집는다. 저트래픽 구간에서 특히 잘 재현된다.
 - **실무 규칙: `maxIdleTime` < 서버 keep-alive timeout** (1/2~1/3 권장). `maxIdleTime`은 기본 eviction predicate에 합쳐지지만(`PooledConnectionProvider.java:598-601`) **꺼낼 때만 평가**되므로 `evictInBackground`를 함께 켜야 한다. 기본값 `Duration.ZERO`면 백그라운드 점검이 아예 안 돈다(`ConnectionProvider.java:529`).

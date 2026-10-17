@@ -250,13 +250,10 @@ mockwebserver 3.14.9 `MockResponse`: `setResponseCode(int)`, `setHeader(String, 
 |---|---|---|
 | `DISCONNECT_AT_START` | 요청 읽기 전에 끊기 | connection reset — netty 자동 재시도 트리거 |
 | `DISCONNECT_AFTER_REQUEST` | 요청 받고 응답 전에 끊기 | 서버 도달 후 실패 |
-| `DISCONNECT_DURING_RESPONSE_BODY` | 본문 전송 중 끊기 | 부분 수신 후 실패 |
-| `DISCONNECT_DURING_REQUEST_BODY` | 요청 본문 수신 중 끊기 | 업로드 실패 |
-| `NO_RESPONSE` | 응답을 아예 안 보냄(소켓 유지) | read/response timeout |
-| `STALL_SOCKET_AT_START` | 소켓을 멈춤 | connect 후 무응답 |
+| `DISCONNECT_DURING_RESPONSE_BODY` / `…REQUEST_BODY` | 전송 중 끊기 | 부분 수신 / 업로드 실패 |
+| `NO_RESPONSE` / `STALL_SOCKET_AT_START` | 응답 없음(소켓 유지) / 소켓 정지 | read·response timeout |
 | `FAIL_HANDSHAKE` | TLS 핸드셰이크 실패 | TLS 오류 경로 |
-| `KEEP_OPEN` | 기본 — keep-alive 유지 | 커넥션 재사용 테스트 |
-| `DISCONNECT_AT_END` | 응답 후 끊기 | 재사용 불가 상황 |
+| `KEEP_OPEN`(기본) / `DISCONNECT_AT_END` | keep-alive 유지 / 응답 후 끊기 | 커넥션 재사용 / 재사용 불가 |
 | `RESET_STREAM_AT_START` | HTTP/2 스트림 리셋 | h2 테스트 |
 | `SHUTDOWN_SERVER_AFTER_RESPONSE`, `UPGRADE_TO_SSL_AT_END`, `SHUTDOWN_INPUT_AT_END`, `SHUTDOWN_OUTPUT_AT_END`, `EXPECT_CONTINUE`, `CONTINUE_ALWAYS` | 프로토콜 세부 | 특수 케이스 |
 
@@ -307,27 +304,14 @@ public Mono<Order> findById(String orderId) {
 ```java
 package com.example.client.order;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-import reactor.util.retry.Retry;
-
-import org.springframework.core.codec.DecodingException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.ClientRequest;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import static org.assertj.core.api.Assertions.assertThat;
+// java.time.Duration, java.util.{ArrayList,List}
+// org.junit.jupiter.api.Test
+// reactor.core.publisher.Mono, reactor.test.StepVerifier, reactor.util.retry.Retry
+// org.springframework.core.codec.DecodingException
+// org.springframework.http.{HttpHeaders,HttpMethod,HttpStatus,MediaType}
+// org.springframework.web.reactive.function.client.{ClientRequest,ClientResponse,
+//         ExchangeFunction,WebClient,WebClientResponseException}
+// static org.assertj.core.api.Assertions.assertThat
 
 /** HTTP 없이 OrderClient의 요청 조립과 응답 처리를 검증한다. */
 class OrderClientExchangeFunctionTests {
@@ -408,24 +392,13 @@ class OrderClientExchangeFunctionTests {
 ```java
 package com.example.client.order;
 
-import java.time.Duration;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-import reactor.util.retry.Retry;
-
-import com.example.client.resilience.RetryDecision;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import static org.assertj.core.api.Assertions.assertThat;
+// java.time.Duration, java.util.concurrent.atomic.AtomicInteger, org.junit.jupiter.api.Test
+// reactor.core.publisher.Mono, reactor.test.StepVerifier, reactor.util.retry.Retry
+// com.example.client.resilience.RetryDecision
+// org.springframework.http.{HttpHeaders,HttpStatus,MediaType}
+// org.springframework.web.reactive.function.client.{ClientResponse,ExchangeFunction,
+//         WebClient,WebClientResponseException}
+// static org.assertj.core.api.Assertions.assertThat
 
 /**
  * 재시도 간격을 가상 시간으로 검증한다. 실시간 대기 0초.
@@ -496,32 +469,19 @@ class OrderClientRetryTimingTests {
 ```java
 package com.example.client.order;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
-
-import io.netty.channel.ChannelOption;
+// java.io.IOException, java.time.Duration, java.util.concurrent.TimeUnit
+// java.util.function.{Consumer,UnaryOperator}, io.netty.channel.ChannelOption
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import okhttp3.mockwebserver.SocketPolicy;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import reactor.netty.http.client.HttpClient;
-import reactor.test.StepVerifier;
-import reactor.util.retry.Retry;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import static org.assertj.core.api.Assertions.assertThat;
+// org.junit.jupiter.api.{AfterEach,BeforeEach,Test}
+// reactor.netty.http.client.HttpClient, reactor.test.StepVerifier, reactor.util.retry.Retry
+// org.springframework.http.{HttpHeaders,MediaType}
+// org.springframework.http.client.reactive.ReactorClientHttpConnector
+// org.springframework.web.reactive.function.client.{WebClient,
+//         WebClientRequestException,WebClientResponseException}
+// static org.assertj.core.api.Assertions.assertThat
 
 /**
  * 실제 TCP/HTTP 왕복을 거친다. 타임아웃·연결 끊김을 검증한다.
@@ -591,18 +551,8 @@ class OrderClientIntegrationTests {
                 .verify(Duration.ofSeconds(3));
     }
 
-    @Test
-    void 본문_지연도_responseTimeout에_잡힌다() {
-        // responseTimeout은 "응답 완료"까지를 재므로 헤더를 받은 뒤여도 끊긴다
-        enqueue(response -> response
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBodyDelay(RESPONSE_TIMEOUT.toMillis() * 3, TimeUnit.MILLISECONDS)
-                .setBody("{\"id\":\"o-1\",\"amount\":12000}"));
-
-        StepVerifier.create(this.client.findById("o-1"))
-                .expectError()
-                .verify(Duration.ofSeconds(3));
-    }
+    // setBodyDelay(...) 로 바꾸면 "헤더는 왔는데 본문이 안 오는" 상황이 된다.
+    // responseTimeout은 "응답 완료"까지를 재므로 이 경우도 끊긴다 — 07-timeout-strategy.md
 
     @Test
     void reactor_netty는_connection_reset을_한_번_자동_재시도한다() {
@@ -637,11 +587,9 @@ class OrderClientIntegrationTests {
                 .setHeader(HttpHeaders.RETRY_AFTER, "2").setBody(""));
 
         StepVerifier.create(this.client.findById("o-1"))
-                .expectErrorSatisfies(error -> {
-                    WebClientResponseException ex = (WebClientResponseException) error;
-                    assertThat(ex.getStatusCode().value()).isEqualTo(503);
-                    assertThat(ex.getHeaders().getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("2");
-                })
+                .expectErrorSatisfies(error -> assertThat(
+                        ((WebClientResponseException) error).getHeaders()
+                                .getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("2"))
                 .verify(Duration.ofSeconds(3));
     }
 
