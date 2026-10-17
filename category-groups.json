@@ -6,7 +6,7 @@
       "label": "Backend Framework",
       "icon": "🖥️",
       "order": 1,
-      "categories": ["spring", "spring-data-jdbc", "hibernate", "jpa", "batch", "build-tool"]
+      "categories": ["spring", "reactive", "spring-data-jdbc", "hibernate", "jpa", "batch", "build-tool"]
     },
     {
       "id": "language",
@@ -63,6 +63,7 @@
     "data & messaging": "Data & Messaging",
     "elk": "ELK Stack",
     "aws-cicd-ecs": "AWS CI/CD & ECS",
+    "reactive": "Reactive (Reactor & WebClient)",
     "resilience4j": "Resilience4j"
   },
   "defaultCollapsed": true
