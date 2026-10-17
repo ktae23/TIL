@@ -414,9 +414,8 @@ webClient.get().uri("/orders/{id}", id)
 // ❌ .syncBody(command)                    ✅ .bodyValue(command)
 // ❌ .context(ctx -> ctx.put("t", id))     ✅ 결과에 .contextWrite(ctx -> ctx.put("t", id))
 
-// ─── basicAuthentication() 무인자 + Credentials ───────────────
-// ❌ 7.0에서 전부 제거
-//    .filter(ExchangeFilterFunctions.basicAuthentication())
+// ─── basicAuthentication() 무인자 + Credentials (7.0에서 전부 제거) ───
+// ❌ .filter(ExchangeFilterFunctions.basicAuthentication())
 //    .attributes(ExchangeFilterFunctions.Credentials.basicAuthenticationCredentials(u, p))
 
 // ✅ 고정 자격증명이면 7.0.8+ 오버로드 (UTF-8 지원)
@@ -425,9 +424,7 @@ WebClient client = builder
                 props.getUsername(), props.getPassword(), StandardCharsets.UTF_8))
         .build();
 
-// ✅ 요청별 자격증명이 필요하면 필터를 직접 쓴다
-static final String CREDENTIALS_ATTRIBUTE = "app.client.credentials";
-
+// ✅ 요청별 자격증명이 필요하면 요청 속성 + 필터로 직접 구현한다
 ExchangeFilterFunction perRequestBasicAuth = (request, next) ->
         request.attribute(CREDENTIALS_ATTRIBUTE)
                 .map(BasicCredentials.class::cast)
@@ -437,10 +434,9 @@ ExchangeFilterFunction perRequestBasicAuth = (request, next) ->
                         .build()))
                 .orElseGet(() -> next.exchange(request));
 
-// ─── ReactorResourceFactory ───────────────────────────────────
+// ─── ReactorResourceFactory (6.2에서 미리 바꿔 두면 무사통과) ──────
 // ❌ import org.springframework.http.client.reactive.ReactorResourceFactory;
 // ✅ import org.springframework.http.client.ReactorResourceFactory;
-//    6.2에서 미리 바꿔 두면 7.0 업그레이드가 무사통과한다
 ```
 
 ### 4.2 `@ImportHttpServices` 로 WebClient 그룹 등록 (7.0 전용)
@@ -448,15 +444,10 @@ ExchangeFilterFunction perRequestBasicAuth = (request, next) ->
 ```java
 package com.example.client;
 
-import java.time.Duration;
-
-import io.netty.channel.ChannelOption;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.resources.ConnectionProvider;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+// java.time.Duration, io.netty.channel.ChannelOption
+// reactor.netty.http.client.HttpClient, reactor.netty.resources.ConnectionProvider
+// org.springframework.context.annotation.{Bean,Configuration}
+// org.springframework.http.client.reactive.ReactorClientHttpConnector
 import org.springframework.web.reactive.function.client.support.NotFoundWebClientAdapterDecorator;
 import org.springframework.web.reactive.function.client.support.WebClientHttpServiceGroupConfigurer;
 import org.springframework.web.service.registry.HttpServiceGroup;
@@ -497,11 +488,10 @@ public class HttpServicesConfig {
     }
 
     private ReactorClientHttpConnector connector(ConnectionProvider provider, Duration responseTimeout) {
-        HttpClient httpClient = HttpClient.create(provider)
+        return new ReactorClientHttpConnector(HttpClient.create(provider)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1_000)
                 .responseTimeout(responseTimeout)
-                .metrics(true, uri -> uri);
-        return new ReactorClientHttpConnector(httpClient);
+                .metrics(true, uri -> uri));
     }
 
     @Bean
@@ -510,7 +500,7 @@ public class HttpServicesConfig {
                 .maxConnections(props.getMaxConnections())
                 .maxIdleTime(props.getMaxIdleTime())
                 .maxLifeTime(props.getMaxLifeTime())
-                // reactor-netty 1.3.4+ — 동시 만료를 분산시킨다
+                // reactor-netty 1.3.4+ — 동시 만료를 분산시킨다 (§3.10)
                 .maxLifeTimeVariance(props.getMaxLifeTimeVariancePercent())
                 .evictInBackground(Duration.ofSeconds(30))
                 .metrics(true)
@@ -519,27 +509,7 @@ public class HttpServicesConfig {
 }
 ```
 
-```java
-public interface OrderApi {
-
-    @GetExchange("/orders/{id}")
-    Mono<Order> findById(@PathVariable String id);
-}
-
-@Service
-public class OrderService {
-
-    private final OrderApi orderApi;
-
-    // (a) 프록시 빈을 직접 주입 — 가장 흔한 방식
-    public OrderService(OrderApi orderApi) {
-        this.orderApi = orderApi;
-    }
-
-    // (b) 또는 레지스트리에서 그룹명으로 꺼낸다 (같은 타입이 여러 그룹에 있으면 필수)
-    //     this.orderApi = registry.getClient("order", OrderApi.class);
-}
-```
+인터페이스는 6.2와 동일하게 `@HttpExchange` 계열 애노테이션만 쓴다. 소비 측은 프록시 빈을 직접 주입하거나(`OrderApi` 를 생성자 파라미터로), 같은 타입이 여러 그룹에 있을 때는 `registry.getClient("order", OrderApi.class)` 로 그룹명을 지정해 꺼낸다.
 
 ### 4.3 API 버저닝 (7.0 전용)
 
@@ -586,6 +556,8 @@ dependencies {
 Jackson 2를 당장 유지해야 하면 **아무 것도 하지 않아도 7.0.9가 폴백해 준다**(§3.2). 단 코덱 접근자는 새 이름을 쓴다.
 
 ```java
+// tools.jackson.databind.json.JsonMapper
+// org.springframework.http.codec.json.{JacksonJsonDecoder,JacksonJsonEncoder}
 @Bean
 WebClient.Builder jacksonConfiguredBuilder(JsonMapper jsonMapper, ClientProperties props) {
     ExchangeStrategies strategies = ExchangeStrategies.builder()
@@ -597,7 +569,6 @@ WebClient.Builder jacksonConfiguredBuilder(JsonMapper jsonMapper, ClientProperti
                 configurer.defaultCodecs().jacksonJsonEncoder(new JacksonJsonEncoder(jsonMapper));
             })
             .build();
-
     return WebClient.builder().exchangeStrategies(strategies);
 }
 ```

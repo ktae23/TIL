@@ -95,14 +95,7 @@ void setup() {
 }
 ```
 
-`ArgumentCaptor<ClientRequest>` 로 잡아 URI를 단정하는 패턴이 반복된다 (`:83-91`):
-
-```java
-this.builder.build().get().uri("/path").retrieve().bodyToMono(Void.class).block(Duration.ofSeconds(10));
-
-ClientRequest request = verifyAndGetRequest();
-assertThat(request.url().toString()).isEqualTo("/base/path");
-```
+이후 `ArgumentCaptor<ClientRequest>` 로 잡아 `request.url()` 을 단정하는 패턴이 반복된다 (`:83-91`).
 
 **둘 중 무엇을 쓸까**: 요청만 검증하면 람다가 간결하다. 호출 횟수(`verifyNoMoreInteractions`)나 연속 호출마다 다른 응답(`thenReturn(a, b)`)이 필요하면 Mockito가 편하다.
 
@@ -183,18 +176,9 @@ flowchart TD
 
 ### 3.2 `ClientResponse.create(...)` — 코덱을 타는 스텁
 
-정적 팩토리 네 개 (`ClientResponse.java:246~277`): `create(HttpStatusCode)`(기본 `ExchangeStrategies.withDefaults()`), `create(HttpStatusCode, ExchangeStrategies)`, `create(int, ExchangeStrategies)`, `create(HttpStatusCode, List<HttpMessageReader<?>>)`.
+정적 팩토리 네 개 (`ClientResponse.java:246~277`): `create(HttpStatusCode)`(기본 `ExchangeStrategies.withDefaults()`), `create(HttpStatusCode, ExchangeStrategies)`, `create(int, ExchangeStrategies)`, `create(HttpStatusCode, List<HttpMessageReader<?>>)`. `Builder` 로 채운다 (`:327-407`): `statusCode`, `rawStatusCode`, `header(String, String...)`, `cookie`, `body(String)`, `body(Flux<DataBuffer>)`, `body(Function<Flux<DataBuffer>, Flux<DataBuffer>>)`.
 
-`Builder` 로 채운다 (`:327-407`): `statusCode`, `rawStatusCode`, `header(String, String...)`, `cookie`, `body(String)`, `body(Flux<DataBuffer>)`, `body(Function<Flux<DataBuffer>, Flux<DataBuffer>>)`.
-
-```java
-ClientResponse response = ClientResponse.create(HttpStatus.OK)
-        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-        .body("{\"id\":\"o-1\",\"amount\":12000}")
-        .build();
-```
-
-이러면 `bodyToMono(Order.class)` 가 **실제 Jackson 디코더를 타므로** 역직렬화 버그까지 잡힌다. `mock(ClientResponse.class)` 는 못 잡는다. 코덱과 `DataBuffer` 소유권 규칙은 [`05-codecs-and-databuffer.md`](05-codecs-and-databuffer.md).
+이걸 쓰면 `bodyToMono(Order.class)` 가 **실제 Jackson 디코더를 타므로** 역직렬화 버그까지 잡힌다 — `mock(ClientResponse.class)` 는 못 잡는다(§4.1에 예제). 코덱과 `DataBuffer` 소유권 규칙은 [`05-codecs-and-databuffer.md`](05-codecs-and-databuffer.md).
 
 ### 3.3 MockWebServer 하네스 — Spring의 패턴
 
@@ -219,24 +203,7 @@ void shutdown() throws IOException {
 }
 ```
 
-`new MockWebServer()` 는 `url(...)` 을 처음 호출할 때 포트를 자동 할당하며 시작한다 — `start()` 를 직접 부를 필요가 없다. 헬퍼 (`:1399-1418`):
-
-```java
-private void prepareResponse(Consumer<MockResponse> consumer) {
-    MockResponse response = new MockResponse();
-    consumer.accept(response);
-    this.server.enqueue(response);
-}
-
-private void expectRequest(Consumer<RecordedRequest> consumer) {
-    try {
-        consumer.accept(this.server.takeRequest());
-    }
-    catch (InterruptedException ex) {
-        throw new IllegalStateException(ex);
-    }
-}
-```
+`new MockWebServer()` 는 `url(...)` 을 처음 호출할 때 포트를 자동 할당하며 시작한다 — `start()` 를 직접 부를 필요가 없다. 응답 큐잉·요청 검증 헬퍼는 `prepareResponse(Consumer<MockResponse>)` / `expectRequest(Consumer<RecordedRequest>)` / `expectRequestCount(int)` 세 개다 (`:1399-1418`, §4.2에 그대로 옮겼다).
 
 `enqueue()` 는 FIFO 큐다 — "첫 응답 503, 두 번째 200"을 만들 때 그대로 쓴다. Spring은 커넥터 5종을 `@ParameterizedTest` 로 돌리지만(`:108-119`), 애플리케이션 테스트에서는 실제로 쓰는 커넥터 하나로 충분하다.
 
@@ -299,28 +266,30 @@ public Mono<Order> findById(String orderId) {
 }
 ```
 
-### 4.1 층위 (1) — `ExchangeFunction` 스텁
+### 4.1 층위 (1) — `ExchangeFunction` 스텁 (+ 가상 시간)
 
 ```java
 package com.example.client.order;
 
 // java.time.Duration, java.util.{ArrayList,List}
-// org.junit.jupiter.api.Test
+// java.util.concurrent.atomic.AtomicInteger, org.junit.jupiter.api.Test
 // reactor.core.publisher.Mono, reactor.test.StepVerifier, reactor.util.retry.Retry
+// com.example.client.resilience.RetryDecision
 // org.springframework.core.codec.DecodingException
 // org.springframework.http.{HttpHeaders,HttpMethod,HttpStatus,MediaType}
 // org.springframework.web.reactive.function.client.{ClientRequest,ClientResponse,
 //         ExchangeFunction,WebClient,WebClientResponseException}
 // static org.assertj.core.api.Assertions.assertThat
 
-/** HTTP 없이 OrderClient의 요청 조립과 응답 처리를 검증한다. */
+/** HTTP 없이 OrderClient의 요청 조립·응답 처리·재시도 타이밍을 검증한다. */
 class OrderClientExchangeFunctionTests {
 
     private static final String BASE_URL = "https://orders.internal";
 
     private final List<ClientRequest> captured = new ArrayList<>();
 
-    /** 요청을 기록하고 지정한 응답을 돌려주는 스텁. ExchangeFunction이 함수형이라 람다로 끝난다. */
+    /** 요청을 기록하고 지정한 응답을 순서대로 돌려주는 스텁.
+     *  ExchangeFunction이 함수형 인터페이스라 람다 하나로 끝난다. */
     private ExchangeFunction stub(ClientResponse... responses) {
         return request -> {
             this.captured.add(request);
@@ -328,7 +297,7 @@ class OrderClientExchangeFunctionTests {
         };
     }
 
-    private OrderClient clientWith(ExchangeFunction exchange, Retry retry) {
+    private OrderClient client(ExchangeFunction exchange, Retry retry) {
         return new OrderClient(WebClient.builder().exchangeFunction(exchange), BASE_URL, retry);
     }
 
@@ -339,9 +308,17 @@ class OrderClientExchangeFunctionTests {
                 .build();
     }
 
+    private static Retry backoffSpec() {
+        return Retry.backoff(2, Duration.ofSeconds(1))
+                .maxBackoff(Duration.ofSeconds(10))
+                .jitter(0d)                              // 테스트에서는 지터를 끈다
+                .filter(RetryDecision::isRetryable)
+                .onRetryExhaustedThrow((spec, signal) -> signal.failure());
+    }
+
     @Test
     void uri템플릿과_baseUrl이_조립되고_속성에_템플릿이_남는다() {
-        OrderClient client = clientWith(
+        OrderClient client = client(
                 stub(json(HttpStatus.OK, "{\"id\":\"o-1\",\"amount\":12000}")), Retry.max(0));
 
         StepVerifier.create(client.findById("o-1"))
@@ -358,66 +335,25 @@ class OrderClientExchangeFunctionTests {
 
     @Test
     void 실제_코덱을_타므로_역직렬화_버그를_잡는다() {
-        // amount가 문자열로 오는 서버 — mock(ClientResponse.class)로는 못 잡는다
-        OrderClient client = clientWith(
-                stub(json(HttpStatus.OK, "{\"id\":\"o-1\",\"amount\":\"twelve\"}")), Retry.max(0));
-
-        StepVerifier.create(client.findById("o-1"))
+        // amount가 문자열로 오는 서버. mock(ClientResponse.class)로는 절대 못 잡는다
+        StepVerifier.create(client(
+                        stub(json(HttpStatus.OK, "{\"id\":\"o-1\",\"amount\":\"twelve\"}")),
+                        Retry.max(0)).findById("o-1"))
                 .expectError(DecodingException.class)
                 .verify(Duration.ofSeconds(1));
     }
 
     @Test
     void onStatus로_404는_빈_Mono가_되고_400은_예외가_된다() {
-        StepVerifier.create(clientWith(
-                        stub(ClientResponse.create(HttpStatus.NOT_FOUND).build()), Retry.max(0))
-                .findById("missing"))
+        StepVerifier.create(client(stub(ClientResponse.create(HttpStatus.NOT_FOUND).build()),
+                        Retry.max(0)).findById("missing"))
                 .verifyComplete();   // onNext 없이 바로 complete
 
-        StepVerifier.create(clientWith(
-                        stub(json(HttpStatus.BAD_REQUEST, "{\"code\":\"INVALID_ID\"}")), Retry.max(0))
-                .findById("!!"))
-                .expectErrorSatisfies(error -> {
-                    WebClientResponseException ex = (WebClientResponseException) error;
-                    assertThat(ex.getStatusCode().value()).isEqualTo(400);
-                    assertThat(ex.getResponseBodyAsString()).contains("INVALID_ID");
-                })
+        StepVerifier.create(client(stub(json(HttpStatus.BAD_REQUEST, "{\"code\":\"INVALID_ID\"}")),
+                        Retry.max(0)).findById("!!"))
+                .expectErrorSatisfies(error -> assertThat(((WebClientResponseException) error)
+                        .getResponseBodyAsString()).contains("INVALID_ID"))
                 .verify(Duration.ofSeconds(1));
-    }
-}
-```
-
-### 4.2 층위 (1) + 가상 시간 — 백오프 검증
-
-```java
-package com.example.client.order;
-
-// java.time.Duration, java.util.concurrent.atomic.AtomicInteger, org.junit.jupiter.api.Test
-// reactor.core.publisher.Mono, reactor.test.StepVerifier, reactor.util.retry.Retry
-// com.example.client.resilience.RetryDecision
-// org.springframework.http.{HttpHeaders,HttpStatus,MediaType}
-// org.springframework.web.reactive.function.client.{ClientResponse,ExchangeFunction,
-//         WebClient,WebClientResponseException}
-// static org.assertj.core.api.Assertions.assertThat
-
-/**
- * 재시도 간격을 가상 시간으로 검증한다. 실시간 대기 0초.
- * Retry.backoff의 기본 백오프 스케줄러가 Schedulers::parallel(팩토리 참조)이라
- * VirtualTimeScheduler가 교체할 수 있다 — 인스턴스를 직접 넘기면 안 된다.
- */
-class OrderClientRetryTimingTests {
-
-    private Retry retrySpec() {
-        return Retry.backoff(2, Duration.ofSeconds(1))
-                .maxBackoff(Duration.ofSeconds(10))
-                .jitter(0d)                              // 테스트에서는 지터를 끈다
-                .filter(RetryDecision::isRetryable)
-                .onRetryExhaustedThrow((spec, signal) -> signal.failure());
-    }
-
-    private OrderClient client(ExchangeFunction exchange) {
-        return new OrderClient(WebClient.builder().exchangeFunction(exchange),
-                "https://orders.internal", retrySpec());
     }
 
     @Test
@@ -425,17 +361,14 @@ class OrderClientRetryTimingTests {
         AtomicInteger attempts = new AtomicInteger();
 
         StepVerifier.withVirtualTime(() -> {
-                    // ★ Supplier 안에서 조립해야 가상 스케줄러가 적용된다
+                    // ★ Supplier 안에서 조립해야 가상 스케줄러가 적용된다 (§3.5)
                     ExchangeFunction exchange = request -> {
                         int n = attempts.incrementAndGet();
                         return Mono.just(n < 3
                                 ? ClientResponse.create(HttpStatus.SERVICE_UNAVAILABLE).build()
-                                : ClientResponse.create(HttpStatus.OK)
-                                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                                        .body("{\"id\":\"o-1\",\"amount\":12000}")
-                                        .build());
+                                : json(HttpStatus.OK, "{\"id\":\"o-1\",\"amount\":12000}"));
                     };
-                    return client(exchange).findById("o-1");
+                    return client(exchange, backoffSpec()).findById("o-1");
                 })
                 .expectSubscription()
                 .expectNoEvent(Duration.ofSeconds(1))   // 첫 실패 → 1초 백오프
@@ -453,9 +386,9 @@ class OrderClientRetryTimingTests {
         StepVerifier.withVirtualTime(() -> client(request -> {
                     attempts.incrementAndGet();
                     return Mono.just(ClientResponse.create(HttpStatus.BAD_REQUEST).build());
-                }).findById("o-1"))
+                }, backoffSpec()).findById("o-1"))
                 .expectSubscription()
-                // filter 탈락 → 감싸지지 않은 원본 예외가 바로 간다
+                // filter 탈락 → 감싸지지 않은 원본 예외가 바로 간다 (09 문서 §3.1)
                 .expectError(WebClientResponseException.BadRequest.class)
                 .verify();
 
@@ -464,7 +397,7 @@ class OrderClientRetryTimingTests {
 }
 ```
 
-### 4.3 층위 (2) — MockWebServer로 실제 왕복
+### 4.2 층위 (2) — MockWebServer로 실제 왕복
 
 ```java
 package com.example.client.order;
@@ -581,17 +514,9 @@ class OrderClientIntegrationTests {
                 .verify(Duration.ofSeconds(3));
     }
 
-    @Test
-    void 503_응답에_Retry_After가_실려온다() {
-        enqueue(response -> response.setResponseCode(503)
-                .setHeader(HttpHeaders.RETRY_AFTER, "2").setBody(""));
-
-        StepVerifier.create(this.client.findById("o-1"))
-                .expectErrorSatisfies(error -> assertThat(
-                        ((WebClientResponseException) error).getHeaders()
-                                .getFirst(HttpHeaders.RETRY_AFTER)).isEqualTo("2"))
-                .verify(Duration.ofSeconds(3));
-    }
+    // Retry-After 해석을 검증하려면 setResponseCode(503)
+    //     .setHeader(HttpHeaders.RETRY_AFTER, "2") 를 enqueue하고
+    //     WebClientResponseException.getHeaders() 를 단정한다 — 09 문서 §4.1
 
     // --- Spring의 WebClientIntegrationTests와 같은 헬퍼 ---
 
@@ -612,7 +537,7 @@ class OrderClientIntegrationTests {
 }
 ```
 
-### 4.4 층위 (3) — `WebTestClient` 는 내 서버를 검증한다
+### 4.3 층위 (3) — `WebTestClient` 는 내 서버를 검증한다
 
 ```java
 /** WebTestClient는 "서버가 무엇을 내보내는가"를 고정한다. 소비자 테스트 도구가 아니다 — §2.2 */
@@ -641,11 +566,12 @@ class OrderControllerTests {
 
 `bindToController` 는 서버를 mock 요청/응답으로 돌려 포트를 안 쓴다. 실제 소켓이 필요하면 `@SpringBootTest(webEnvironment = RANDOM_PORT)` + `bindToServer()`.
 
-### 4.5 어떤 테스트를 몇 개 쓸까
+### 4.4 어떤 테스트를 몇 개 쓸까
 
 실무 비율은 대략 **(1) 10개 : (2) 3개 : (3) 서버 엔드포인트당 1개**. (2)는 "이 설정이 정말 그렇게 동작하나"를 한 번 못 박는 용도라 많을 필요가 없다 — 대신 CI에서 반드시 돌려야 한다. **타임아웃 설정 오타는 (1)로는 절대 안 잡힌다.**
 
 ---
+
 
 ## 5. 정리
 
