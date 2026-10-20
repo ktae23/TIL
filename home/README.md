@@ -2,6 +2,11 @@
 
 매일 배운 것을 정리하는 학습 기록 저장소입니다.
 
+- 📖 웹 뷰어: [ktae23.github.io/TIL](https://ktae23.github.io/TIL)
+- 💻 저장소: [github.com/ktae23/TIL](https://github.com/ktae23/TIL)
+
+왼쪽 사이드바에서 카테고리를 펼쳐 문서를 선택하거나, `Ctrl+K`로 전체 검색하세요.
+
 ## 도구
 
 ### /til - TIL 작성 스킬
